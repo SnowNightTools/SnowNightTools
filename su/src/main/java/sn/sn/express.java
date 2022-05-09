@@ -3,6 +3,7 @@ package sn.sn;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.command.Command;
@@ -12,12 +13,10 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static sn.sn.Sn.*;
 
@@ -109,36 +108,79 @@ public class express implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, String label, String[] args){
 
 
+        //获取玩家背包信息
+        if(sender instanceof Player){
+            senderPlayer = (Player)sender;
+        } else {
+            say("玩家信息异常，请联系管理员。");
+        }
 
-        if(label.equalsIgnoreCase("express")) {
+        if(label.equalsIgnoreCase("express")&&senderPlayer.hasPermission("sn.express")) {
 
+            if(args==null){
+                help();
+                return true;
+            }
 
-            //获取玩家背包信息
-            if(sender instanceof Player){
-                senderPlayer = (Player)sender;
-            } else {
-                say("玩家信息异常，请联系管理员。");
+            if(args[0].equalsIgnoreCase("mes")&&senderPlayer.hasPermission("sn.express.mes")){
+                say("share_yml地址："+share_Path);
+                say("plugin地址："+Sn.plugin_Path);
                 return true;
             }
 
 
-            if(args.length==0){
-                return help();
-            }
+
+
+
             if(args[0].equalsIgnoreCase("help")||args[0].equalsIgnoreCase("？")||args[0].equalsIgnoreCase("?")){
                 return help();
             }
 
-            if(args[0].equalsIgnoreCase("mes")&&senderPlayer.isOp()){
-                say("share_yml地址："+share_Path);
-                say("plugin地址："+Sn.plugin_Path);
+
+            if(args[0].equalsIgnoreCase("reset_state")){
+                if(!senderPlayer.hasPermission("sn.express.reset_state")){
+                    noPermission("sn.express.reset_state");
+                    return false;
+                }
+                if(args.length == 1){
+                    Sn.share_yml.set(senderPlayer.getName()+".using",false);
+                    try {
+                        share_yml.save(share_file);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return true;
+                }
+                Player tmp = Bukkit.getPlayer(args[1]);
+                if(tmp!=null){
+                    tmp.closeInventory();
+                    Sn.share_yml.set(tmp.getName()+".using",false);
+                    tmp.sendMessage("管理员尝试更改了你的状态！");
+                    try {
+                        share_yml.save(share_file);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    OfflinePlayer tmp2 = Bukkit.getOfflinePlayer(UUID.fromString(args[1]));
+                    Sn.share_yml.set(tmp2.getName()+".using",false);
+                    try {
+                        share_yml.save(share_file);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                return true;
             }
 
-            if(args[0].equalsIgnoreCase("setpath")&&senderPlayer.isOp()){
-
+            if(args[0].equalsIgnoreCase("sn.set_path")){
+                if(!senderPlayer.hasPermission("sn.express.set_path")){
+                    noPermission("sn.express.set_path");
+                    return false;
+                }
                 String path = args[1];
 
                 //检测目录是否有空格
@@ -201,6 +243,10 @@ public class express implements CommandExecutor {
             }
 
             if(args[0].equalsIgnoreCase("clean")){
+                if(!senderPlayer.hasPermission("sn.express.clean")){
+                    noPermission("sn.express.clean");
+                    return false;
+                }
                 Sn.share_yml.set(senderPlayer.getName()+".using",false);
                 Sn.share_yml.set(senderPlayer.getName()+".line",0);
                 Sn.share_yml.set(senderPlayer.getName()+".max",54);
@@ -232,6 +278,10 @@ public class express implements CommandExecutor {
 
 
             if(args[0].equalsIgnoreCase("send")){
+                if(!senderPlayer.hasPermission("sn.express.send")){
+                    noPermission("sn.express.send");
+                    return false;
+                }
                 //say("玩家"+sender.getName()+"尝试使用express send");
 
                 if(args.length == 1){
@@ -315,12 +365,10 @@ public class express implements CommandExecutor {
                         return true;
                     }
 
-                    Sn.share_yml.set(strline, n+ninv);
                     //添加物品
 
                     Inventory temp = Bukkit.createInventory(null, 54);
                     Inventory remains = Bukkit.createInventory(null, 27);
-
                     for(int i=0;i<n;i++)
                         temp.addItem(readItemStackFromYml(share_yml,sender.getName() + ".items"+'.'+i));
 
@@ -348,9 +396,10 @@ public class express implements CommandExecutor {
             }
 
             if(args[0].equalsIgnoreCase("show")){
-                //say("玩家"+sender.getName()+"尝试使用express show");
-
-
+                if(!senderPlayer.hasPermission("sn.express.show")){
+                    noPermission("sn.express.show");
+                    return false;
+                }
                 //为玩家创建一个inventory，只在开启和关闭时进行文件操作。
                 showInv.put(senderPlayer, Bukkit.createInventory(senderPlayer,54,ChatColor.BLUE+"雪花速递"));
 
@@ -377,11 +426,15 @@ public class express implements CommandExecutor {
         return true;
     }
 
+    private void noPermission(String per) {
+        senderPlayer.sendMessage("你没有"+per+"权限");
+    }
 
 
     private boolean help() {
         senderPlayer.sendMessage(ChatColor.GREEN+"欢迎使用雪花速递~");
         if(senderPlayer.isOp()) {
+
             senderPlayer.sendMessage(ChatColor.GREEN + "你可以使用下列命令");
             senderPlayer.sendMessage(ChatColor.GREEN + "/express send hand 发送手上的物品到快递箱");
             senderPlayer.sendMessage(ChatColor.GREEN + "/express send box 发送你指向的箱子内的物品到快递箱");

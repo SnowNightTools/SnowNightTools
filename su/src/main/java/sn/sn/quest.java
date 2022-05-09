@@ -5,14 +5,16 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.enchantments.Enchantment;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.ObjectStreamException;
@@ -20,6 +22,7 @@ import java.io.Serializable;
 import java.util.*;
 
 import static sn.sn.Sn.*;
+import static sn.sn.showInvEvent.openQuestSettingUI;
 
 /*
 
@@ -271,9 +274,8 @@ public class quest implements CommandExecutor {
     }
 
     public static Quest getQuest(int id){
-        return quests[id];
+        return quests.get(id);
     }
-
 
 
     private static void addQuest(Player player, String name) {
@@ -302,165 +304,18 @@ public class quest implements CommandExecutor {
 
     public static Quest getQuest(String name){
         int id = quest_yml.getInt("inside."+name);
-        return quests[id];
+        return quests.get(id);
     }
 
-    public static void openQuestSettingUI(Player questPlayer){
-        openQuestSettingUI(questPlayer,questseting.get(questPlayer).getQuestname());
-    }
 
-    public static void openQuestSettingUI(Player questPlayer,String questname){
-        Inventory questcreate = Bukkit.createInventory(questPlayer,9,ChatColor.BLUE+"正在创建一个新任务，请填写以下信息");
-
-
-        ItemStack nameicon = new ItemStack(Material.BOOK);
-        ItemMeta nameiconmeta = nameicon.getItemMeta();
-        assert nameiconmeta != null;
-        nameiconmeta.setDisplayName(questname);
-        List<String> namelore = new ArrayList<>();
-        namelore.add(ChatColor.RED+"任务名应该不含空格、\\（右斜杠）、单/双引号、英文句点等特殊字符");
-        namelore.add(ChatColor.RED+"任务名应该不以数字开头");
-        namelore.add(ChatColor.RED+"任务名应该独一无二");
-        namelore.add(ChatColor.YELLOW+"任务名最好不含中文字符，否则可能会出现意料之外的编码错误");
-        namelore.add(ChatColor.GREEN+"任务名最好与它的内容相对应");
-        namelore.add("例子：FirstQuestofSnowNightTown");
-        nameiconmeta.addEnchant(Enchantment.DIG_SPEED,1,false);
-        nameiconmeta.setLore(namelore);
-        nameicon.setItemMeta(nameiconmeta);
-        questcreate.setItem(4,nameicon);
-
-
-        ItemStack positionicon = new ItemStack(SettingType.QUESTPOSITION.getSymbol());
-        ItemMeta positioniconmeta = positionicon.getItemMeta();
-        assert positioniconmeta != null;
-        positioniconmeta.setDisplayName("任务位置");
-        List<String> positionlore = new ArrayList<>();
-        positionlore.add(ChatColor.GREEN+"点我设置任务位置");
-        if(questseting.get(questPlayer).isPositionSet()) {
-            positioniconmeta.addEnchant(Enchantment.LUCK,1,false);
-        }
-        positioniconmeta.setLore(positionlore);
-        positionicon.setItemMeta(positioniconmeta);
-        questcreate.setItem(5, positionicon);
-
-
-        ItemStack typeicon = new ItemStack(Material.ARROW);
-        ItemMeta typeiconmeta = typeicon.getItemMeta();
-        assert typeiconmeta != null;
-        typeiconmeta.setDisplayName("任务类型");
-        List<String> typelore = new ArrayList<>();
-        typelore.add(ChatColor.GREEN+"点我设置任务类型");
-        if(questseting.get(questPlayer).isTypeSet()) {
-            typeiconmeta.addEnchant(Enchantment.LUCK,1,false);
-            typeicon.setType(questseting.get(questPlayer).getQuesttype().getSymbol());
-        }
-        typeiconmeta.setLore(typelore);
-        typeicon.setItemMeta(typeiconmeta);
-        questcreate.setItem(3, typeicon);
-
-
-        ItemStack targeticon = new ItemStack(SettingType.QUESTACTION.getSymbol());
-        ItemMeta targeticonmeta = targeticon.getItemMeta();
-        assert targeticonmeta != null;
-        targeticonmeta.setDisplayName("任务目标");
-        List<String> targetlore = new ArrayList<>();
-        targetlore.add(ChatColor.GREEN+"点我设置任务目标");
-        if(questseting.get(questPlayer).isTargetSet()) {
-            targeticonmeta.addEnchant(Enchantment.ARROW_DAMAGE,1,false);
-        }
-        targeticonmeta.setLore(targetlore);
-        targeticon.setItemMeta(targeticonmeta);
-        questcreate.setItem(6, targeticon);
-
-
-        ItemStack acccondtnicon = new ItemStack(SettingType.QUESTACTION.getSymbol());
-        ItemMeta acccondtniconmeta = acccondtnicon.getItemMeta();
-        assert acccondtniconmeta != null;
-        acccondtniconmeta.setDisplayName("任务接受条件");
-        List<String> acccondtnlore = new ArrayList<>();
-        acccondtnlore.add(ChatColor.GREEN+"点我设置任务接受条件");
-        acccondtnlore.add("如果没有特别的任务接受条件，");
-        acccondtnlore.add("也请将其设置为“默认“！");
-        if(questseting.get(questPlayer).isAcceptconditionSet()) {
-            acccondtniconmeta.addEnchant(Enchantment.ARROW_DAMAGE,1,false);
-        }
-        acccondtniconmeta.setLore(acccondtnlore);
-        acccondtnicon.setItemMeta(acccondtniconmeta);
-        questcreate.setItem(2, acccondtnicon);
-
-
-        ItemStack rewardicon = new ItemStack(SettingType.QUESTREWARD.getSymbol());
-        ItemMeta rewardiconmeta = rewardicon.getItemMeta();
-        assert rewardiconmeta != null;
-        rewardiconmeta.setDisplayName("任务奖励");
-        List<String> rewardlore = new ArrayList<>();
-        rewardlore.add(ChatColor.GREEN+"点我设置任务奖励");
-        if(questseting.get(questPlayer).isAcceptconditionSet()) {
-            rewardiconmeta.addEnchant(Enchantment.CHANNELING,1,false);
-        }
-        rewardiconmeta.setLore(rewardlore);
-        rewardicon.setItemMeta(rewardiconmeta);
-        questcreate.setItem(7, rewardicon);
-
-
-        ItemStack onicon = new ItemStack(Material.BARRIER);
-        ItemMeta oniconmeta = onicon.getItemMeta();
-        assert oniconmeta != null;
-        oniconmeta.setDisplayName("任务试运行");
-        List<String> onlore = new ArrayList<>();
-
-        if(questseting.get(questPlayer).isAcceptconditionSet()) {
-            oniconmeta.addEnchant(Enchantment.CHANNELING,1,false);
-        }
-        if(questseting.get(questPlayer).isOn()){
-            onicon.setType(Material.EMERALD);
-            onlore.add(ChatColor.GREEN+"任务现在正在运行！");
-            onlore.add(ChatColor.RED+"左键关闭任务！");
-        } else {
-            onlore.add(ChatColor.GREEN+"任务现在没有运行！");
-            onlore.add(ChatColor.RED+"左键打开任务！");
-            onlore.add(ChatColor.RED+"请在打开任务前确定所有参数已经被充分设置！");
-        }
-        oniconmeta.setLore(onlore);
-        onicon.setItemMeta(oniconmeta);
-        questcreate.setItem(8, onicon);
-
-
-        ItemStack cficon = new ItemStack(Material.EMERALD);
-        ItemMeta cficonmeta = cficon.getItemMeta();
-        assert cficonmeta != null;
-        cficonmeta.setDisplayName("确认并创建任务");
-        List<String> cflore = new ArrayList<>();
-        cflore.add(ChatColor.GREEN+"点我确认并创建任务");
-        cflore.add("请确认所有状态准确地、充分地被设置！");
-        cflore.add("建议先试运行任务");
-        cflore.add("新建的任务的运行状态继承试运行状态");
-        cficonmeta.setLore(cflore);
-        cficon.setItemMeta(cficonmeta);
-        questcreate.setItem(1, cficon);
-
-
-        ItemStack cicon = new ItemStack(Material.BARRIER);
-        ItemMeta ciconmeta = cicon.getItemMeta();
-        assert ciconmeta != null;
-        ciconmeta.setDisplayName("任务接受条件");
-        List<String> clore = new ArrayList<>();
-        clore.add(ChatColor.RED+"取消新建这个任务！");
-        clore.add(ChatColor.RED+"这会导致你刚才所完成的工作全部被删除！");
-        ciconmeta.setLore(clore);
-        cicon.setItemMeta(ciconmeta);
-        questcreate.setItem(0, cicon);
-
-
-        questPlayer.openInventory(questcreate);
-    }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, String label, String[] args) {
         if(!label.equalsIgnoreCase("quest")){
             return true;
         }
 
+        if(args==null) return help();
 
         //获取玩家背包信息
         if(sender instanceof Player){
@@ -594,7 +449,7 @@ public class quest implements CommandExecutor {
         }
         //set
         if(args[0].equalsIgnoreCase("set")){
-            if(args.length==2){
+            if(args.length==1){
                 if(!questseting.containsKey(questPlayer)){
                     questPlayer.sendMessage("请先新建一个任务！");
                     return false;
@@ -606,6 +461,13 @@ public class quest implements CommandExecutor {
 
 
         return true;
+    }
+
+    private boolean help() {
+        if(questPlayer.isOp()) {
+            say("/quest create [任务名] 打开任务新建界面");
+            return true;
+        } else return false;
     }
 
     private void show(String name,Player player) {
@@ -623,15 +485,15 @@ public class quest implements CommandExecutor {
                     player.sendMessage(ChatColor.GREEN+"父任务："+a.getQuestposition().getParentquest());
                     player.sendMessage(ChatColor.GREEN+"子任务："+a.getQuestposition().getChildquest());
                     player.sendMessage(ChatColor.GREEN+"任务描述：");
-                    String[] tempstr = a.getQuestdescription();
+                    List<String> tempstr = a.getQuestdescription();
                     for (int i = 0; i < a.getQuestdescriptionline(); i++) {
-                        player.sendMessage(ChatColor.WHITE + tempstr[i]);
+                        player.sendMessage(ChatColor.WHITE + tempstr.get(i));
                     }
                     player.sendMessage(ChatColor.GREEN+"任务目标：");
-                    QuestAction[] tempqa = a.getQuestacceptcondition();
+                    List<QuestAction> tempqa = a.getQuestacceptcondition();
                     for (int i = 0; i < a.getQuestacceptconditionamount(); i++) {
                         player.sendMessage(ChatColor.WHITE + "操作"+(i+1)+"：");
-                        show(ymlfile,tempqa[i].getQuestactionname(),player);
+                        show(ymlfile, tempqa.get(i).getQuestactionname(),player);
                     }
                 } else player.sendMessage("查询失败~");
                 break;
@@ -645,7 +507,7 @@ public class quest implements CommandExecutor {
                         break;
                     case COLLECT:
                         player.sendMessage(ChatColor.GREEN+"这个操作是一个收集操作，你需要收集以下物品：");
-                        ItemStack[] b = a.getQuestactiondata().getQuesttargetitem();
+                        List<ItemStack> b = a.getQuestactiondata().getQuesttargetitem();
                         for (ItemStack stack : b) {
                             player.sendMessage(ChatColor.WHITE + stack.toString());
                         }
@@ -662,12 +524,13 @@ public class quest implements CommandExecutor {
                     case FIND_NPC:
                         player.sendMessage(ChatColor.GREEN+"这个操作是一个寻找操作，你需要找到以下NPC：");
                         Entity d= Bukkit.getEntity(a.getQuestactiondata().getQuesttargetnpc());
+                        assert d != null;
                         player.sendMessage(ChatColor.WHITE+"它叫"+d.getName());
                         ymlfile.set(player.getName()+".check",true);
                         break;
                     case FIND_ITEM:
                         player.sendMessage(ChatColor.GREEN+"这个操作是一个寻找操作，你需要找到这个物品：");
-                        ItemStack f = a.getQuestactiondata().getQuesttargetitem()[0];
+                        ItemStack f = a.getQuestactiondata().getQuesttargetitem().get(0);
                         player.sendMessage(ChatColor.WHITE+f.toString());
                         ymlfile.set(player.getName()+".check",true);
                         break;
@@ -681,7 +544,7 @@ public class quest implements CommandExecutor {
                         break;
                     case AGRICULTURE:
                         player.sendMessage(ChatColor.GREEN+"这个操作是一个种植操作，你的身边需要出现下列作物：");
-                        ItemStack[] g = a.getQuestactiondata().getQuesttargetitem();
+                        List<ItemStack> g = a.getQuestactiondata().getQuesttargetitem();
                         for (ItemStack itemStack : g) {
                             player.sendMessage(ChatColor.WHITE + itemStack.toString());
                         }
@@ -706,7 +569,8 @@ public class quest implements CommandExecutor {
         }
     }
 
-    public enum SettingType implements Keyed{
+    @SerializableAs("SnQuestSettingType")
+    public enum SettingType implements Keyed, Cloneable, Serializable,ConfigurationSerializable{
         QUEST(1,"quest", Material.BOOK),
         QUESTPOSITION(2,"qusetposition", Material.PINK_GLAZED_TERRACOTTA),
         QUESTACTION(3,"qusetaction", Material.WRITABLE_BOOK),
@@ -724,7 +588,7 @@ public class quest implements CommandExecutor {
         }
 
         @Override
-        public NamespacedKey getKey() {
+        public @NotNull NamespacedKey getKey() {
             return key;
         }
 
@@ -735,8 +599,26 @@ public class quest implements CommandExecutor {
         public Material getSymbol() {
             return symbol;
         }
+
+        /**
+         * Creates a Map representation of this class.
+         * <p>
+         * This class must provide a method to restore this class, as defined in
+         * the {@link ConfigurationSerializable} interface javadocs.
+         *
+         * @return Map containing the current state of this class
+         */
+        @NotNull
+        @Override
+        public Map<String, Object> serialize() {
+            Map<String, Object> tmp= new HashMap<>();
+            tmp.put("name",this.key);
+            return tmp;
+        }
     }
-    public enum QuestType implements Keyed {
+
+    @SerializableAs("SnQuestType")
+    public enum QuestType implements Keyed , Cloneable, Serializable,ConfigurationSerializable{
         MAIN(1,"main", Material.RAIL),
         SIDE(2,"side", Material.POWERED_RAIL),
         TRIGGER(3,"trigger", Material.ACTIVATOR_RAIL),
@@ -754,7 +636,7 @@ public class quest implements CommandExecutor {
         }
 
         @Override
-        public NamespacedKey getKey() {
+        public @NotNull NamespacedKey getKey() {
             return key;
         }
 
@@ -765,8 +647,25 @@ public class quest implements CommandExecutor {
         public Material getSymbol() {
             return symbol;
         }
+        /**
+         * Creates a Map representation of this class.
+         * <p>
+         * This class must provide a method to restore this class, as defined in
+         * the {@link ConfigurationSerializable} interface javadocs.
+         *
+         * @return Map containing the current state of this class
+         */
+        @NotNull
+        @Override
+        public Map<String, Object> serialize() {
+            Map<String, Object> tmp= new HashMap<>();
+            tmp.put("name",this.key);
+            return tmp;
+        }
     }
-    public enum QuestActionType implements Keyed {
+
+    @SerializableAs("SnQuestActionType")
+    public enum QuestActionType implements Keyed, Cloneable, Serializable,ConfigurationSerializable {
         COLLECT(1,"collect"),
         CRUSADE(2,"crusade"),
         FIND_NPC(3,"find_npc"),
@@ -780,35 +679,84 @@ public class quest implements CommandExecutor {
         final int number;
         final NamespacedKey key;
 
+        public static void register(){
+            NamespacedKey a;
+        }
+
+        @Contract(pure = true)
+        public static @Nullable QuestActionType getFromInt(int number){
+            switch (number){
+                case 1:
+                    return QuestActionType.COLLECT;
+                case 2:
+                    return QuestActionType.CRUSADE;
+                case 3:
+                    return QuestActionType.FIND_NPC;
+                case 4:
+                    return QuestActionType.FIND_ITEM;
+                case 5:
+                    return QuestActionType.FIND_POSITION;
+                case 6:
+                    return QuestActionType.BUILD;
+                case 7:
+                    return QuestActionType.ACCOMPLISHMENT;
+                case 8:
+                    return QuestActionType.HUSBANDRY;
+                case 9:
+                    return QuestActionType.AGRICULTURE;
+                default:
+                    return null;
+            }
+        }
+
         QuestActionType(int number,String key) {
             this.number = number;
             this.key = NamespacedKey.fromString(key);
         }
 
         @Override
-        public NamespacedKey getKey() {
+        public @NotNull NamespacedKey getKey() {
             return key;
         }
 
         public int getNumber() {
             return number;
         }
+
+        /**
+         * Creates a Map representation of this class.
+         * <p>
+         * This class must provide a method to restore this class, as defined in
+         * the {@link ConfigurationSerializable} interface javadocs.
+         *
+         * @return Map containing the current state of this class
+         */
+        @NotNull
+        @Override
+        public Map<String, Object> serialize() {
+            Map<String, Object> tmp= new HashMap<>();
+            tmp.put("name",this.key);
+            return tmp;
+        }
     }
 
-    public static class Quest implements Serializable {
+    @SerializableAs("SnQuest")
+    public static class Quest implements Cloneable ,ConfigurationSerializable, Serializable{
         private int questnumber;
         private String questname;
-        private QuestPosition questposition;
-        private QuestType questtype;
-        private QuestAction[] questacceptcondition;
-        private int questacceptconditionamount;
-        private QuestAction[] questtarget;
-        private int questtargetamount;
-        private QuestReward questreward;
-        private String[] questdescription;
-        private int questdescriptionline;
+        private QuestPosition questposition = null;
+        private QuestType questtype = null;
+        private List<QuestAction> questacceptcondition = new ArrayList<>();
+        private int questacceptconditionamount = -1;
+        private List<QuestAction> questtarget = new ArrayList<>();
+        private int questtargetamount = -1;
+        private QuestReward questreward = new QuestReward();
+        private List<String> questdescription = new ArrayList<>();
+        private int questdescriptionline = -1;
         private boolean issync = false;
         private boolean on = false;
+
+
 
         public boolean isOn() {
             return on;
@@ -823,48 +771,15 @@ public class quest implements CommandExecutor {
             return false;
         }
 
-        private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-            out.writeObject(questnumber);
-            out.writeObject(questname);
-            out.writeObject(questposition);
-            out.writeObject(questtype);
-            out.writeObject(questacceptcondition);
-            out.writeObject(questacceptconditionamount);
-            out.writeObject(questtarget);
-            out.writeObject(questtargetamount);
-            out.writeObject(questreward);
-            out.writeObject(questdescription);
-            out.writeObject(questdescriptionline);
-            out.writeObject(issync);
-            out.writeObject(on);
-        }
-        private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException{
-            questnumber = (int) in.readObject();
-            questname = (String) in.readObject();
-            questposition = (QuestPosition) in.readObject();
-            questtype = (QuestType) in.readObject();
-            questacceptcondition = (QuestAction[]) in.readObject();
-            questacceptconditionamount = (int) in.readObject();
-            questtarget = (QuestAction[]) in.readObject();
-            questtargetamount = (int) in.readObject();
-            questreward = (QuestReward) in.readObject();
-            questdescription = (String[]) in.readObject();
-            questdescriptionline = (int) in.readObject();
-            issync = (boolean) in.readObject();
-            on = (boolean) in.readObject();
-        }
-        private void readObjectNoData() throws ObjectStreamException{
-            String name = "NewQuest";
-            questname = name;
-            questnumber = quest_yml.getInt("Amount");//amount比序号大1，所以不用+1
-            quest_yml.set("Amount",questnumber+1);//计数
-            quest_yml.set("inside."+name,questnumber);
-            quest_yml.set("inside."+questnumber,name);
-        }
+
 
         public Boolean turnOff() {
 
-            Player[] tmp1 = (Player[]) Bukkit.getOfflinePlayers();
+            List<Player> tmp1= new ArrayList<>();
+
+            for (OfflinePlayer offlinePlayer : Bukkit.getOfflinePlayers()) {
+                tmp1.add((Player) offlinePlayer);
+            }
             Collection<? extends Player> tmp2 = Bukkit.getOnlinePlayers();
             for (Player tmpplayer : tmp1) {
                 if(playerquest_yml.getString(tmpplayer.getName()+".nowquest","").equals(questname)){
@@ -941,7 +856,6 @@ public class quest implements CommandExecutor {
                 loadQuest(winner,this.getQuestposition().getChildquest());
             }
             addDoneQuest(winner,this);
-
             resetQuestProcess(winner);
         }
 
@@ -1034,7 +948,7 @@ public class quest implements CommandExecutor {
                             break;
                         }
                         String tname = ymlfile.getString(questname + ".property-inherit.questacceptcondition." + j);
-                        questacceptcondition[j].readQaFromYml(ymlfile, tname);
+                        questacceptcondition.get(j).readQaFromYml(ymlfile, tname);
                     }
                 }
 
@@ -1047,14 +961,14 @@ public class quest implements CommandExecutor {
                             break;
                         }
                         String tname =ymlfile.getString(questname + ".property-inherit.questtarget." + j);
-                        questtarget[j].readQaFromYml(ymlfile,tname);
+                        questtarget.get(j).readQaFromYml(ymlfile,tname);
                     }
                 }
 
             //quest description
             questdescriptionline=ymlfile.getInt("property-set.questdescriptionline");
             for(int j = 0; j<this.getQuestdescriptionline(); j++){
-                questdescription[j] =ymlfile.getString(questname + ".property-set.questdescription." + j);
+                questdescription.set(j, ymlfile.getString(questname + ".property-set.questdescription." + j));
             }
             //questreward
             questreward.readQrFromYml(ymlfile,ymlfile.getString(questname + ".property-inherit.questreward"));
@@ -1098,70 +1012,42 @@ public class quest implements CommandExecutor {
             ymlfile.set(questname+".property-set.on",on);
 
             for (int i = 0; i < questdescriptionline; i++) {
-                ymlfile.set(questname+".property-set.questdescription."+i, questdescription[i]);
+                ymlfile.set(questname+".property-set.questdescription."+i, questdescription.get(i));
             }
             for (int i = 0; i < questacceptconditionamount; i++) {
-                ymlfile.set(questname+".property-inherit.questacceptcondition."+i,questacceptcondition[i].getQuestactionname());
-                questacceptcondition[i].saveQaToYml(ymlfile);
+                ymlfile.set(questname+".property-inherit.questacceptcondition."+i, questacceptcondition.get(i).getQuestactionname());
+                questacceptcondition.get(i).saveQaToYml(ymlfile);
             }
 
             for (int i = 0; i < questtargetamount; i++) {
-                ymlfile.set(questname+".property-inherit.questtarget."+i,questtarget[i].getQuestactionname());
-                questtarget[i].saveQaToYml(ymlfile);
+                ymlfile.set(questname+".property-inherit.questtarget."+i, questtarget.get(i).getQuestactionname());
+                questtarget.get(i).saveQaToYml(ymlfile);
             }
             return true;
         }
 
-        public void addQuesttarget(QuestAction a){
-            QuestAction[] tempstr = questtarget.clone();
-            questtarget = new QuestAction[questtargetamount+1];
-            if (questtargetamount >= 0) System.arraycopy(tempstr, 0, questtarget, 0, questtargetamount);
-            questtarget[questtargetamount++] = a;
+        public void addQuesttarget(QuestAction qa){
+            questtarget.add(qa);
         }
 
         public void addQuestacceptcondition(QuestAction a){
-            QuestAction[] tempstr = questacceptcondition.clone();
-            questacceptcondition = new QuestAction[questacceptconditionamount+1];
-            if (questacceptconditionamount >= 0)
-                System.arraycopy(tempstr, 0, questacceptcondition, 0, questacceptconditionamount);
-            questacceptcondition[questacceptconditionamount++] = a;
+            questacceptcondition.add(a);
         }
 
         public void addQuestdescription(String a){
-            String[] tempstr = questdescription.clone();
-            questdescription = new String[questdescriptionline+1];
-            if (questdescriptionline >= 0) System.arraycopy(tempstr, 0, questdescription, 0, questdescriptionline);
-            questdescription[questdescriptionline++] = a;
+            questdescription.add(a);
         }
 
         public void removeQuesttarget(int index){
-            QuestAction[] tempstr = questtarget.clone();
-            questtarget = new QuestAction[questtargetamount-1];
-            for (int i = 0; i < questtargetamount; i++) {
-                if(i>index)questtarget[i-1]=tempstr[i];
-                else questtarget[i]=tempstr[i];
-            }
-            questtargetamount--;
+            questtarget.remove(index);
         }
 
         public void removeQuestacceptcondition(int index){
-            QuestAction[] tempstr = questacceptcondition.clone();
-            questacceptcondition = new QuestAction[questacceptconditionamount-1];
-            for (int i = 0; i < questacceptconditionamount; i++) {
-                if(i>index)questacceptcondition[i-1]=tempstr[i];
-                else questacceptcondition[i]=tempstr[i];
-            }
-            questacceptconditionamount--;
+            questacceptcondition.remove(index);
         }
 
         public void removeQuestdescription(int index){
-            String[] tempstr = questdescription.clone();
-            questdescription = new String[questdescriptionline-1];
-            for (int i = 0; i < questdescriptionline; i++) {
-                if(i>index)questdescription[i-1]=tempstr[i];
-                else questdescription[i]=tempstr[i];
-            }
-            questdescriptionline--;
+            questdescription.remove(index);
         }
 
         public int getQuestnumber() {
@@ -1180,26 +1066,32 @@ public class quest implements CommandExecutor {
             this.questname = questname;
         }
 
-        public void setQuesttarget(QuestAction[] questtarget) {
-            questtargetamount = questtarget.length;
-            this.questtarget = questtarget;
-        }
-
         @Override
         public String toString() {
             return "Quest{" +
-                    "questposition=" + questposition +
+                    "questnumber=" + questnumber +
+                    ", questname='" + questname + '\'' +
+                    ", questposition=" + questposition +
                     ", questtype=" + questtype +
-                    ", questacceptcondition=" + Arrays.toString(questacceptcondition) +
+                    ", questacceptcondition=" + questacceptcondition +
                     ", questacceptconditionamount=" + questacceptconditionamount +
-                    ", questtarget=" + Arrays.toString(questtarget) +
+                    ", questtarget=" + questtarget +
                     ", questtargetamount=" + questtargetamount +
                     ", questreward=" + questreward +
-                    ", questdescription=" + Arrays.toString(questdescription) +
+                    ", questdescription=" + questdescription +
                     ", questdescriptionline=" + questdescriptionline +
+                    ", issync=" + issync +
+                    ", on=" + on +
                     '}';
         }
 
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Quest)) return false;
+            Quest quest = (Quest) o;
+            return getQuestnumber() == quest.getQuestnumber() && getQuestacceptconditionamount() == quest.getQuestacceptconditionamount() && getQuesttargetamount() == quest.getQuesttargetamount() && getQuestdescriptionline() == quest.getQuestdescriptionline() && issync == quest.issync && isOn() == quest.isOn() && getQuestname().equals(quest.getQuestname()) && getQuestposition().equals(quest.getQuestposition()) && getQuesttype() == quest.getQuesttype() && getQuestacceptcondition().equals(quest.getQuestacceptcondition()) && getQuesttarget().equals(quest.getQuesttarget()) && getQuestreward().equals(quest.getQuestreward()) && getQuestdescription().equals(quest.getQuestdescription());
+        }
 
         public void setQuestposition(QuestPosition questposition) {
             this.questposition = questposition;
@@ -1210,20 +1102,12 @@ public class quest implements CommandExecutor {
         }
 
         @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Quest)) return false;
-            Quest quest = (Quest) o;
-            return questtype == quest.questtype && questacceptconditionamount == quest.questacceptconditionamount && questtargetamount == quest.questtargetamount && getQuestdescriptionline() == quest.getQuestdescriptionline() && getQuestposition().equals(quest.getQuestposition()) && Arrays.equals(questacceptcondition, quest.questacceptcondition) && Arrays.equals(getQuesttarget(), quest.getQuesttarget()) && getQuestreward().equals(quest.getQuestreward()) && Arrays.equals(getQuestdescription(), quest.getQuestdescription());
+        public int hashCode() {
+            return Objects.hash(getQuestnumber(), getQuestname(), getQuestposition(), getQuesttype(), getQuestacceptcondition(), getQuestacceptconditionamount(), getQuesttarget(), getQuesttargetamount(), getQuestreward(), getQuestdescription(), getQuestdescriptionline(), issync, isOn());
         }
 
-        @Override
-        public int hashCode() {
-            int result = Objects.hash( getQuestposition(), questtype, questacceptconditionamount, questtargetamount, getQuestreward(), getQuestdescriptionline());
-            result = 31 * result + Arrays.hashCode(questacceptcondition);
-            result = 31 * result + Arrays.hashCode(getQuesttarget());
-            result = 31 * result + Arrays.hashCode(getQuestdescription());
-            return result;
+        public List<QuestAction> getQustAccptCndtn(){
+            return questacceptcondition;
         }
 
         public QuestType getQuestType(){
@@ -1235,8 +1119,8 @@ public class quest implements CommandExecutor {
             return super.clone();
         }
 
-        public QuestAction[] getQustAccptCndtn(){
-            return questacceptcondition;
+        public List<QuestAction> getQuesttarget(){
+            return questtarget;
         }
 
         public int getQuestacceptconditionamount() {
@@ -1260,20 +1144,21 @@ public class quest implements CommandExecutor {
             this.questtargetamount = questtargetamount;
         }
 
-        public QuestAction[] getQuesttarget(){
-            return questtarget;
+        public void setQuesttarget(List<QuestAction> questtarget) {
+            questtargetamount = questtarget.size();
+            this.questtarget = questtarget;
         }
 
         public QuestReward getQuestreward(){
             return questreward;
         }
 
-        public String[] getQuestdescription() {
+        public List<String> getQuestdescription() {
             return questdescription;
         }
 
-        public void setQuestdescription(String[] questdescription) {
-            questdescriptionline = questdescription.length;
+        public void setQuestdescription(List<String> questdescription) {
+            questdescriptionline = questdescription.size();
             this.questdescription = questdescription;
         }
 
@@ -1285,7 +1170,7 @@ public class quest implements CommandExecutor {
             this.questtype = questtype;
         }
 
-        public QuestAction[] getQuestacceptcondition() {
+        public List<QuestAction> getQuestacceptcondition() {
             return questacceptcondition;
         }
 
@@ -1297,8 +1182,8 @@ public class quest implements CommandExecutor {
             return questtargetamount;
         }
 
-        public void setQuestacceptcondition(QuestAction[] questacceptcondition) {
-            questacceptconditionamount = questacceptcondition.length;
+        public void setQuestacceptcondition(List<QuestAction> questacceptcondition) {
+            questacceptconditionamount = questacceptcondition.size();
             this.questacceptcondition = questacceptcondition;
         }
 
@@ -1326,10 +1211,73 @@ public class quest implements CommandExecutor {
         public boolean isPositionSet() {
             return questposition != null;
         }
+
+        @NotNull
+        @Override
+        public Map<String, Object> serialize() {
+            Map<String, Object> tmp = new HashMap<>();
+            tmp.put("questnumber",questnumber);
+            tmp.put("questname",questname);
+            tmp.put("questposition",questposition);
+            tmp.put("questtype",questtype);
+            tmp.put("questacceptcondition",questacceptcondition);
+            tmp.put("questacceptconditionamount",questacceptconditionamount);
+            tmp.put("questtarget",questtarget);
+            tmp.put("questtargetamount",questtargetamount);
+            tmp.put("questreward",questreward);
+            tmp.put("questdescription",questdescription);
+            tmp.put("questdescriptionline",questdescriptionline);
+            tmp.put("issync",issync);
+            tmp.put("on",on);
+
+            return tmp;
+        }
+        private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+            out.writeObject(questnumber);
+            out.writeObject(questname);
+            out.writeObject(questposition);
+            out.writeObject(questtype);
+            out.writeObject(questacceptcondition);
+            out.writeObject(questacceptconditionamount);
+            out.writeObject(questtarget);
+            out.writeObject(questtargetamount);
+            out.writeObject(questreward);
+            out.writeObject(questdescription);
+            out.writeObject(questdescriptionline);
+            out.writeObject(issync);
+            out.writeObject(on);
+        }
+        private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException{
+            questnumber = (int) in.readObject();
+            questname = (String) in.readObject();
+            questposition = (QuestPosition) in.readObject();
+            questtype = (QuestType) in.readObject();
+            questacceptcondition = (List<QuestAction>) in.readObject();
+            questacceptconditionamount = (int) in.readObject();
+            questtarget = (List<QuestAction>) in.readObject();
+            questtargetamount = (int) in.readObject();
+            questreward = (QuestReward) in.readObject();
+            questdescription = (List<String>) in.readObject();
+            questdescriptionline = (int) in.readObject();
+            issync = (boolean) in.readObject();
+            on = (boolean) in.readObject();
+        }
+        private void readObjectNoData() throws ObjectStreamException{
+            String name = "NewQuest";
+            questname = name;
+            questnumber = quest_yml.getInt("Amount");//amount比序号大1，所以不用+1
+            quest_yml.set("Amount",questnumber+1);//计数
+            quest_yml.set("inside."+name,questnumber);
+            quest_yml.set("inside."+questnumber,name);
+        }
+
+        public boolean isRewardset() {
+            return questreward != null;
+        }
     }
 
-
-    public static class QuestPosition implements Serializable  {
+    @SerializableAs("SnQuestPosition")
+    public static class QuestPosition implements Cloneable ,ConfigurationSerializable, Serializable  {
         private int questlevel;
         private String parentquest;
         private String childquestother1;
@@ -1337,6 +1285,26 @@ public class quest implements CommandExecutor {
         private String childquestother3;
         private String childquest;
         private String questpositionname;
+
+        public QuestPosition(){
+            questlevel = -1;
+            parentquest = null;
+            childquestother1 = null;
+            childquestother2 = null;
+            childquestother3 = null;
+            childquest = null;
+            questpositionname = "QuestPosition" + new Random().nextInt(99999);
+        }
+
+        public QuestPosition(String name){
+            questlevel = -1;
+            parentquest = null;
+            childquestother1 = null;
+            childquestother2 = null;
+            childquestother3 = null;
+            childquest = null;
+            questpositionname = name;
+        }
 
         private void writeObject(java.io.ObjectOutputStream out) throws IOException {
             out.writeObject(questlevel);
@@ -1486,6 +1454,28 @@ public class quest implements CommandExecutor {
             return Objects.hash(getQuestlevel(), getParentquest(), getChildquestother1(), getChildquestother2(), getChildquestother3(), getChildquest());
         }
 
+        /**
+         * Creates a Map representation of this class.
+         * <p>
+         * This class must provide a method to restore this class, as defined in
+         * the {@link ConfigurationSerializable} interface javadocs.
+         *
+         * @return Map containing the current state of this class
+         */
+        @NotNull
+        @Override
+        public Map<String, Object> serialize() {
+            Map<String, Object> tmp = new HashMap<>();
+            tmp.put("questlevel",questlevel);
+            tmp.put("parentquest",parentquest);
+            tmp.put("childquestother1",childquestother1);
+            tmp.put("childquestother2",childquestother2);
+            tmp.put("childquestother3",childquestother3);
+            tmp.put("childquest",childquest);
+            tmp.put("questpositionname",questpositionname);
+            return tmp;
+        }
+
 
 
         /*任务等级：（int）
@@ -1500,8 +1490,8 @@ public class quest implements CommandExecutor {
         */
     }
 
-
-    public static class QuestAction implements Serializable  {
+    @SerializableAs("SnQuestAction")
+    public static class QuestAction implements Cloneable ,ConfigurationSerializable, Serializable  {
 
         private String questactionname;
         private QuestActionType questactiontype;
@@ -1603,19 +1593,55 @@ public class quest implements CommandExecutor {
                     ", questactiondata=" + questactiondata +
                     '}';
         }
+
+        public QuestAction(QuestActionData a){
+            questactionname = a.getQuestActndtname();
+            questactiondata = a;
+            questactiontype = null;
+        }
+        public QuestAction(){
+            questactiontype = null;
+            questactionname = "QuestAction" + new Random().nextInt(99999);
+            questactiondata = new quest.QuestActionData(questactionname);
+        }
+
+        /**
+         * Creates a Map representation of this class.
+         * <p>
+         * This class must provide a method to restore this class, as defined in
+         * the {@link ConfigurationSerializable} interface javadocs.
+         *
+         * @return Map containing the current state of this class
+         */
+        @NotNull
+        @Override
+        public Map<String, Object> serialize() {
+            Map<String, Object> tmp = new HashMap<>();
+            tmp.put("questactionname",questactionname);
+            tmp.put("questactiontype",questactiontype);
+            tmp.put("questactiondata",questactiondata);
+            return tmp;
+        }
     }
 
-
-    public static class QuestActionData implements Serializable  {
+    @SerializableAs("SnQuestActionData")
+    public static class QuestActionData implements Cloneable ,ConfigurationSerializable, Serializable  {
         public double defaultdistance = -1;
         private String questActndtname;
-        private ItemStack[] questtargetitem;
+        private List<ItemStack> questtargetitem;
         private int questtimelimit = -1;
         private Map<EntityType, Integer> questtargetentity;
         //private Map<Block, Integer> questtargetblock;
         private UUID questtargetnpc;
         private int targetpositionx = 0,targetpositiony = 0,targetpositionz = 0;
-        private Location targetlocation;
+        private Location targetlocation = null;
+
+        public QuestActionData(String questactionname) {
+            this.questActndtname = questactionname;
+            questtargetnpc = null;
+            questtargetentity = new HashMap<>();
+            questtargetitem = new ArrayList<>();
+        }
 
         private void writeObject(java.io.ObjectOutputStream out) throws IOException {
             out.writeObject(defaultdistance);
@@ -1629,17 +1655,11 @@ public class quest implements CommandExecutor {
             out.writeObject(targetpositionz);
             out.writeObject(targetlocation);
         }
-        private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException{
-            defaultdistance = (double) in.readObject();
-            questActndtname = (String) in.readObject();
-            questtargetitem = (ItemStack[]) in.readObject();
-            questtimelimit = (int) in.readObject();
-            questtargetentity = (Map<EntityType, Integer>) in.readObject();
-            questtargetnpc = (UUID) in.readObject();
-            targetpositionx = (int) in.readObject();
-            targetpositiony = (int) in.readObject();
-            targetpositionz = (int) in.readObject();
-            targetlocation = (Location) in.readObject();
+        public QuestActionData(){
+            questtargetnpc = null;
+            questtargetentity = new HashMap<>();
+            questtargetitem = new ArrayList<>();
+            questActndtname = null;
         }
         private void readObjectNoData() throws ObjectStreamException{
             new QuestActionData();
@@ -1657,63 +1677,18 @@ public class quest implements CommandExecutor {
         public Boolean readQaDataFromYml(String name){
             return readQaDataFromYml(quest_yml,name);
         }
-        public Boolean readQaDataFromYml(YamlConfiguration ymlfile, String name){
-            if(!ymlfile.contains(name)){
-                say("[WARNING]读取QuestActionData数据错误，数据不存在");
-                return false;
-            }
 
-            if(ymlfile.getInt(name+".tpye")!=4){
-                say("[WARNING]读取QuestActionData数据错误，该名的类型不正确");
-                return false;
-            }
-
-            questActndtname = name;
-
-            int i = 0;
-            if(ymlfile.contains(name+".property-inherit.questtargetitem")){
-                while (ymlfile.contains(name + ".property-inherit.questtargetitem." + i))
-                    questtargetitem[i++] = readItemStackFromYml(ymlfile, name + ".property-inherit.questtargetitem" + i);
-            }
-
-            if(ymlfile.contains(name+".property-set.defaultdistance")){
-                defaultdistance = ymlfile.getInt(name+".property-set.defaultdistance");
-            }
-
-            if(ymlfile.contains(name+".property-set.questtimelimit"))
-                questtimelimit = ymlfile.getInt(name+".property-set.questtimelimit");
-
-            if(ymlfile.contains(name+".property-set.questtargetentity")) {
-                while(ymlfile.contains(name+".property-set.questtargetentity."+i)) {
-                    if(!ymlfile.contains(name + ".property-set.questtargetentity."+i+".amount")||!ymlfile.contains(name + ".property-set.questtargetentity."+i+".entitytype")){
-                        say("[WARNING]读取QuestAction数据错误，数据非法："+this.toString());
-                        say("[WARNING]读取QuestAction数据错误，数据非法："+i);
-                        continue;
-                    }
-                    questtargetentity.put(EntityType.valueOf(Objects.requireNonNull(ymlfile.getString(name + ".property-set.questtargetentity."+i+".entitytype")).toUpperCase()),
-                            ymlfile.getInt(name + ".property-set.questtargetentity."+i+".amount"));
-
-                }
-            }
-
-            if(ymlfile.contains(name+".property-set.targetpositionx")) {
-                if (ymlfile.contains(name + ".property-set.targetpositiony") && ymlfile.contains(name + ".property-set.targetpositionz")) {
-                    targetpositionx = ymlfile.getInt(name + ".property-set.targetpositionx");
-                    targetpositiony = ymlfile.getInt(name + ".property-set.targetpositiony");
-                    targetpositionz = ymlfile.getInt(name + ".property-set.targetpositionz");
-                    targetlocation.setX(targetpositionx);
-                    targetlocation.setY(targetpositiony);
-                    targetlocation.setZ(targetpositionz);
-
-                } else {
-                    say("[WARNING]QuestTargetPosition数据可能出现问题！");
-                }
-            }
-            if(ymlfile.contains(name+".property-set.questtargetnpc")) {
-                questtargetnpc= UUID.fromString(Objects.requireNonNull(ymlfile.getString(name + ".property-set.questtargetnpc")));
-            }
-
-            return true;
+        private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException{
+            defaultdistance = (double) in.readObject();
+            questActndtname = (String) in.readObject();
+            questtargetitem = (List<ItemStack>) in.readObject();
+            questtimelimit = (int) in.readObject();
+            questtargetentity = (Map<EntityType, Integer>) in.readObject();
+            questtargetnpc = (UUID) in.readObject();
+            targetpositionx = (int) in.readObject();
+            targetpositiony = (int) in.readObject();
+            targetpositionz = (int) in.readObject();
+            targetlocation = (Location) in.readObject();
         }
 
         public void saveQaDataToYml(){
@@ -1758,32 +1733,87 @@ public class quest implements CommandExecutor {
             ymlfile.set(questActndtname+".property-set.questtargetnpc",questtargetnpc.toString());
         }
 
+        public Boolean readQaDataFromYml(YamlConfiguration ymlfile, String name){
+            if(!ymlfile.contains(name)){
+                say("[WARNING]读取QuestActionData数据错误，数据不存在");
+                return false;
+            }
+
+            if(ymlfile.getInt(name+".tpye")!=4){
+                say("[WARNING]读取QuestActionData数据错误，该名的类型不正确");
+                return false;
+            }
+
+            questActndtname = name;
+
+            int i = 0;
+            if(ymlfile.contains(name+".property-inherit.questtargetitem")){
+                while (ymlfile.contains(name + ".property-inherit.questtargetitem." + i))
+                    questtargetitem.set(i++, readItemStackFromYml(ymlfile, name + ".property-inherit.questtargetitem" + i));
+            }
+
+            if(ymlfile.contains(name+".property-set.defaultdistance")){
+                defaultdistance = ymlfile.getInt(name+".property-set.defaultdistance");
+            }
+
+            if(ymlfile.contains(name+".property-set.questtimelimit"))
+                questtimelimit = ymlfile.getInt(name+".property-set.questtimelimit");
+
+            if(ymlfile.contains(name+".property-set.questtargetentity")) {
+                while(ymlfile.contains(name+".property-set.questtargetentity."+i)) {
+                    if(!ymlfile.contains(name + ".property-set.questtargetentity."+i+".amount")||!ymlfile.contains(name + ".property-set.questtargetentity."+i+".entitytype")){
+                        say("[WARNING]读取QuestAction数据错误，数据非法："+this.toString());
+                        say("[WARNING]读取QuestAction数据错误，数据非法："+i);
+                        continue;
+                    }
+                    questtargetentity.put(EntityType.valueOf(Objects.requireNonNull(ymlfile.getString(name + ".property-set.questtargetentity."+i+".entitytype")).toUpperCase()),
+                            ymlfile.getInt(name + ".property-set.questtargetentity."+i+".amount"));
+
+                }
+            }
+
+            if(ymlfile.contains(name+".property-set.targetpositionx")) {
+                if (ymlfile.contains(name + ".property-set.targetpositiony") && ymlfile.contains(name + ".property-set.targetpositionz")) {
+                    targetpositionx = ymlfile.getInt(name + ".property-set.targetpositionx");
+                    targetpositiony = ymlfile.getInt(name + ".property-set.targetpositiony");
+                    targetpositionz = ymlfile.getInt(name + ".property-set.targetpositionz");
+                    targetlocation.setX(targetpositionx);
+                    targetlocation.setY(targetpositiony);
+                    targetlocation.setZ(targetpositionz);
+
+                } else {
+                    say("[WARNING]QuestTargetPosition数据可能出现问题！");
+                }
+            }
+            if(ymlfile.contains(name+".property-set.questtargetnpc")) {
+                questtargetnpc= UUID.fromString(Objects.requireNonNull(ymlfile.getString(name + ".property-set.questtargetnpc")));
+            }
+
+            return true;
+        }
+
         public void addCollectquesttargetitem(ItemStack a){
-            ItemStack[] tempis = questtargetitem.clone();
-            questtargetitem = new ItemStack[tempis.length+1];
+            List<ItemStack> tempis = questtargetitem;
+            questtargetitem = new ArrayList<>();
             int i=0;
             for (ItemStack b:
                  tempis) {
-                questtargetitem[i++]=b;
+                questtargetitem.set(i++, b);
             }
-            questtargetitem[i]= a;
+            questtargetitem.set(i, a);
         }
 
         public void removeCollectquesttargetitem(int index){
-            ItemStack[] tempis = questtargetitem.clone();
-            questtargetitem = new ItemStack[tempis.length-1];
+            List<ItemStack> tempis = questtargetitem;
+            questtargetitem = new ArrayList<>();
             int i=0;
             for (ItemStack b:
                     tempis) {
                 if(i>index) {
-                    questtargetitem[i-1]=b;
+                    questtargetitem.set(i - 1, b);
                     ++i;
-                } else questtargetitem[i++]=b;
+                } else questtargetitem.set(i++, b);
             }
-        }
-
-        public void addQuesttargetentity(EntityType key,int value){
-            questtargetentity.put(key,value);
         }
 
         public void removeQuesttargetentity(EntityType key){
@@ -1822,19 +1852,18 @@ public class quest implements CommandExecutor {
             this.questActndtname = questActndtname;
         }
 
+        public void addQuesttargetentity(EntityType key,int value){
+            if(questtargetentity.containsKey(key))
+                questtargetentity.replace(key,questtargetentity.get(key)+value);
+            else questtargetentity.put(key,value);
+        }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (!(o instanceof QuestActionData)) return false;
             QuestActionData that = (QuestActionData) o;
-            return questtimelimit == that.questtimelimit && targetpositionx == that.targetpositionx && targetpositiony == that.targetpositiony && targetpositionz == that.targetpositionz && Objects.equals(getQuestActndtname(), that.getQuestActndtname()) && Arrays.equals(questtargetitem, that.questtargetitem) && questtargetentity.equals(that.questtargetentity);
-        }
-
-        @Override
-        public int hashCode() {
-            int result = Objects.hash(getQuestActndtname(), questtimelimit, questtargetentity, targetpositionx, targetpositiony, targetpositionz);
-            result = 31 * result + Arrays.hashCode(questtargetitem);
-            return result;
+            return Double.compare(that.getDefaultdistance(), getDefaultdistance()) == 0 && getQuesttimelimit() == that.getQuesttimelimit() && getTargetpositionx() == that.getTargetpositionx() && getTargetpositiony() == that.getTargetpositiony() && getTargetpositionz() == that.getTargetpositionz() && getQuestActndtname().equals(that.getQuestActndtname()) && getQuesttargetitem().equals(that.getQuesttargetitem()) && getQuesttargetentity().equals(that.getQuesttargetentity()) && getQuesttargetnpc().equals(that.getQuesttargetnpc()) && getTargetlocation().equals(that.getTargetlocation());
         }
 
         public void setTargetpositiony(int targetpositiony) {
@@ -1842,19 +1871,8 @@ public class quest implements CommandExecutor {
         }
 
         @Override
-        public String toString() {
-            return "QuestActionData{" +
-                    "defaultdistance=" + defaultdistance +
-                    ", questActndtname='" + questActndtname + '\'' +
-                    ", questtargetitem=" + Arrays.toString(questtargetitem) +
-                    ", questtimelimit=" + questtimelimit +
-                    ", questtargetentity=" + questtargetentity +
-                    ", questtargetnpc=" + questtargetnpc +
-                    ", targetpositionx=" + targetpositionx +
-                    ", targetpositiony=" + targetpositiony +
-                    ", targetpositionz=" + targetpositionz +
-                    ", targetlocation=" + targetlocation +
-                    '}';
+        public int hashCode() {
+            return Objects.hash(getDefaultdistance(), getQuestActndtname(), getQuesttargetitem(), getQuesttimelimit(), getQuesttargetentity(), getQuesttargetnpc(), getTargetpositionx(), getTargetpositiony(), getTargetpositionz(), getTargetlocation());
         }
 
         public int getQuesttimelimit() {
@@ -1890,12 +1908,24 @@ public class quest implements CommandExecutor {
             this.targetpositionz = targetpositionz;
         }
 
-        public ItemStack[] getQuesttargetitem() {
-            return questtargetitem;
+        @Override
+        public String toString() {
+            return "QuestActionData{" +
+                    "defaultdistance=" + defaultdistance +
+                    ", questActndtname='" + questActndtname + '\'' +
+                    ", questtargetitem=" + questtargetitem +
+                    ", questtimelimit=" + questtimelimit +
+                    ", questtargetentity=" + questtargetentity +
+                    ", questtargetnpc=" + questtargetnpc +
+                    ", targetpositionx=" + targetpositionx +
+                    ", targetpositiony=" + targetpositiony +
+                    ", targetpositionz=" + targetpositionz +
+                    ", targetlocation=" + targetlocation +
+                    '}';
         }
 
-        public void setQuesttargetitem(ItemStack[] questtargetitem) {
-            this.questtargetitem = questtargetitem;
+        public List<ItemStack> getQuesttargetitem() {
+            return questtargetitem;
         }
 
         public Map<EntityType, Integer> getQuesttargetentity() {
@@ -1906,17 +1936,60 @@ public class quest implements CommandExecutor {
             this.questtargetentity = questtargetentity;
         }
 
+        public void setQuesttargetitem(List<ItemStack> questtargetitem) {
+            this.questtargetitem = questtargetitem;
+        }
 
+        /**
+         * Creates a Map representation of this class.
+         * <p>
+         * This class must provide a method to restore this class, as defined in
+         * the {@link ConfigurationSerializable} interface javadocs.
+         *
+         * @return Map containing the current state of this class
+         */
+        @NotNull
+        @Override
+        public Map<String, Object> serialize() {
+            Map<String, Object> tmp = new HashMap<>();
+            tmp.put("defaultdistance",defaultdistance);
+            tmp.put("questActndtname",questActndtname);
+            tmp.put("questtargetitem",questtargetitem);
+            tmp.put("questtimelimit",questtimelimit);
+            tmp.put("questtargetentity",questtargetentity);
+            tmp.put("questtargetnpc",questtargetnpc);
+            tmp.put("targetpositionx",targetpositionx);
+            tmp.put("targetpositiony",targetpositiony);
+            tmp.put("targetpositionz",targetpositionz);
+            tmp.put("targetlocation",targetlocation);
+            return tmp;
+        }
+
+        public boolean isLocSet() {
+            return this.targetlocation != null;
+        }
     }
 
-
-    public static class QuestReward implements Serializable  {
+    @SerializableAs("SnQuestReward")
+    public static class QuestReward implements Cloneable ,ConfigurationSerializable, Serializable  {
         private String questrewardname;
         private double rewardmoney = 0;
-        private ItemStack[] rewarditems;
+        private List<ItemStack> rewarditems = new ArrayList<>();
         private int rewarditemamount;
-        private String[] rewardpermission;
+        private List<String> rewardpermission = new ArrayList<>();
         private int rewardpermissionamount;
+        private boolean isadmin = false;
+
+        public QuestReward(){
+            rewarditemamount = 0;
+            rewardpermissionamount = 0;
+            questrewardname = "QuestReward" + new Random().nextInt(99999);
+        }
+        public QuestReward(String name){
+            rewarditemamount = 0;
+            rewardpermissionamount = 0;
+            questrewardname = name;
+        }
 
         private void writeObject(java.io.ObjectOutputStream out) throws IOException {
             out.writeObject(questrewardname);
@@ -1925,14 +1998,16 @@ public class quest implements CommandExecutor {
             out.writeObject(rewarditemamount);
             out.writeObject(rewardpermission);
             out.writeObject(rewardpermissionamount);
+            out.writeObject(isadmin);
         }
         private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException{
             questrewardname = (String) in.readObject();
             rewardmoney = (double) in.readObject();
-            rewarditems = (ItemStack[]) in.readObject();
+            rewarditems = (List<ItemStack>) in.readObject();
             rewarditemamount = (int) in.readObject();
-            rewardpermission = (String[]) in.readObject();
+            rewardpermission = (List<String>) in.readObject();
             rewardpermissionamount = (int) in.readObject();
+            isadmin = (boolean) in.readObject();
         }
         private void readObjectNoData() throws ObjectStreamException{
             new QuestReward();
@@ -1964,54 +2039,54 @@ public class quest implements CommandExecutor {
 
         public void addRewarditem(ItemStack a){
             rewarditemamount++;
-            ItemStack[] tempis = rewarditems.clone();
-            rewarditems = new ItemStack[tempis.length+1];
+            List<ItemStack> tempis = rewarditems;
+            rewarditems = new ArrayList<>();
             int i=0;
             for (ItemStack b:
                     tempis) {
-                rewarditems[i++]=b;
+                rewarditems.set(i++, b);
             }
-            rewarditems[i]= a;
+            rewarditems.set(i, a);
         }
 
         public void addRewardpermission(String a){
             rewardpermissionamount++;
-            String[] tempstr = rewardpermission.clone();
-            rewardpermission = new String[tempstr.length+1];
+            List<String> tempstr = rewardpermission;
+            rewardpermission = new ArrayList<>();
             int i=0;
             for (String b:
                     tempstr) {
-                rewardpermission[i++]=b;
+                rewardpermission.set(i++, b);
             }
-            rewardpermission[i]= a;
+            rewardpermission.set(i, a);
         }
 
 
         public void removeRewarditem(int index){
             rewarditemamount--;
-            ItemStack[] tempis = rewarditems.clone();
-            rewarditems = new ItemStack[tempis.length-1];
+            List<ItemStack> tempis = rewarditems;
+            rewarditems = new ArrayList<>();
             int i=0;
             for (ItemStack b:
                     tempis) {
                 if(i>index) {
-                    rewarditems[i-1]=b;
+                    rewarditems.set(i - 1, b);
                     ++i;
-                } else rewarditems[i++]=b;
+                } else rewarditems.set(i++, b);
             }
         }
 
         public void removeRewardpermission(int index){
             rewardpermissionamount--;
-            String[] tempstr = rewardpermission.clone();
-            rewardpermission = new String[tempstr.length-1];
+            List<String> tempstr = rewardpermission;
+            rewardpermission = new ArrayList<>();
             int i=0;
             for (String b:
                     tempstr) {
                 if(i>index) {
-                    rewardpermission[i-1]=b;
+                    rewardpermission.set(i - 1, b);
                     ++i;
-                } else rewardpermission[i++]=b;
+                } else rewardpermission.set(i++, b);
             }
         }
 
@@ -2026,7 +2101,7 @@ public class quest implements CommandExecutor {
             if(ymlfile.contains(name+".property-set.rewarditemamount")) {
                 rewarditemamount = ymlfile.getInt(name + ".property-set.rewarditemamount");
                 for(int i=0 ;i<rewarditemamount ;i++){
-                    rewarditems[i]= readItemStackFromYml(ymlfile,name+".property-set.rewarditem."+i);
+                    rewarditems.set(i, readItemStackFromYml(ymlfile, name + ".property-set.rewarditem." + i));
                 }
             }
             if(ymlfile.contains(name+".property-set.rewardmoney")) {
@@ -2035,7 +2110,7 @@ public class quest implements CommandExecutor {
             if(ymlfile.contains(name+".property-set.rewardpermissionamount")) {
                 rewardpermissionamount = ymlfile.getInt(name + ".property-set.rewardpermissionamount");
                 for(int i=0 ;i<rewardpermissionamount ;i++){
-                    rewardpermission[i]=ymlfile.getString(name+".property-set.rewardpermissionamount."+i);
+                    rewardpermission.set(i, ymlfile.getString(name + ".property-set.rewardpermissionamount." + i));
                 }
             }
             return true;
@@ -2053,13 +2128,13 @@ public class quest implements CommandExecutor {
             if(rewarditemamount !=0){
                 ymlfile.set(questrewardname+".property-set.rewarditemamount",rewarditemamount);
                 for (int i = 0; i < rewarditemamount; i++) {
-                    saveItemStackToYml(ymlfile,questrewardname+".property-set.rewarditem."+i,rewarditems[i]);
+                    saveItemStackToYml(ymlfile,questrewardname+".property-set.rewarditem."+i, rewarditems.get(i));
                 }
             }
             if(rewardpermissionamount !=0){
                 ymlfile.set(questrewardname+".property-set.rewardpermissionamount",rewardpermissionamount);
                 for (int i = 0; i < rewardpermissionamount; i++) {
-                    ymlfile.set(questrewardname+".property-set.rewarditemamount."+i,rewardpermission[i]);
+                    ymlfile.set(questrewardname+".property-set.rewarditemamount."+i, rewardpermission.get(i));
                 }
             }
 
@@ -2093,15 +2168,19 @@ public class quest implements CommandExecutor {
             return rewardmoney;
         }
 
-        public String[] getRewardpermission() {
+        public List<String> getRewardpermission() {
             return rewardpermission;
         }
 
-        public ItemStack[] getRewarditems() {
+        public void setRewardpermission(List<String> rewardpermission) {
+            this.rewardpermission = rewardpermission;
+        }
+
+        public List<ItemStack> getRewarditems() {
             return rewarditems;
         }
 
-        public void setRewarditems(ItemStack[] rewarditems) {
+        public void setRewarditems(List<ItemStack> rewarditems) {
             this.rewarditems = rewarditems;
         }
 
@@ -2109,34 +2188,38 @@ public class quest implements CommandExecutor {
             this.rewardmoney = rewardmoney;
         }
 
-        public void setRewardpermission(String[] rewardpermission) {
-            this.rewardpermission = rewardpermission;
+        public boolean isAdmin() {
+            return isadmin;
         }
+
+        public void setAdmin(boolean isadmin){
+            this.isadmin = isadmin;
+        }
+
 
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (!(o instanceof QuestReward)) return false;
             QuestReward that = (QuestReward) o;
-            return getRewardmoney() == that.getRewardmoney() && getRewarditemamount() == that.getRewarditemamount() && getRewardpermissionamount() == that.getRewardpermissionamount() && Arrays.equals(getRewarditems(), that.getRewarditems()) && Arrays.equals(getRewardpermission(), that.getRewardpermission());
+            return Double.compare(that.getRewardmoney(), getRewardmoney()) == 0 && getRewarditemamount() == that.getRewarditemamount() && getRewardpermissionamount() == that.getRewardpermissionamount() && isadmin == that.isadmin && getQuestrewardname().equals(that.getQuestrewardname()) && getRewarditems().equals(that.getRewarditems()) && getRewardpermission().equals(that.getRewardpermission());
         }
 
         @Override
         public int hashCode() {
-            int result = Objects.hash(getRewardmoney(), getRewarditemamount(), getRewardpermissionamount());
-            result = 31 * result + Arrays.hashCode(getRewarditems());
-            result = 31 * result + Arrays.hashCode(getRewardpermission());
-            return result;
+            return Objects.hash(getQuestrewardname(), getRewardmoney(), getRewarditems(), getRewarditemamount(), getRewardpermission(), getRewardpermissionamount(), isadmin);
         }
 
         @Override
         public String toString() {
             return "QuestReward{" +
-                    "rewardmoney=" + rewardmoney +
-                    ", rewarditems=" + Arrays.toString(rewarditems) +
+                    "questrewardname='" + questrewardname + '\'' +
+                    ", rewardmoney=" + rewardmoney +
+                    ", rewarditems=" + rewarditems +
                     ", rewarditemamount=" + rewarditemamount +
-                    ", rewardpermission=" + Arrays.toString(rewardpermission) +
+                    ", rewardpermission=" + rewardpermission +
                     ", rewardpermissionamount=" + rewardpermissionamount +
+                    ", isadmin=" + isadmin +
                     '}';
         }
 
@@ -2147,11 +2230,28 @@ public class quest implements CommandExecutor {
 
 
 
-        QuestReward(){
-            double rewardmoney = 0;
-            int rewarditemamount = 0;
-            int rewardpermissionamount = 0;
 
+
+        /**
+         * Creates a Map representation of this class.
+         * <p>
+         * This class must provide a method to restore this class, as defined in
+         * the {@link ConfigurationSerializable} interface javadocs.
+         *
+         * @return Map containing the current state of this class
+         */
+        @NotNull
+        @Override
+        public Map<String, Object> serialize() {
+            Map<String, Object> tmp = new HashMap<>();
+            tmp.put("questrewardname",questrewardname);
+            tmp.put("rewardmoney",rewardmoney);
+            tmp.put("rewarditems",rewarditems);
+            tmp.put("rewarditemamount",rewarditemamount);
+            tmp.put("rewardpermission",rewardpermission);
+            tmp.put("rewardpermissionamount",rewardpermissionamount);
+            tmp.put("isadmin",isadmin);
+            return tmp;
         }
 
         /*

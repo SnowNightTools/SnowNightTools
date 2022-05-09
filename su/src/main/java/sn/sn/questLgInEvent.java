@@ -1,5 +1,6 @@
 package sn.sn;
 
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
@@ -7,7 +8,14 @@ import static sn.sn.Sn.*;
 
 public class questLgInEvent implements Listener {
 
+    @EventHandler
     public void JoinLoadQuest(PlayerJoinEvent event){
+        if(!vaultset)
+            if(!initVault()) {
+                say("[SN][WARNING]vault插件挂钩失败，请检查vault插件。");
+                return;
+            }
+
         if(!sneconomy.hasAccount(event.getPlayer()))sneconomy.createPlayerAccount(event.getPlayer());
 
         if(!config_yml.getBoolean("login-load"))return;

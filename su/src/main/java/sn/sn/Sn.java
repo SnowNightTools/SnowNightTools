@@ -15,14 +15,13 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Axolotl;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.TropicalFish;
+import org.bukkit.entity.*;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.*;
+import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -31,19 +30,19 @@ import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
+import java.util.function.Consumer;
+
+import static org.bukkit.configuration.serialization.ConfigurationSerialization.registerClass;
 
 public class Sn extends JavaPlugin {
 
+    public static boolean vaultset = false;
     public static File plugin_file;
     public static File share_file;
     public static File quest_file;
@@ -58,6 +57,7 @@ public class Sn extends JavaPlugin {
         CommandSender sender = Bukkit.getConsoleSender();
         sender.sendMessage(a);
     }
+    public static List<quest.Quest> quests = new ArrayList<>();
 
     public static String plugin_Path;
 
@@ -65,13 +65,32 @@ public class Sn extends JavaPlugin {
         plugin_Path = getDataFolder().getPath();
     }
     public static YamlConfiguration share_yml,plugin_yml,config_yml,quest_yml,playerquest_yml;
-    public static quest.Quest[] quests;
+    public static Map<Player, quest.QuestAction> questactionseting = new HashMap<>();
     public static Map<Player, Inventory> showInv = new HashMap<>();
     public static Map<Player, quest.Quest> questseting = new HashMap<>();
+    public static Map<Player, Consumer<Object>> seting = new HashMap<>();
+    public static Map<Player, Consumer<Player>> uiopener = new HashMap<>();
+    public static Map<Player, EntityType> entitytypeseting = new HashMap<>();
+    public static Map<Player, Boolean> isSetTorC = new HashMap<>();//true when commander is setting Target
+    public static Map<Player, Location> locseting = new HashMap<>();
+    public static Map<Player, Double> doubleseting = new HashMap<>();
+    public static Map<Player, Integer> intseting = new HashMap<>();
+    public static Map<Player, String> stringseting = new HashMap<>();
+    public static Map<Player, List<String>> liststrseting = new HashMap<>();
+    public static Permission snperm;
+
     //public static Map<Player, Map<ItemStack, Map<String, String>>> spitemtags = new HashMap<>();
     public static int questamount = 0;
-    public static Permission snperm = null;
-    public static Economy sneconomy = null;
+    public static Economy sneconomy;
+
+    public static List<String> toStrList(Map<String,Object> map){
+        List<String> list = new ArrayList<>();
+        for (String s : map.keySet()) {
+            if(map.get(s)==null)continue;
+            list.add(s+"->"+map.get(s).toString());
+        }
+        return list;
+    }
     public String share_Path,quest_Path,playerquest_Path;
 
 
@@ -220,12 +239,19 @@ public class Sn extends JavaPlugin {
     }
 
     /**
-     * @param ymlfile:where the ItemStack saved.
+     * @param ymlfile:where ethe ItemStack saved.
      * @param path:the path in yamlfile where the ItemStack is.
      * @return ItemStack which has been read.
      * @exception ClassCastException: when data were broken(May not clean the data before reset it)
      */
     public static ItemStack readItemStackFromYml(YamlConfiguration ymlfile, String path){
+
+        try{
+            return Objects.requireNonNull(ymlfile.getItemStack(path+".dr"));
+        } catch (IndexOutOfBoundsException|NullPointerException|IllegalArgumentException|ClassCastException ignore){}
+        say("物品在读取时无法直接读取，尝试使用详细信息读取!");
+
+
         String tmpmtrilname = ymlfile.getString(path+".type");
         assert tmpmtrilname != null;
         ItemStack itemwhckrd = new ItemStack(Objects.requireNonNull(Material.getMaterial(tmpmtrilname)));
@@ -272,9 +298,6 @@ public class Sn extends JavaPlugin {
             }
         }
 
-        List<String> tmpp = new ArrayList<>();
-        if(ymlfile.contains(path+".tag"))
-        tmpp = (List<String>) ymlfile.getStringList(path + ".tag");
 
 
         /*该部分内容过时，故注释
@@ -561,6 +584,8 @@ public class Sn extends JavaPlugin {
      */
     private static void readAttFromYml(YamlConfiguration ymlfile, String path, ItemMeta tmpmeta, String atttypename) {
         //String atttypename = "generic_max_health";
+
+
         if(ymlfile.contains(path +".meta.attribute."+atttypename)){
             String attpath = path +".meta.attribute."+atttypename+'.';
             for(int j = 0; ymlfile.contains(attpath+j); j++){
@@ -576,7 +601,7 @@ public class Sn extends JavaPlugin {
         }
     }
 
-    /**save all item data to yml file ,which can be read by{@link sn.sn.Sn#readItemStackFromYml}
+    /**save all item data to a yml file ,which can be read by{@link sn.sn.Sn#readItemStackFromYml}
      *
      * @param ymlfile where to save
      * @param path path in ymlfile
@@ -584,13 +609,10 @@ public class Sn extends JavaPlugin {
      */
     public static void saveItemStackToYml(YamlConfiguration ymlfile, String path, ItemStack itemtosave){
 
+        ymlfile.set(path+".dr",itemtosave);
+
         ymlfile.set(path+".type",itemtosave.getType().toString());
         ymlfile.set(path+".amount",itemtosave.getAmount());
-
-        Map<String, Object> tmpp = itemtosave.serialize();
-        if(!tmpp.isEmpty())
-            ymlfile.set(path+".tag",tmpp);
-
 
         if(itemtosave.getType().toString().contains("SHULKER_BOX")&&itemtosave.getItemMeta() instanceof BlockStateMeta) {
             BlockStateMeta tmpbsm = (BlockStateMeta) itemtosave.getItemMeta();
@@ -1032,12 +1054,16 @@ public class Sn extends JavaPlugin {
         return true;
     }
 
-    @Override
-    public void onDisable() {
-        // Plugin shutdown logic
+    public static boolean initVault(){
+        RegisteredServiceProvider<Economy> economyProvider = Bukkit.getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
+        RegisteredServiceProvider<Permission> perProvider = Bukkit.getServicesManager().getRegistration(net.milkbowl.vault.permission.Permission.class);
 
-
-        say("雪夜插件已卸载~");
+        if(economyProvider != null&&perProvider != null){
+            sneconomy = economyProvider.getProvider();
+            snperm = perProvider.getProvider();
+            vaultset = true;
+            return true;
+        } else return false;
     }
 
      /*Permission basicio=new Permission("sn.express.basicio") ,admin= new Permission("sn.express.admin");
@@ -1105,75 +1131,29 @@ public class Sn extends JavaPlugin {
 
                 */
 
-    /**
-     * 字符串的压缩
-     *
-     * @param str
-     * 待压缩的字符串
-     * @return 返回压缩后的字符串
-     * @throws IOException
-     */
-    public static String compress(String str) throws IOException {
-        if (null == str || str.length() <= 0) {
-            return str;
-        }
-// 创建一个新的 byte 数组输出流
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-// 使用默认缓冲区大小创建新的输出流
-        GZIPOutputStream gzip = new GZIPOutputStream(out);
-// 将 b.length 个字节写入此输出流
-        gzip.write(str.getBytes());
-        gzip.close();
-// 使用指定的 charsetName，通过解码字节将缓冲区内容转换为字符串
-        return out.toString("ISO-8859-1");
-    }
+    @Override
+    public void onDisable() {
+        // Plugin shutdown logic
 
-    private boolean initVault(){
-        RegisteredServiceProvider<Economy> economyProvider = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
-        return economyProvider != null;
-    }
+        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+            onlinePlayer.closeInventory();
+        }
 
-    private static class EnchantPair {
-        Enchantment a;
-        int b;
-        EnchantPair(String data){
-            int index = data.indexOf(' ');
-            a = Enchantment.getByKey(NamespacedKey.minecraft(data.substring(0,index)));
-            b = Integer.parseInt(data.substring(index+1,data.length()));
-        }
-    }
-
-    /**
-     * 字符串的解压
-     *
-     * @param str
-     * 对字符串解压
-     * @return 返回解压缩后的字符串
-     * @throws IOException
-     */
-    public static String unCompress(String str) throws IOException {
-        if (null == str || str.length() <= 0) {
-            return str;
-        }
-// 创建一个新的 byte 数组输出流
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-// 创建一个 ByteArrayInputStream，使用 buf 作为其缓冲区数组
-        ByteArrayInputStream in = new ByteArrayInputStream(str
-                .getBytes(StandardCharsets.ISO_8859_1));
-// 使用默认缓冲区大小创建新的输入流
-        GZIPInputStream gzip = new GZIPInputStream(in);
-        byte[] buffer = new byte[256];
-        int n = 0;
-        while ((n = gzip.read(buffer)) >= 0) {// 将未压缩数据读入字节数组
-// 将指定 byte 数组中从偏移量 off 开始的 len 个字节写入此 byte数组输出流
-            out.write(buffer, 0, n);
-        }
-// 使用指定的 charsetName，通过解码字节将缓冲区内容转换为字符串
-        return out.toString("UTF-8");
+        say("雪夜插件已卸载~");
     }
 
     @Override
     public void onEnable() {
+
+        registerClass(quest.Quest.class);
+        registerClass(quest.QuestPosition.class);
+        registerClass(quest.QuestAction.class);
+        registerClass(quest.QuestReward.class);
+        registerClass(quest.QuestActionData.class);
+
+
+
+
         //加载config
     /*
         plugin_file = new File( getDataFolder(), "plugin.yml");
@@ -1211,9 +1191,7 @@ public class Sn extends JavaPlugin {
         boolean Sharepathed = config_yml.getBoolean("share-path-ed");
 
         if(Sharepathed){//如果已经设置过地址，默认文件已经创造。
-            //if(true){
             share_Path = config_yml.getString("share-path");
-            //if(share_Path == null) share_Path = "E:\\\\Mc server\\";
             try {
                 Sn.share_file = new File(share_Path + "share.yml");
                 Sn.share_yml = YamlConfiguration.loadConfiguration(Sn.share_file);
@@ -1226,11 +1204,19 @@ public class Sn extends JavaPlugin {
 
         }
 
+
         quest_Path = config_yml.getString("quest-path");
         playerquest_Path = config_yml.getString("playerquest-path");
 
+        say("quest_path=" + quest_Path);
+        say("playerquest_Path=" + playerquest_Path);
+
         quest_file = new File(quest_Path + "quest.yml");
-        playerquest_file = new File(playerquest_Path + "quest.yml");
+        playerquest_file = new File(playerquest_Path + "playerquest.yml");
+
+
+        quest_file = checkFile(quest_file,quest_Path + "quest.yml");
+        playerquest_file = checkFile(playerquest_file,playerquest_Path + "playerquest.yml");
 
         quest_yml = YamlConfiguration.loadConfiguration(quest_file);
         playerquest_yml = YamlConfiguration.loadConfiguration(playerquest_file);
@@ -1242,7 +1228,7 @@ public class Sn extends JavaPlugin {
             String questname;
             questname = quest_yml.getString("inside."+ i );
             if (quest_yml.getInt(questname +".type")== 1){
-                quests[i].readQuestFromYml(questname);
+                quests.get(i).readQuestFromYml(questname);
             }
         }
             /*
@@ -1265,12 +1251,42 @@ public class Sn extends JavaPlugin {
             * */
 
         if(!initVault()) getLogger().info("[SN][WARNING]vault插件挂钩失败，请检查vault插件。");
+
+        BukkitRunnable nt = new questRuntime();
+        nt.runTaskTimerAsynchronously(this,0L,200L);
+
         Bukkit.getPluginManager().registerEvents(new questLgInEvent(), this);
         Bukkit.getPluginManager().registerEvents(new showInvEvent(), this);
-        getCommand("express").setExecutor(new express());
-        getCommand("quest").setExecutor(new quest());
+
+        Objects.requireNonNull(getCommand("express")).setExecutor(new express());
+        //Objects.requireNonNull(getCommand("npc")).setExecutor(new sn.sn.npc());
+        Objects.requireNonNull(getCommand("quest")).setExecutor(new quest());
 
         say("雪夜插件已加载~");
+    }
+
+    private File checkFile(File file,String path) {
+        while (!file.exists()){
+            try {
+                Process runtime = Runtime.getRuntime().exec("fsutil file createnew \""+path+"\" 0");
+                say("创建文件"+file.getName()+" at "+path);
+                Thread.sleep(50);
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
+            file = new File(path);
+        }
+        return file;
+    }
+
+    private static class EnchantPair {
+        Enchantment a;
+        int b;
+        EnchantPair(String data){
+            int index = data.indexOf(' ');
+            a = Enchantment.getByKey(NamespacedKey.minecraft(data.substring(0,index)));
+            b = Integer.parseInt(data.substring(index+1));
+        }
     }
 
 }

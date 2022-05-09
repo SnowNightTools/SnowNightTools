@@ -12,7 +12,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
 
-import static sn.sn.Sn.playerquest_yml;
+import static sn.sn.Sn.*;
 
 public class questRuntime extends BukkitRunnable {
 
@@ -20,6 +20,10 @@ public class questRuntime extends BukkitRunnable {
 
     @Override
     public void run() {
+        if(!vaultset)
+            if(!initVault()) {
+                say("[SN][WARNING]vault插件挂钩失败，请检查vault插件。");
+            }
         for (Player player: Bukkit.getServer().getOnlinePlayers()) {
             if(playerquest_yml.contains(player.getName())){
                 if(playerquest_yml.contains(player.getName()+".nowtaskid")){
@@ -119,9 +123,9 @@ public class questRuntime extends BukkitRunnable {
 
                             }
                             boolean questend = true;
-                            sn.sn.quest.QuestAction[] questtarget = quest.getQuesttarget();
-                            for (int i = 0, questtargetLength = questtarget.length; i < questtargetLength; i++) {
-                                sn.sn.quest.QuestAction action = questtarget[i];
+                            List<sn.sn.quest.QuestAction> questtarget = quest.getQuesttarget();
+                            for (int i = 0, questtargetLength = questtarget.size(); i < questtargetLength; i++) {
+                                sn.sn.quest.QuestAction action = questtarget.get(i);
                                 if(!playerquest_yml.getBoolean(player.getName()+".progress."+action.getQuestactionname(),false))questend = false;
                             }
                             if(questend)quest.succeed(player);
@@ -141,10 +145,10 @@ public class questRuntime extends BukkitRunnable {
     }
 
 
-    private Map<ItemStack,Boolean> getBlockListAndCnt(Player player,double distance,ItemStack[] itemtocheck){
+    private Map<ItemStack,Boolean> getBlockListAndCnt(Player player, double distance, List<ItemStack> itemtocheck){
         Map<ItemStack,Boolean> ret = new HashMap<>();
         List<Block> nowblock = getBlockList(player,distance);
-        int[] cnt = new int[itemtocheck.length+5];
+        int[] cnt = new int[itemtocheck.size()+5];
         boolean succeed;
         int i=0;
         for (ItemStack stack : itemtocheck) {
