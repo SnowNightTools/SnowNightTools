@@ -1,0 +1,75 @@
+name: Sn
+version: '${project.version}'
+main: sn.sn.Sn
+api-version: 1.18
+softdepend: [Vault]
+
+commands:
+  express:
+    #描述这个命令
+    description: 雪花速递~
+    #用法
+    usage: /express help
+    #执行此命令的人所需的权限
+    permission:
+      sn.express
+    #没有权限的提示消息
+    permission-message: 你不能执行它.
+  quest:
+    #描述这个命令
+    description: 雪夜任务系统~
+    #用法
+    usage: /quest
+    #执行此命令的人所需的权限
+    permission:
+      sn.quest
+    #没有权限的提示消息
+    permission-message: 你不能执行它.
+  npc:
+    #描述这个命令
+    description: npc系统~
+    #用法
+    usage: /npc
+    #执行此命令的人所需的权限
+    permission:
+      sn.npc
+    #没有权限的提示消息
+    permission-message: 你不能执行它.
+
+permission:
+  sn.express:
+    description: 雪花速递的基本权限
+    default: true
+    child:
+      sn.express.clean:
+        description: clean all statements of command sender
+        default: true
+      sn.express.show:
+        description: show the UI, and can operate the items
+        default: true
+      sn.express.send:
+        description: send items
+        default: true
+
+  sn.express.admin:
+    description: 雪花速递的管理员权限
+    default: op
+    child:
+      sn.express.reset_state:
+        description: Change statement of specific player
+        default: op
+      sn.express.mes:
+        description: Send infomation of file path to console
+        default: op
+      sn.express.set_path:
+        description: set file path
+        default: op
+
+
+  sn.quest:
+    description: 雪夜任务系统的基本权限
+    default: true
+  sn.quest.admin:
+    description: 雪夜任务系统的管理员权限
+    default: op
+
