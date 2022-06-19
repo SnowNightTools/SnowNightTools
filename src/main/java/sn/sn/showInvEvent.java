@@ -634,13 +634,11 @@ public class showInvEvent implements Listener {
                 case 17:
                     if(isSetTorC.get(commander)) {
                         questseting.get(commander).addQuesttarget(questactionseting.get(commander));
-                        questactionseting.remove(commander);
-                        openActionSettingUI(commander);
                     } else {
                         questseting.get(commander).addQuestacceptcondition(questactionseting.get(commander));
-                        questactionseting.remove(commander);
-                        openActionSettingUI(commander);
                     }
+                    questactionseting.remove(commander);
+                    openActionSettingUI(commander);
                     return;
                 default:
                     return;
