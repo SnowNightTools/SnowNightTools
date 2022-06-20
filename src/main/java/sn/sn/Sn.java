@@ -45,7 +45,7 @@ import static org.bukkit.configuration.serialization.ConfigurationSerialization.
 
 public class Sn extends JavaPlugin {
 
-    public static boolean vaultset = false;
+    public static boolean eco_system_set = false;
     public static File plugin_file;
     public static File share_file;
     public static File quest_file;
@@ -161,22 +161,14 @@ public class Sn extends JavaPlugin {
         thread.join();
         return a;
     }
+    public static Map<Player, Location> startpoint = new HashMap<>();
+    public static Map<Player, Location> endpoint = new HashMap<>();
+    public static Map<Player, List<Collector_CE.Collector>> collectors = new HashMap<>();
+    public static boolean debug = false;
 
-
-
-
-    /** 给Console发送信息
-     * send message to console
-     * @param a 要发送的信息(the message to send)
-     */
-    public static void say(String a){
-        CommandSender sender = Bukkit.getConsoleSender();
-        sender.sendMessage(a);
-    }
     public static List<quest.Quest> quests = new ArrayList<>();
 
     public static String plugin_Path;
-
     {
         plugin_Path = getDataFolder().getPath();
     }
@@ -195,6 +187,45 @@ public class Sn extends JavaPlugin {
     public static Map<Player, Integer> intseting = new HashMap<>();
     public static Map<Player, String> stringseting = new HashMap<>();
     public static Map<Player, List<String>> liststrseting = new HashMap<>();
+    public static boolean eco_use_vault = false;
+
+    /** 给Console发送信息
+     * send message to console
+     * @param mes 要发送的信息(the message to send)
+     */
+    public static void sendInfo(String mes){
+        CommandSender sender = Bukkit.getConsoleSender();
+        sender.sendMessage("[INFO]"+ mes);
+    }
+
+    /** 给Console发送debug信息
+     * send debug message to console when debug is true.
+     * @param mes 要发送的信息(the message to send)
+     */
+    public static void sendDebug(String mes){
+        if(debug){
+            CommandSender sender = Bukkit.getConsoleSender();
+            sender.sendMessage(ChatColor.BLUE+"[DEBUG]"+ mes);
+        }
+    }
+
+    /** 给Console发送Warn信息
+     * send Warn message to console.
+     * @param mes 要发送的信息(the message to send)
+     */
+    public static void sendWarn(String mes){
+        CommandSender sender = Bukkit.getConsoleSender();
+        sender.sendMessage(ChatColor.YELLOW+"[WARN]"+ mes);
+    }
+
+    /** 给Console发送Error信息
+     * send Error message to console.
+     * @param mes 要发送的信息(the message to send)
+     */
+    public static void sendError(String mes){
+        CommandSender sender = Bukkit.getConsoleSender();
+        sender.sendMessage(ChatColor.RED+"[Error]"+ mes);
+    }
 
 
     public static Permission snperm;
@@ -369,7 +400,7 @@ public class Sn extends JavaPlugin {
         try{
             return Objects.requireNonNull(ymlfile.getItemStack(path+".dr"));
         } catch (IndexOutOfBoundsException|NullPointerException|IllegalArgumentException|ClassCastException ignore){}
-        say("物品在读取时无法直接读取，尝试使用详细信息读取!");
+        sendInfo("物品在读取时无法直接读取，尝试使用详细信息读取!");
 
 
         String tmpmtrilname = ymlfile.getString(path+".type");
@@ -1026,7 +1057,7 @@ public class Sn extends JavaPlugin {
         Map<Enchantment,Integer> tenm = itemtosave.getEnchantments();
 
         for(Enchantment key:tenm.keySet()){
-            say("####");
+            sendInfo("####");
             ymlfile.set(path+".enchantment."+i,key.getKey().getKey()+' '+tenm.get(key));
             //第一个getKey返回的是bukkit的namespacekey类型，第二个getkey返回的是String类型
             ++i;
@@ -1156,7 +1187,7 @@ public class Sn extends JavaPlugin {
             ymlfile.set(path + ".line", nown);
             ymlfile.set(path + ".items",null);
         } catch (Exception e) {
-            say(e.getLocalizedMessage());
+            sendInfo(e.getLocalizedMessage());
         }
 
         for (int i = 0; i < nown; i++) {
@@ -1178,6 +1209,30 @@ public class Sn extends JavaPlugin {
         return true;
     }
 
+    public static Range readRangeToYml(YamlConfiguration ymlfile, String path){
+
+        if(ymlfile.contains(path+".world")){
+            try {
+                Range temp = new Range(ymlfile.getDouble(path+".startX"),
+                        ymlfile.getDouble(path+".startY"),
+                        ymlfile.getDouble(path+".startZ"),
+                        ymlfile.getDouble(path+".endX"),
+                        ymlfile.getDouble(path+".endY"),
+                        ymlfile.getDouble(path+".endZ"));
+                temp.setWorld(Bukkit.getWorld(UUID.fromString(Objects.requireNonNull(ymlfile.getString(path + ".world")))));
+                return temp;
+            } catch (Exception e) {
+                sendError(e.getLocalizedMessage());
+            }
+        } else return new Range(ymlfile.getDouble(path+".startX"),
+                ymlfile.getDouble(path+".startY"),
+                ymlfile.getDouble(path+".startZ"),
+                ymlfile.getDouble(path+".endX"),
+                ymlfile.getDouble(path+".endY"),
+                ymlfile.getDouble(path+".endZ"));
+        return null;
+    }
+
 
 
     public static boolean initVault(){
@@ -1187,7 +1242,7 @@ public class Sn extends JavaPlugin {
         if(economyProvider != null && perProvider != null){
             sneconomy = economyProvider.getProvider();
             snperm = perProvider.getProvider();
-            vaultset = true;
+            eco_system_set = true;
             return true;
         } else return false;
     }
@@ -1268,7 +1323,7 @@ public class Sn extends JavaPlugin {
             onlinePlayer.closeInventory();
         }
 
-        say("雪夜插件已卸载~");
+        sendInfo("雪夜插件已卸载~");
     }
 
     @Override
@@ -1280,29 +1335,17 @@ public class Sn extends JavaPlugin {
         registerClass(quest.QuestReward.class);
         registerClass(quest.QuestActionData.class);
 
-        //加载config
-    /*
-        plugin_file = new File( getDataFolder(), "plugin.yml");
-        if(!plugin_file.exists()) {
-            plugin_file.mkdir();
-            try {
-                plugin_file.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }*/
-
         config_file = new File(getDataFolder().getAbsolutePath()+ "\\config.yml");
-        say(getDataFolder().getAbsolutePath()+ "\\config.yml");
+        sendInfo(getDataFolder().getAbsolutePath()+ "\\config.yml");
 
-        int brkcnt1 = 0 ;
+        int brkcnt1 = 1 ;
         while (true) {
-            say("尝试寻找config");
+            sendDebug("尝试寻找config 第"+brkcnt1+"次，会尝试5次。");
 
             config_file = new File(getDataFolder().getAbsolutePath()+ "\\config.yml");
             brkcnt1 ++;
-            if(brkcnt1 >=5) {
-                say("config配置错误");
+            if(brkcnt1 >= 5) {
+                sendError("config配置错误");
                 break;
             }
             config_yml = YamlConfiguration.loadConfiguration(config_file);
@@ -1312,21 +1355,21 @@ public class Sn extends JavaPlugin {
         }
         saveConfig();
 
+        boolean Sharepathed = config_yml.getBoolean("share-path-ed",false);
+        debug = config_yml.getBoolean("debug",false);
+        eco_use_vault = config_yml.getBoolean("vault",false);
 
-
-        boolean Sharepathed = config_yml.getBoolean("share-path-ed");
-
-        if(Sharepathed){//如果已经设置过地址，默认文件已经创造。
+        if(Sharepathed){
+            //如果已经设置过地址，默认文件已经创造。
             share_Path = config_yml.getString("share-path");
             try {
                 Sn.share_file = new File(share_Path + "share.yml");
                 Sn.share_yml = YamlConfiguration.loadConfiguration(Sn.share_file);
-
             } catch (NullPointerException e){
-                say("share.yml读取失败！ 请重新设置或者手动创建文件!");
+                sendInfo("share.yml读取失败！ 请重新设置或者手动创建文件!");
             }
         } else {
-            say("share.yml文件加载失败，请使用/express setpath [sharePath]为它添加地址，并使用/reload重载插件！");
+            sendInfo("share.yml文件加载失败，请使用/express setpath [sharePath]为它添加地址，并使用/reload重载插件！");
 
         }
 
@@ -1334,12 +1377,11 @@ public class Sn extends JavaPlugin {
         quest_Path = config_yml.getString("quest-path");
         playerquest_Path = config_yml.getString("playerquest-path");
 
-        say("quest_path=" + quest_Path);
-        say("playerquest_Path=" + playerquest_Path);
+        sendInfo("quest_path=" + quest_Path);
+        sendInfo("playerquest_Path=" + playerquest_Path);
 
         quest_file = new File(quest_Path + "quest.yml");
         playerquest_file = new File(playerquest_Path + "playerquest.yml");
-
 
         quest_file = checkFile(quest_file,quest_Path + "quest.yml");
         playerquest_file = checkFile(playerquest_file,playerquest_Path + "playerquest.yml");
@@ -1356,7 +1398,7 @@ public class Sn extends JavaPlugin {
             if (quest_yml.getInt(questname +".type")== 1){
                 quests.add(new quest.Quest(questname));
                 if(!quests.get(i).readQuestFromYml()){
-                    say("警告！ 在加载"+questname+"时出现错误！");
+                    sendInfo("警告！ 在加载"+questname+"时出现错误！");
                 }
             }
         }
@@ -1379,7 +1421,9 @@ public class Sn extends JavaPlugin {
                 15：block
             * */
 
-        if(!initVault()) getLogger().info("[SN][WARNING]vault插件挂钩失败，请检查vault插件。");
+        if(eco_use_vault)
+            if(!initVault()) sendInfo("vault插件挂钩失败，请检查vault插件。");
+        else eco_system_set = true;
 
         BukkitRunnable nt = new questRuntime();
         nt.runTaskTimerAsynchronously(this,0L,200L);
@@ -1391,14 +1435,14 @@ public class Sn extends JavaPlugin {
         //Objects.requireNonNull(getCommand("npc")).setExecutor(new sn.sn.npc());
         Objects.requireNonNull(getCommand("quest")).setExecutor(new quest());
 
-        say("雪夜插件已加载~");
+        sendInfo("雪夜插件已加载~");
     }
 
     private File checkFile(File file,String path) {
         while (!file.exists()){
             try {
                 Process runtime = Runtime.getRuntime().exec("fsutil file createnew \""+path+"\" 0");
-                say("创建文件"+file.getName()+" at "+path);
+                sendInfo("创建文件"+file.getName()+" at "+path);
                 Thread.sleep(50);
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();

@@ -328,7 +328,7 @@ public class quest implements CommandExecutor {
         if(sender instanceof Player){
             questPlayer = (Player)sender;
         } else {
-            say("玩家信息异常，请联系管理员。");
+            sendInfo("玩家信息异常，请联系管理员。");
             return true;
         }
 
@@ -470,7 +470,7 @@ public class quest implements CommandExecutor {
 
     private boolean help() {
         if(questPlayer.isOp()) {
-            say("/quest create [任务名] 打开任务新建界面");
+            sendInfo("/quest create [任务名] 打开任务新建界面");
             return true;
         } else return false;
     }
@@ -569,7 +569,7 @@ public class quest implements CommandExecutor {
 
                 break;
             default:
-                say("要查询这个信息，你可能需要换个指令（或者换个号QWQ）！");
+                sendInfo("要查询这个信息，你可能需要换个指令（或者换个号QWQ）！");
                 break;
         }
     }
@@ -690,7 +690,7 @@ public class quest implements CommandExecutor {
         FIND_POSITION(5,"find_position"),
         BUILD(6,"build"),
         ACCOMPLISHMENT(7,"accomplishment"),
-        HUSBANDRY(8,"husbandry"),
+        HUSBANDRY(8,"husbandry"),//养殖动物
         AGRICULTURE(9,"agriculture");
 
         final private int number;
@@ -940,12 +940,12 @@ public class quest implements CommandExecutor {
 
         public Boolean readQuestFromYml(YamlConfiguration ymlfile,String name){
             if(!ymlfile.contains(name)){
-                say("[WARNING]读取Quest数据错误，数据不存在");
+                sendInfo("[WARNING]读取Quest数据错误，数据不存在");
                 return false;
             }
 
             if(ymlfile.getInt(name+".tpye")!=1){
-                say("[WARNING]读取Quest数据错误，该名的类型不正确");
+                sendInfo("[WARNING]读取Quest数据错误，该名的类型不正确");
                 return false;
             }
             //读取quest position信息
@@ -960,7 +960,7 @@ public class quest implements CommandExecutor {
                     questacceptconditionamount = ymlfile.getInt(questname + "property-set.questacceptconditionamount");
                     for (int j = 0; j < questacceptconditionamount; j++) {
                         if(!ymlfile.contains(questname + ".property-inherit.questacceptcondition." + j)){
-                            say("[WARNING]读取Quest时错误，信息文件可能损坏！");
+                            sendInfo("[WARNING]读取Quest时错误，信息文件可能损坏！");
                             break;
                         }
                         String tname = ymlfile.getString(questname + ".property-inherit.questacceptcondition." + j);
@@ -973,7 +973,7 @@ public class quest implements CommandExecutor {
                     questtargetamount = ymlfile.getInt(questname + "property-set.questtargetamount");
                     for(int j=0;j<questtargetamount;j++){
                         if(!ymlfile.contains(questname + ".property-inherit.questtarget." + j)){
-                            say("[WARNING]读取Quest时错误，信息文件可能损坏！");
+                            sendInfo("[WARNING]读取Quest时错误，信息文件可能损坏！");
                             break;
                         }
                         String tname =ymlfile.getString(questname + ".property-inherit.questtarget." + j);
@@ -1351,12 +1351,12 @@ public class quest implements CommandExecutor {
         public Boolean readQpFromYml(YamlConfiguration ymlfile,String name){
 
             if(!ymlfile.contains(name)){
-                say("[WARNING]读取QuestPosition数据错误，数据不存在");
+                sendInfo("[WARNING]读取QuestPosition数据错误，数据不存在");
                 return false;
             }
 
             if(ymlfile.getInt(name+".tpye")!=2){
-                say("[WARNING]读取QuestPosition数据错误，该名的类型不正确");
+                sendInfo("[WARNING]读取QuestPosition数据错误，该名的类型不正确");
                 return false;
             }
             parentquest = ymlfile.getString(name+".property-set.parentquest");
@@ -1536,12 +1536,12 @@ public class quest implements CommandExecutor {
 
         public boolean readQaFromYml(YamlConfiguration ymlfile,String name){
             if(!ymlfile.contains(name)){
-                say("[WARNING]读取QuestAction数据错误，数据不存在");
+                sendInfo("[WARNING]读取QuestAction数据错误，数据不存在");
                 return false;
             }
 
             if(ymlfile.getInt(name+".tpye")!=3){
-                say("[WARNING]读取QuestAction数据错误，该名的类型不正确");
+                sendInfo("[WARNING]读取QuestAction数据错误，该名的类型不正确");
                 return false;
             }
             questactionname = name;
@@ -1752,12 +1752,12 @@ public class quest implements CommandExecutor {
 
         public Boolean readQaDataFromYml(YamlConfiguration ymlfile, String name){
             if(!ymlfile.contains(name)){
-                say("[WARNING]读取QuestActionData数据错误，数据不存在");
+                sendInfo("[WARNING]读取QuestActionData数据错误，数据不存在");
                 return false;
             }
 
             if(ymlfile.getInt(name+".tpye")!=4){
-                say("[WARNING]读取QuestActionData数据错误，该名的类型不正确");
+                sendInfo("[WARNING]读取QuestActionData数据错误，该名的类型不正确");
                 return false;
             }
 
@@ -1779,8 +1779,8 @@ public class quest implements CommandExecutor {
             if(ymlfile.contains(name+".property-set.questtargetentity")) {
                 while(ymlfile.contains(name+".property-set.questtargetentity."+i)) {
                     if(!ymlfile.contains(name + ".property-set.questtargetentity."+i+".amount")||!ymlfile.contains(name + ".property-set.questtargetentity."+i+".entitytype")){
-                        say("[WARNING]读取QuestAction数据错误，数据非法："+this.toString());
-                        say("[WARNING]读取QuestAction数据错误，数据非法："+i);
+                        sendInfo("[WARNING]读取QuestAction数据错误，数据非法："+this.toString());
+                        sendInfo("[WARNING]读取QuestAction数据错误，数据非法："+i);
                         continue;
                     }
                     questtargetentity.put(EntityType.valueOf(Objects.requireNonNull(ymlfile.getString(name + ".property-set.questtargetentity."+i+".entitytype")).toUpperCase()),
@@ -1799,7 +1799,7 @@ public class quest implements CommandExecutor {
                     targetlocation.setZ(targetpositionz);
 
                 } else {
-                    say("[WARNING]QuestTargetPosition数据可能出现问题！");
+                    sendInfo("[WARNING]QuestTargetPosition数据可能出现问题！");
                 }
             }
             if(ymlfile.contains(name+".property-set.questtargetnpc")) {

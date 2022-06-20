@@ -484,7 +484,7 @@ public class showInvEvent implements Listener {
                 if(Invclick.getSlot() == 8){//isOn
                     if(questseting.get(commander).isOn()) {
                         if(!questseting.get(commander).turnOff()) return;
-                        say("打开了任务"+questseting.get(commander).getQuestname());
+                        sendInfo("打开了任务"+questseting.get(commander).getQuestname());
                         ItemStack temp = Invclick.getClickedInventory().getItem(2);
                         assert temp != null;
                         temp.setType(Material.BARRIER);
@@ -1321,7 +1321,7 @@ public class showInvEvent implements Listener {
     }
 
     private void openNPCSettingUI(Player commander) {
-        say("系统建设中");
+        sendInfo("系统建设中");
     }
 
     private static void putEntitySet(Player commander, Object ignored){

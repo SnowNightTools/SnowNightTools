@@ -20,15 +20,16 @@ public class questRuntime extends BukkitRunnable {
 
     @Override
     public void run() {
-        if(!vaultset)
+        if(!eco_system_set)
             if(!initVault()) {
-                say("[SN][WARNING]vault插件挂钩失败，请检查vault插件。");
+                sendInfo("[SN][WARNING]vault插件挂钩失败，请检查vault插件。");
             }
+
         for (Player player: Bukkit.getServer().getOnlinePlayers()) {
             if(playerquest_yml.contains(player.getName())){
                 if(playerquest_yml.contains(player.getName()+".nowtaskid")){
                     if(playerquest_yml.getInt(player.getName()+".nowtaskid")==this.getTaskId()){
-
+                        if(debug) player.sendMessage("snQuest在线程"+this.getTaskId()+"检测你的任务情况~");
                         while(playerquest_yml.getBoolean(player.getName()+".check",true)) {
 
                             int checktime = playerquest_yml.getInt(player.getName()+".checktime",5000);
@@ -62,8 +63,7 @@ public class questRuntime extends BukkitRunnable {
 
                                     case ACCOMPLISHMENT:
                                     case HUSBANDRY:
-                                        Entity pl = (Entity) player;
-                                        List<Entity> tg = pl.getNearbyEntities(defaultdistance, defaultdistance, defaultdistance);
+                                        List<Entity> tg = player.getNearbyEntities(defaultdistance, defaultdistance, defaultdistance);
                                         Map<EntityType, Integer> tmap = new HashMap<>();
                                         Map<EntityType, Integer> questt = action.getQuestactiondata().getQuesttargetentity();
                                         for (Entity tent : tg) {
@@ -124,23 +124,20 @@ public class questRuntime extends BukkitRunnable {
                             }
                             boolean questend = true;
                             List<sn.sn.quest.QuestAction> questtarget = quest.getQuesttarget();
-                            for (int i = 0, questtargetLength = questtarget.size(); i < questtargetLength; i++) {
-                                sn.sn.quest.QuestAction action = questtarget.get(i);
-                                if(!playerquest_yml.getBoolean(player.getName()+".progress."+action.getQuestactionname(),false))questend = false;
+                            for (sn.sn.quest.QuestAction action : questtarget) {
+                                if (!playerquest_yml.getBoolean(player.getName() + ".progress." + action.getQuestactionname(), false))
+                                    questend = false;
                             }
                             if(questend)quest.succeed(player);
                         }
-
-
-
-
-                        return;
+                        if(debug) player.sendMessage("snQuest在"+this.getTaskId()+"检测你的任务情况的线程已经结束！");
                     }
                 }
 
             }
 
         }
+
         this.cancel();
     }
 

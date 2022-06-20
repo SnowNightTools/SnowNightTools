@@ -1,7 +1,9 @@
-share-path: 'Z:\\Mc server\'
+share-path: 'E:\\Mc server\'
 share-path-ed: true
-playerquest-path: 'Z:\\Mc server\'
+playerquest-path: 'E:\\Mc server\'
 playerquest-path-ed: true
-quest-path: 'Z:\\Mc server\'
+quest-path: 'E:\\Mc server\'
 quest-path-ed: true
 login-load: true
+debug: true
+vault: false

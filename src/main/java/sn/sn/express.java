@@ -95,7 +95,8 @@ public class express implements CommandExecutor {
         Sn.share_yml.set(senderPlayer.getName()+".using",false);
         try {
             Sn.share_yml.save(Sn.share_file);
-        } catch (IOException e) {say("[WARN]文件保存可能出错");}
+        } catch (IOException e) {
+            sendInfo("[WARN]文件保存可能出错");}
         try {
             Sn.share_yml.load(Sn.share_file);
         } catch (IOException | InvalidConfigurationException ignored) {}
@@ -115,7 +116,7 @@ public class express implements CommandExecutor {
         if(sender instanceof Player){
             senderPlayer = (Player)sender;
         } else {
-            say("玩家信息异常，请联系管理员。");
+            sendInfo("玩家信息异常，请联系管理员。");
         }
 
         if(label.equalsIgnoreCase("express")&&senderPlayer.hasPermission("sn.express")) {
@@ -135,8 +136,8 @@ public class express implements CommandExecutor {
             }
 
             if(args[0].equalsIgnoreCase("mes")&&senderPlayer.hasPermission("sn.express.mes")){
-                say("share_yml地址："+share_Path);
-                say("plugin地址："+Sn.plugin_Path);
+                sendInfo("share_yml地址："+share_Path);
+                sendInfo("plugin地址："+Sn.plugin_Path);
                 return true;
             }
 
@@ -190,29 +191,29 @@ public class express implements CommandExecutor {
                     args[1]= args[1]+' '+args[i++];
 
 
-                say("3s后即将设置sharePath，请结束任何速递指令!");
+                sendInfo("3s后即将设置sharePath，请结束任何速递指令!");
                 try {
                     Thread.sleep(3000);
                 } catch (InterruptedException ignored) {
                 }
-                say("你的sharePath即将设置为"+path);
+                sendInfo("你的sharePath即将设置为"+path);
                 config_yml.set("share_path",path);
-                say("正在寻找目录……");
+                sendInfo("正在寻找目录……");
 
                 try {
                     if(!Sn.share_file.getParentFile().exists()){
-                        say("目录不存在，正在自动创建……");
-                        if(Sn.share_file.getParentFile().mkdirs())say("创建成功！");
-                        else say("创建失败，请检查文件权限。");
-                    } else say("目录已找到！");
+                        sendInfo("目录不存在，正在自动创建……");
+                        if(Sn.share_file.getParentFile().mkdirs()) sendInfo("创建成功！");
+                        else sendInfo("创建失败，请检查文件权限。");
+                    } else sendInfo("目录已找到！");
                 } catch (NullPointerException e){
-                    say("你的目录出现错误，请不要在目录中包含空格，或选择手动配置config文件");
+                    sendInfo("你的目录出现错误，请不要在目录中包含空格，或选择手动配置config文件");
                 }
 
-                say("准备创建文件……");
+                sendInfo("准备创建文件……");
                 try {
                     if(Sn.share_file.createNewFile()){
-                        say("sharefile 重载成功");
+                        sendInfo("sharefile 重载成功");
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -224,7 +225,7 @@ public class express implements CommandExecutor {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                say("完成，请/reload,或重启服务器。");
+                sendInfo("完成，请/reload,或重启服务器。");
             }
 
 
@@ -283,7 +284,7 @@ public class express implements CommandExecutor {
                     noPermission("sn.express.send");
                     return false;
                 }
-                //say("玩家"+sender.getName()+"尝试使用express send");
+                //sendInfo("玩家"+sender.getName()+"尝试使用express send");
 
                 if(args.length == 1){
                     help();
