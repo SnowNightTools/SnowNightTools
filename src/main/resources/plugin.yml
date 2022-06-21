@@ -14,7 +14,7 @@ commands:
     permission:
       sn.express
     #没有权限的提示消息
-    permission-message: 你不能执行它.
+    permission-message: 你缺少必要的权限.
   quest:
     #描述这个命令
     description: 雪夜任务系统~
@@ -24,7 +24,17 @@ commands:
     permission:
       sn.quest
     #没有权限的提示消息
-    permission-message: 你不能执行它.
+    permission-message: 你缺少必要的权限.
+  collector:
+    #描述这个命令
+    description: 雪夜收集器~
+    #用法
+    usage: /collector
+    #执行此命令的人所需的权限
+    permission:
+      sn.collector
+    #没有权限的提示消息
+    permission-message: 你缺少必要的权限.
   npc:
     #描述这个命令
     description: npc系统~
@@ -34,7 +44,7 @@ commands:
     permission:
       sn.npc
     #没有权限的提示消息
-    permission-message: 你不能执行它.
+    permission-message: 你缺少必要的权限.
 
 permission:
   sn.express:
@@ -73,3 +83,19 @@ permission:
     description: 雪夜任务系统的管理员权限
     default: op
 
+  sn.collector:
+    description: 收集器的基本权限
+    default: true
+    child:
+      sn.collector.amount.1:
+        description: clean all statements of command sender
+        default: true
+      sn.collector.range.10:
+        description: show the UI, and can operate the items
+        default: true
+      sn.collector.remove:
+        description: send items
+        default: true
+  sn.collector.admin:
+    description: 雪夜任务系统的管理员权限
+    default: op

@@ -51,6 +51,7 @@ public class Sn extends JavaPlugin {
     public static File quest_file;
     public static File playerquest_file;
     public static File config_file;
+    public static File collector_file;
 
     /**Begin to ask question asynchronously,without sending message to the player.
      * Nothing will be done to consumers when time out(60s), and the n_done will be called.
@@ -172,7 +173,7 @@ public class Sn extends JavaPlugin {
     {
         plugin_Path = getDataFolder().getPath();
     }
-    public static YamlConfiguration share_yml,plugin_yml,config_yml,quest_yml,playerquest_yml;
+    public static YamlConfiguration share_yml,plugin_yml,config_yml,quest_yml,playerquest_yml,collector_yml;
     public static Map<Player, quest.QuestAction> questactionseting = new HashMap<>();
     public static Map<Player, Inventory> showInv = new HashMap<>();
     public static Map<Player, quest.Quest> questseting = new HashMap<>();
@@ -1428,10 +1429,15 @@ public class Sn extends JavaPlugin {
         BukkitRunnable nt = new questRuntime();
         nt.runTaskTimerAsynchronously(this,0L,200L);
 
+        CollectorRuntime cr = new CollectorRuntime();
+        cr.start();
+
         Bukkit.getPluginManager().registerEvents(new questLgInEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new rangeSelector(), this);
         Bukkit.getPluginManager().registerEvents(new showInvEvent(), this);
 
         Objects.requireNonNull(getCommand("express")).setExecutor(new express());
+        Objects.requireNonNull(getCommand("collector")).setExecutor(new Collector_CE());
         //Objects.requireNonNull(getCommand("npc")).setExecutor(new sn.sn.npc());
         Objects.requireNonNull(getCommand("quest")).setExecutor(new quest());
 
