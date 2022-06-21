@@ -20,10 +20,11 @@ public class questRuntime extends BukkitRunnable {
 
     @Override
     public void run() {
-        if(!eco_system_set)
-            if(!initVault()) {
-                sendInfo("[SN][WARNING]vault插件挂钩失败，请检查vault插件。");
-            }
+        if(eco_use_vault)
+            if(!eco_system_set)
+                if(!initVault()) {
+                    sendInfo("[SN][WARNING]vault插件挂钩失败，请检查vault插件。");
+                }
 
         for (Player player: Bukkit.getServer().getOnlinePlayers()) {
             if(playerquest_yml.contains(player.getName())){

@@ -43,14 +43,18 @@ import static sn.sn.Sn.*;
 * 存储：collectors.yml文件
 *
 *   格式：
+*       amount: 1
 *       list:
 *           - <name>
+
 *       <name>:
-*           owner: <Player name>
+*           owner: <Player uuid>
+            range_amount:
 *           range:
-*               0:
+*               1:
 *                   start: <X,Y,Z>
 *                   end: <X,Y,Z>
+
 *
 *
 * */
@@ -74,8 +78,8 @@ public class Collector_CE implements CommandExecutor {
 
         if(!label.equals("collector"))return false;
 
-        if(args.length == 0)return help();
-        if(args[0].equals("help")||args[0].equals("?")||args[0].equals("？"))return help();
+        if(args.length == 0)return help(sender);
+        if(args[0].equals("help")||args[0].equals("?")||args[0].equals("？"))return help(sender);
         Player commander = null;
         try {
             commander = (Player) sender;
@@ -84,7 +88,8 @@ public class Collector_CE implements CommandExecutor {
         }
 
         if(args[0].equals("create")){
-            if(!(args.length==3 && args[2].equals("-g") || args.length!=2))return help();
+            if(args.length!=2)return help(sender);
+
 
             if(!startpoint.containsKey(commander)||!endpoint.containsKey(commander)){
                 commander.sendMessage(ChatColor.GREEN+"请先选择两个点哦~");
@@ -139,16 +144,23 @@ public class Collector_CE implements CommandExecutor {
             temp.setOwner(commander.getUniqueId());
             temp.setName(args[1]);
 
-            if(args.length!=3) tr.setWorld(commander.getWorld());
+            tr.setWorld(commander.getWorld());
             temp.addRange(tr);
 
             temp.setBox(chest.getLocation());
-
-            collectors.get(commander).add(temp);
+            List<Collector> g = collectors.getOrDefault(commander, new ArrayList<>());
+            g.add(temp);
+            collectors.put(commander,g);
+            sender.sendMessage("添加成功！");
+            return true;
+        }
+        if(args[0].equals("save")&&sender.isOp()){
+            new AutoSave().start();
+            return true;
         }
 
         if(args[0].equals("add")){
-            if(args.length<=1)return help();
+            if(args.length<=1)return help(sender);
             if(!startpoint.containsKey(commander)||!endpoint.containsKey(commander)){
                 commander.sendMessage(ChatColor.GREEN+"请先选择两个点哦~");
                 return true;
@@ -203,7 +215,7 @@ public class Collector_CE implements CommandExecutor {
 
         if(args[0].equals("remove")){
             if(!commander.hasPermission("sn.collector.remove"))noPermission(commander,"sn.collector.remove");
-            if(args.length == 1)return help();
+            if(args.length == 1)return help(sender);
             if(args.length == 2) {
                 if (!collectors.containsKey(commander)) {
                     commander.sendMessage("没有找到你的收集器哦~");
@@ -253,14 +265,15 @@ public class Collector_CE implements CommandExecutor {
             }
         }
 
-        return help();
+        return help(sender);
     }
 
     private void noPermission(Player p,String s) {
         p.sendMessage("你缺少必要的权限："+s);
     }
 
-    private boolean help() {
+    private boolean help(CommandSender player) {
+        player.sendMessage("help page");
         return true;
     }
 
@@ -319,7 +332,8 @@ public class Collector_CE implements CommandExecutor {
             for (Range range : ranges) {
                 range.saveRangeToYml(ymlfile,path + "." + cnt++);
             }
-            sendDebug("collector类存储完成，cnt="+cnt);
+            ymlfile.set(path+"range_amount",cnt-1);
+            sendDebug("collector类存储完成，cnt="+(cnt-1));
         }
     }
 }

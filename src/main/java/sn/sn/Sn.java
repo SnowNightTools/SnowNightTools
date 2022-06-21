@@ -15,14 +15,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Axolotl;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.TropicalFish;
+import org.bukkit.entity.*;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.*;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
@@ -165,7 +163,7 @@ public class Sn extends JavaPlugin {
     public static Map<Player, Location> startpoint = new HashMap<>();
     public static Map<Player, Location> endpoint = new HashMap<>();
     public static Map<Player, List<Collector_CE.Collector>> collectors = new HashMap<>();
-    public static boolean debug = false;
+    public static boolean debug = true;
 
     public static List<quest.Quest> quests = new ArrayList<>();
 
@@ -1210,7 +1208,7 @@ public class Sn extends JavaPlugin {
         return true;
     }
 
-    public static Range readRangeToYml(YamlConfiguration ymlfile, String path){
+    public static Range readRangeFromYml(YamlConfiguration ymlfile, String path){
 
         if(ymlfile.contains(path+".world")){
             try {
@@ -1381,12 +1379,19 @@ public class Sn extends JavaPlugin {
         sendInfo("quest_path=" + quest_Path);
         sendInfo("playerquest_Path=" + playerquest_Path);
 
+        collector_file = new File(getDataFolder(),"collector.yml");
         quest_file = new File(quest_Path + "quest.yml");
         playerquest_file = new File(playerquest_Path + "playerquest.yml");
 
+        try {
+            collector_file.createNewFile();
+        } catch (IOException e) {
+            sendError(e.getLocalizedMessage());
+        }
         quest_file = checkFile(quest_file,quest_Path + "quest.yml");
         playerquest_file = checkFile(playerquest_file,playerquest_Path + "playerquest.yml");
 
+        collector_yml = YamlConfiguration.loadConfiguration(collector_file);
         quest_yml = YamlConfiguration.loadConfiguration(quest_file);
         playerquest_yml = YamlConfiguration.loadConfiguration(playerquest_file);
 
@@ -1426,11 +1431,25 @@ public class Sn extends JavaPlugin {
             if(!initVault()) sendInfo("vault插件挂钩失败，请检查vault插件。");
         else eco_system_set = true;
 
+        loadCollector();
+
         BukkitRunnable nt = new questRuntime();
         nt.runTaskTimerAsynchronously(this,0L,200L);
 
-        CollectorRuntime cr = new CollectorRuntime();
-        cr.start();
+        Runnable task = () -> {
+            for (World world : Bukkit.getWorlds()) {
+                for (Entity entity : world.getEntities()) {
+                    CollectorRuntime cr = new CollectorRuntime(entity);
+                    Bukkit.getScheduler().runTask(this,cr);
+                }
+            }
+        };
+
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this,task,0,1200);
+        Bukkit.getScheduler().runTaskTimerAsynchronously(this,()->{
+            AutoSave as = new AutoSave();
+            as.start();
+        },0,72000);
 
         Bukkit.getPluginManager().registerEvents(new questLgInEvent(), this);
         Bukkit.getPluginManager().registerEvents(new rangeSelector(), this);
@@ -1442,6 +1461,42 @@ public class Sn extends JavaPlugin {
         Objects.requireNonNull(getCommand("quest")).setExecutor(new quest());
 
         sendInfo("雪夜插件已加载~");
+    }
+
+    private void loadCollector() {
+        int n = collector_yml.getInt("amount",0);
+        String name,uuid;
+        int cn;
+        for (int i = 0; i < n; i++) {
+            name = collector_yml.getString("list."+i);
+            uuid = collector_yml.getString(name+".owner","d59beeb3-6c24-3f22-8888-f8c83bc38cfa");
+            cn = collector_yml.getInt(name+".range_amount",1);
+            Collector_CE.Collector temp = new Collector_CE.Collector();
+            temp.setName(name);
+            temp.setOwner(UUID.fromString(uuid));
+            temp.setBox(readLocationFromYml(collector_yml,name+".box"));
+            for (int i1 = 1; i1 <= cn; i1++) {
+                temp.addRange(readRangeFromYml(collector_yml,name+".range."+i1));
+            }
+            List<Collector_CE.Collector> t = collectors.getOrDefault(Bukkit.getPlayer(uuid), new ArrayList<>());
+            t.add(temp);
+            collectors.put(Bukkit.getPlayer(uuid),t);
+        }
+    }
+
+    private Location readLocationFromYml(YamlConfiguration ymlfile, String path) {
+        return new Location(
+                Bukkit.getWorld(UUID.fromString(Objects.requireNonNull(ymlfile.getString(path + ".world")))),
+                ymlfile.getDouble(path+".x"),
+                ymlfile.getDouble(path+".y"),
+                ymlfile.getDouble(path+".z"));
+    }
+
+    public void saveLocationToYml(YamlConfiguration ymlfile,String path, Location loc){
+        ymlfile.set(path+".world", Objects.requireNonNull(loc.getWorld()).getUID());
+        ymlfile.set(path+".x", loc.getX());
+        ymlfile.set(path+".y", loc.getY());
+        ymlfile.set(path+".z", loc.getZ());
     }
 
     private File checkFile(File file,String path) {
