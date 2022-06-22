@@ -21,8 +21,18 @@ public class CollectorThrowThread extends Thread{
         } catch (InterruptedException e) {
             sendError(e.getLocalizedMessage());
         }
+        try {
+            folder.createNewFile();
+        } catch (IOException e) {
+            sendError(e.getLocalizedMessage());
+        }
         Date now = new Date();
         File rubbish_file = new File(folder,"rubbish-" + now + ".yml");
+        try {
+            rubbish_file.createNewFile();
+        } catch (IOException e) {
+            sendError(e.getLocalizedMessage());
+        }
         YamlConfiguration rubbish_yml = new YamlConfiguration();
         int amount = 0;
         for (ItemStack item : rubbishes) {

@@ -66,14 +66,22 @@ public class CollectorRuntime implements Runnable {
                 }
             }
             ItemStack item = ((Item) entity).getItemStack();
-            ItemMeta im = item.getItemMeta();
-            List<String> lore = new ArrayList<>();
-            lore.add(String.valueOf(new Date().getTime()));
-            lore.add(entity.getLocation().toString());
-            assert im != null;
-            im.setLore(lore);
-            item.setItemMeta(im);
-            rubbishes.add(item);
+            if(item.hasItemMeta()) {
+                ItemMeta im = item.getItemMeta();
+                assert im != null;
+                List<String> lore = new ArrayList<>();
+                if (im.hasLore()) {
+                    lore = im.getLore();
+                }
+                if (lore == null) {
+                    lore = new ArrayList<>();
+                }
+                lore.add(String.valueOf(new Date().getTime()));
+                lore.add(entity.getLocation().toString());
+                im.setLore(lore);
+                item.setItemMeta(im);
+                rubbishes.add(item);
+            }
         }
     }
 
