@@ -8,9 +8,14 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
+import static sn.sn.Collector_CE.rubbishes;
 import static sn.sn.Sn.*;
 
 public class CollectorRuntime implements Runnable {
@@ -22,17 +27,16 @@ public class CollectorRuntime implements Runnable {
 
     @Override
     public void run() {
-
-        sendDebug("Collector 1");
-        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-            sendDebug("Collector 2");
-            if (collectors.containsKey(onlinePlayer)) {
-                sendDebug("Collector 3");
-                for (Collector_CE.Collector collector : collectors.get(onlinePlayer)) {
-                    sendDebug("Collector 4");
-                    for (Range range : collector.getRanges()) {
-                        if (range.getWorld() != null) {
-                            if (entity instanceof Item) {
+        if (entity instanceof Item) {
+            sendDebug("Collector 1");
+            for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+                sendDebug("Collector 2");
+                if (collectors.containsKey(onlinePlayer)) {
+                    sendDebug("Collector 3");
+                    for (Collector_CE.Collector collector : collectors.get(onlinePlayer)) {
+                        sendDebug("Collector 4");
+                        for (Range range : collector.getRanges()) {
+                            if (range.getWorld() != null) {
                                 if (range.isInRange(entity.getLocation())) {
                                     sendDebug("Collector 5");
                                     Chest chest = null;
@@ -54,12 +58,22 @@ public class CollectorRuntime implements Runnable {
                                         range.getWorld().dropItemNaturally(entity.getLocation(), item_left.get(i));
                                     }
                                     entity.remove();
+                                    return;
                                 }
                             }
                         }
                     }
                 }
             }
+            ItemStack item = ((Item) entity).getItemStack();
+            ItemMeta im = item.getItemMeta();
+            List<String> lore = new ArrayList<>();
+            lore.add(String.valueOf(new Date().getTime()));
+            lore.add(entity.getLocation().toString());
+            assert im != null;
+            im.setLore(lore);
+            item.setItemMeta(im);
+            rubbishes.add(item);
         }
     }
 

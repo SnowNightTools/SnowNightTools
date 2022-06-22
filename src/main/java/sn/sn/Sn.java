@@ -40,6 +40,7 @@ import java.util.*;
 import java.util.function.Consumer;
 
 import static org.bukkit.configuration.serialization.ConfigurationSerialization.registerClass;
+import static sn.sn.Collector_CE.rubbishes;
 
 public class Sn extends JavaPlugin {
 
@@ -50,6 +51,7 @@ public class Sn extends JavaPlugin {
     public static File playerquest_file;
     public static File config_file;
     public static File collector_file;
+    public static File data_folder;
 
     public static Map<Player, Location> startpoint = new HashMap<>();
     public static Map<Player, Location> endpoint = new HashMap<>();
@@ -1344,14 +1346,15 @@ public class Sn extends JavaPlugin {
         registerClass(Quest_CE.QuestReward.class);
         registerClass(Quest_CE.QuestActionData.class);
 
-        config_file = new File(getDataFolder().getAbsolutePath()+ "\\config.yml");
-        sendInfo(getDataFolder().getAbsolutePath()+ "\\config.yml");
+        data_folder = getDataFolder();
+        config_file = new File(data_folder.getAbsolutePath()+ "\\config.yml");
+        sendInfo(data_folder.getAbsolutePath()+ "\\config.yml");
 
         int brkcnt1 = 1 ;
         while (true) {
             sendDebug("尝试寻找config 第"+brkcnt1+"次，会尝试5次。");
 
-            config_file = new File(getDataFolder().getAbsolutePath()+ "\\config.yml");
+            config_file = new File(data_folder.getAbsolutePath()+ "\\config.yml");
             brkcnt1 ++;
             if(brkcnt1 >= 5) {
                 sendError("config配置错误");
@@ -1389,7 +1392,7 @@ public class Sn extends JavaPlugin {
         sendInfo("quest_path=" + quest_Path);
         sendInfo("playerquest_Path=" + playerquest_Path);
 
-        collector_file = new File(getDataFolder(),"collector.yml");
+        collector_file = new File(data_folder,"collector.yml");
         quest_file = new File(quest_Path + "quest.yml");
         playerquest_file = new File(playerquest_Path + "playerquest.yml");
 
@@ -1449,12 +1452,14 @@ public class Sn extends JavaPlugin {
 
         Runnable task = () -> {
             sendInfo("开始收集物品！");
+            rubbishes = new ArrayList<>();
             for (World world : Bukkit.getWorlds()) {
                 for (Entity entity : world.getEntities()) {
                     CollectorRuntime cr = new CollectorRuntime(entity);
                     Bukkit.getScheduler().runTask(this,cr);
                 }
             }
+            new CollectorThrowThread().start();
             sendInfo("物品收集结束！");
         };
 

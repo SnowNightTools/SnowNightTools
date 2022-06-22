@@ -10,6 +10,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -61,6 +62,7 @@ import static sn.sn.Sn.*;
 * */
 public class Collector_CE implements CommandExecutor {
 
+    public static List<ItemStack> rubbishes;
 
     /**
      * Executes the given command, returning its success.
@@ -198,7 +200,7 @@ public class Collector_CE implements CommandExecutor {
                     Range tr = new Range(s.getX(), s.getY(), s.getZ(), e.getX(), e.getY(), e.getZ());
                     List<Range> temp_range = new ArrayList<>(collector.getRanges());
                     temp_range.add(tr);
-                    double area = Range.countIntersectionArea(temp_range);
+                    double area = Range.countUnionArea(temp_range);
                     if (area >= pow(range_perm, 3)) {
                         sender.sendMessage(ChatColor.RED + "添加区域后的体积（" + area + "）大于你的权限（" + pow(range_perm, 3) + "）");
                         return true;
@@ -302,7 +304,7 @@ public class Collector_CE implements CommandExecutor {
         }
 
         public double getRangeArea(){
-            return Range.countIntersectionArea(ranges);
+            return Range.countUnionArea(ranges);
         }
 
         public void setOwner(UUID owner) {

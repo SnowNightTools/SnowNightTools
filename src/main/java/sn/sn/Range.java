@@ -26,14 +26,14 @@ public class Range {
 
     }
 
-    public static double countIntersectionArea(List<Range> ranges){
+    public static double countUnionArea(List<Range> ranges){
         double cnt = 0,i_area;
         int n = ranges.size();
         for (Range range : ranges) {
             cnt += range.getArea();
         }
         if(n == 2){
-            return cnt - ranges.get(0).getUnion(ranges.get(1)).getArea();
+            return cnt - ranges.get(0).getIntersection(ranges.get(1)).getArea();
         }
         List<Integer> axis;
         for (int i = 2; i <= n-1; i++) {
@@ -45,10 +45,10 @@ public class Range {
             }
             int pointer = i;
             do {
-                i_area = getI_area(ranges, i_area, axis, i);
+                i_area = getU_area(ranges, i_area, axis, i);
 
                 List<Integer> lt = axis.subList(pointer,i+1);
-                if(!isAllFull(lt,i-pointer,n)){
+                if(notFull(lt, i - pointer, n)){
                     pointer = i;
                 }
                 if(axis.get(pointer)>=n-i+pointer) {
@@ -60,35 +60,35 @@ public class Range {
                     }
                 } else axis.set(pointer,axis.get(pointer)+1);
 
-            } while (!Range.isAllFull(axis,i,n));
-            i_area = getI_area(ranges, i_area, axis, i);
+            } while (Range.notFull(axis, i, n));
+            i_area = getU_area(ranges, i_area, axis, i);
             cnt += pow(-1,i-1) * i_area;
         }
-        return cnt + pow(-1,n-1) *Range.countUnionArea(ranges);
+        return cnt + pow(-1,n-1) *Range.countIntersectionArea(ranges);
     }
 
-    private static double getI_area(List<Range> ranges, double i_area, List<Integer> axis, int i) {
+    private static double getU_area(List<Range> ranges, double i_area, List<Integer> axis, int i) {
         List<Range> temp;
         temp = new ArrayList<>();
         for (int j = 1; j <= i; j++) {
             temp.add(ranges.get(axis.get(j)-1));
         }
-        i_area += Range.countUnionArea(temp);
+        i_area += Range.countIntersectionArea(temp);
         return i_area;
     }
 
-    private static boolean isAllFull(List<Integer> axis, int i, int n) {
+    private static boolean notFull(List<Integer> axis, int i, int n) {
         for (int j = 1; j <= i; j++) {
-            if(axis.get(j) != n-i+j) return false;
+            if(axis.get(j) != n-i+j) return true;
         }
-        return true;
+        return false;
     }
 
-    public static double countUnionArea(List<Range> ranges){
+    public static double countIntersectionArea(List<Range> ranges){
         if(ranges.size()==0)return 0;
         Range temp = ranges.get(0);
         for (Range range : ranges) {
-            temp = temp.getUnion(range);
+            temp = temp.getIntersection(range);
         }
         return temp.getArea();
     }
@@ -125,11 +125,11 @@ public class Range {
         return abs(endX-startX)*abs(endY-startY)*abs(endZ-startZ);
     }
 
-    public double countIntersectionArea(Range other){
-        return this.getArea()+other.getArea()-this.getUnion(other).getArea();
+    public double countUnionArea(Range other){
+        return this.getArea()+other.getArea()-this.getIntersection(other).getArea();
     }
 
-    public Range getUnion(Range other){
+    public Range getIntersection(Range other){
         double usx = max(this.getStartX(),other.getStartX());
         double usy = max(this.getStartY(),other.getStartY());
         double usz = max(this.getStartZ(),other.getStartZ());
