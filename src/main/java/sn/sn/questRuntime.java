@@ -41,7 +41,7 @@ public class questRuntime extends BukkitRunnable {
                             }
 
                             String name = playerquest_yml.getString(player.getName() + ".nowquest");
-                            quest.Quest quest = new quest.Quest(name);
+                            Quest_CE.Quest quest = new Quest_CE.Quest(name);
                             quest.readQuestFromYml(name);
 
                             if(!quest.isOn()){
@@ -49,7 +49,7 @@ public class questRuntime extends BukkitRunnable {
                                 return;
                             }
 
-                            for (sn.sn.quest.QuestAction action : quest.getQuesttarget()) {
+                            for (Quest_CE.QuestAction action : quest.getQuesttarget()) {
                                 boolean questsucceed = false;
                                 double defaultdistance = 50;
                                 if (action.getQuestactiondata().getDefaultdistance() != -1)
@@ -124,8 +124,8 @@ public class questRuntime extends BukkitRunnable {
 
                             }
                             boolean questend = true;
-                            List<sn.sn.quest.QuestAction> questtarget = quest.getQuesttarget();
-                            for (sn.sn.quest.QuestAction action : questtarget) {
+                            List<Quest_CE.QuestAction> questtarget = quest.getQuesttarget();
+                            for (Quest_CE.QuestAction action : questtarget) {
                                 if (!playerquest_yml.getBoolean(player.getName() + ".progress." + action.getQuestactionname(), false))
                                     questend = false;
                             }

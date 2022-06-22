@@ -220,9 +220,7 @@ import static sn.sn.showInvEvent.openQuestSettingUI;
         */
 
 
-public class quest implements CommandExecutor {
-
-
+public class Quest_CE implements CommandExecutor {
 
 
     public static Player questPlayer;
@@ -1619,7 +1617,7 @@ public class quest implements CommandExecutor {
         public QuestAction(){
             questactiontype = QuestActionType.ACCOMPLISHMENT;
             questactionname = "QuestAction" + new Random().nextInt(99999);
-            questactiondata = new quest.QuestActionData(questactionname);
+            questactiondata = new Quest_CE.QuestActionData(questactionname);
         }
 
         /**

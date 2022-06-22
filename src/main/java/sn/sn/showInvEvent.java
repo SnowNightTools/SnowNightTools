@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.*;
 
 import static sn.sn.Sn.*;
-import static sn.sn.quest.getQuest;
+import static sn.sn.Quest_CE.getQuest;
 
 
 /*
@@ -72,36 +72,6 @@ public class showInvEvent implements Listener {
 
 
 
-    @EventHandler(priority = EventPriority.HIGH)
-    public void InvCloseEvent(InventoryCloseEvent Invclose) {
-
-        commander = Bukkit.getPlayer(Invclose.getPlayer().getUniqueId());
-        if(Invclose.getView().getTitle().equalsIgnoreCase(ChatColor.BLUE+"雪花速递")){
-
-            saveInvToYml(share_yml,share_file,commander.getName(),showInv.get(commander));
-
-            //保存文件
-            express.setstatefalse(commander);
-            // 名字 - 背包
-            showInv.remove(commander);
-            commander.sendMessage(commander.getName()+"面板已关闭，信息已同步");
-        }
-
-        if(Invclose.getView().getTitle().equalsIgnoreCase(ChatColor.BLUE+"正在创建一个新任务，请填写以下信息")){
-            try {
-                quest_yml.save(quest_file);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-    }
-
-
-    static void openQuestSettingUI(Player questPlayer){
-        openQuestSettingUI(questPlayer,questseting.get(questPlayer).getQuestname());
-    }
-
     static void openQuestSettingUI(Player questPlayer, String questname){
         try {
             setingstate.remove(commander);
@@ -129,7 +99,7 @@ public class showInvEvent implements Listener {
         questcreate.setItem(4,nameicon);
 
 
-        ItemStack positionicon = new ItemStack(quest.SettingType.QUESTPOSITION.getSymbol());
+        ItemStack positionicon = new ItemStack(Quest_CE.SettingType.QUESTPOSITION.getSymbol());
         ItemMeta positioniconmeta = positionicon.getItemMeta();
         assert positioniconmeta != null;
         positioniconmeta.setDisplayName("任务位置");
@@ -162,14 +132,14 @@ public class showInvEvent implements Listener {
         questcreate.setItem(3, typeicon);
 
 
-        ItemStack targeticon = new ItemStack(quest.SettingType.QUESTACTION.getSymbol());
+        ItemStack targeticon = new ItemStack(Quest_CE.SettingType.QUESTACTION.getSymbol());
         ItemMeta targeticonmeta = targeticon.getItemMeta();
         assert targeticonmeta != null;
         targeticonmeta.setDisplayName("任务目标");
         List<String> targetlore = new ArrayList<>();
         targetlore.add(ChatColor.GREEN+"点我设置任务目标");
         if(questseting.get(questPlayer).isTargetSet()) {
-            for (quest.QuestAction action : questseting.get(questPlayer).getQuesttarget()) {
+            for (Quest_CE.QuestAction action : questseting.get(questPlayer).getQuesttarget()) {
                 targetlore.addAll(toStrList(action.serialize()));
             }
             targeticonmeta.addEnchant(Enchantment.ARROW_DAMAGE,1,false);
@@ -179,7 +149,7 @@ public class showInvEvent implements Listener {
         questcreate.setItem(6, targeticon);
 
 
-        ItemStack acccondtnicon = new ItemStack(quest.SettingType.QUESTACTION.getSymbol());
+        ItemStack acccondtnicon = new ItemStack(Quest_CE.SettingType.QUESTACTION.getSymbol());
         ItemMeta acccondtniconmeta = acccondtnicon.getItemMeta();
         assert acccondtniconmeta != null;
         acccondtniconmeta.setDisplayName("任务接受条件");
@@ -188,7 +158,7 @@ public class showInvEvent implements Listener {
         acccondtnlore.add("如果没有特别的任务接受条件，");
         acccondtnlore.add("也请将其设置为“默认“！");
         if(questseting.get(questPlayer).isAcceptconditionSet()) {
-            for (quest.QuestAction action : questseting.get(questPlayer).getQustAccptCndtn()) {
+            for (Quest_CE.QuestAction action : questseting.get(questPlayer).getQustAccptCndtn()) {
                 acccondtnlore.addAll(toStrList(action.serialize()));
             }
             acccondtniconmeta.addEnchant(Enchantment.ARROW_DAMAGE,1,false);
@@ -198,7 +168,7 @@ public class showInvEvent implements Listener {
         questcreate.setItem(2, acccondtnicon);
 
 
-        ItemStack rewardicon = new ItemStack(quest.SettingType.QUESTREWARD.getSymbol());
+        ItemStack rewardicon = new ItemStack(Quest_CE.SettingType.QUESTREWARD.getSymbol());
         ItemMeta rewardiconmeta = rewardicon.getItemMeta();
         assert rewardiconmeta != null;
         rewardiconmeta.setDisplayName("任务奖励");
@@ -263,11 +233,16 @@ public class showInvEvent implements Listener {
         questPlayer.openInventory(questcreate);
     }
 
+
+    static void openQuestSettingUI(Player questPlayer){
+        openQuestSettingUI(questPlayer,questseting.get(questPlayer).getQuestname());
+    }
+
     static void openActionCreateUI(Player commander) {
 
         Inventory tmpacui = Bukkit.createInventory(commander,18,ChatColor.GREEN+"创建一个任务条件");
         int i = 0;
-        for (quest.QuestActionType value : quest.QuestActionType.values()) {
+        for (Quest_CE.QuestActionType value : Quest_CE.QuestActionType.values()) {
             tmpacui.setItem(i++,getItem("PAPER",value.getKey().getKey(),null,questactionseting.get(commander).getQuestactiontype().getKey() == (value).getKey()));
         }
         List<String> a = new ArrayList<>();
@@ -301,7 +276,7 @@ public class showInvEvent implements Listener {
         if(isSetTorC.get(commander)) viewname = ChatColor.GREEN+"任务达成的条件列表";
         else viewname = ChatColor.GREEN+"任务触发或接受的条件列表";
         Inventory tmptarget = Bukkit.createInventory(commander,18, viewname);
-        List<quest.QuestAction> target;
+        List<Quest_CE.QuestAction> target;
         if(isSetTorC.get(commander)) {
             target = questseting.get(commander).getQuesttarget();
         } else target = questseting.get(commander).getQuestacceptcondition();
@@ -331,12 +306,34 @@ public class showInvEvent implements Listener {
         int nowindex =45 * (pgindex - 1);
 
         for (int i = 0; i < 45; i++) {
-            quest.Quest quest = quests.get(i);
+            Quest_CE.Quest quest = quests.get(i);
             positionset.setItem(nowindex + i, getItem("BOOK", quest.getQuestname(), quest.getQuestdescription()));
         }
         if(pgindex != 1)positionset.setItem(45,pgup);
         if(quests.size() > nowindex + 45)positionset.setItem(53,pgdn);
         commander.openInventory(positionset);
+    }
+
+    static void openActionDeleteUI(Player commander) {
+        Inventory tmpacui = Bukkit.createInventory(commander,18,ChatColor.RED+"删除一个任务条件");
+        List<Quest_CE.QuestAction> target = questseting.get(commander).getQuestacceptcondition();
+        if(isSetTorC.get(commander)) target = questseting.get(commander).getQuesttarget();
+        if(target.size()!=0)
+            for (int i = 0; i < target.size(); i++) {
+                ItemStack tmpis = new ItemStack(Material.BARRIER,1);
+                ItemMeta tmpitm = tmpis.getItemMeta();
+                assert tmpitm != null;
+                tmpitm.setDisplayName(target.get(i).getQuestactionname());
+                List<String> a = new ArrayList<>();
+                for (String s : target.get(i).serialize().keySet()) {
+                    a.add(s+"->"+target.get(i).serialize().get(s).toString());
+                }
+                tmpitm.setLore(a);
+                tmpis.setItemMeta(tmpitm);
+                tmpacui.setItem(i,tmpis);
+            }
+        tmpacui.setItem(17,cancel);
+        commander.openInventory(tmpacui);
     }
 
     static void openRewardSettingUI(Player commander1) {
@@ -392,26 +389,29 @@ public class showInvEvent implements Listener {
 
     }
 
-    static void openActionDeleteUI(Player commander) {
-        Inventory tmpacui = Bukkit.createInventory(commander,18,ChatColor.RED+"删除一个任务条件");
-        List<quest.QuestAction> target = questseting.get(commander).getQuestacceptcondition();
-        if(isSetTorC.get(commander)) target = questseting.get(commander).getQuesttarget();
-        if(target.size()!=0)
-            for (int i = 0; i < target.size(); i++) {
-                ItemStack tmpis = new ItemStack(Material.BARRIER,1);
-                ItemMeta tmpitm = tmpis.getItemMeta();
-                assert tmpitm != null;
-                tmpitm.setDisplayName(target.get(i).getQuestactionname());
-                List<String> a = new ArrayList<>();
-                for (String s : target.get(i).serialize().keySet()) {
-                    a.add(s+"->"+target.get(i).serialize().get(s).toString());
-                }
-                tmpitm.setLore(a);
-                tmpis.setItemMeta(tmpitm);
-                tmpacui.setItem(i,tmpis);
+    @EventHandler(priority = EventPriority.HIGH)
+    public void InvCloseEvent(InventoryCloseEvent Invclose) {
+
+        commander = Bukkit.getPlayer(Invclose.getPlayer().getUniqueId());
+        if(Invclose.getView().getTitle().equalsIgnoreCase(ChatColor.BLUE+"雪花速递")){
+
+            saveInvToYml(share_yml,share_file,commander.getName(),showInv.get(commander));
+
+            //保存文件
+            Express_CE.setstatefalse(commander);
+            // 名字 - 背包
+            showInv.remove(commander);
+            commander.sendMessage(commander.getName()+"面板已关闭，信息已同步");
+        }
+
+        if(Invclose.getView().getTitle().equalsIgnoreCase(ChatColor.BLUE+"正在创建一个新任务，请填写以下信息")){
+            try {
+                quest_yml.save(quest_file);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        tmpacui.setItem(17,cancel);
-        commander.openInventory(tmpacui);
+        }
+
     }
 
     private static @NotNull ItemStack getItem(String typname, String dpname, List<String> lore, boolean isench){
@@ -506,17 +506,17 @@ public class showInvEvent implements Listener {
                     typeset.setItem(5, getItem_QuestTypeSetting("DAILY","日常任务",null));
                     typeset.setItem(6, getItem_QuestTypeSetting("REWARD","悬赏任务",null));
                     typeset.setItem(7, getItem_QuestTypeSetting("DIY","自编任务",null));
-                    setingstate.put(commander, quest.SettingType.QUESTTYPE);
+                    setingstate.put(commander, Quest_CE.SettingType.QUESTTYPE);
                     commander.openInventory(typeset);
                     return;
                 }
 
                 if(Invclick.getSlot() == 5){//quest position
                     Inventory positionset = Bukkit.createInventory(commander,54,ChatColor.GREEN+"父任务设置：请选择父任务" );
-                    setingstate.put(commander, quest.SettingType.QUESTPOSITION);
+                    setingstate.put(commander, Quest_CE.SettingType.QUESTPOSITION);
                     if(quests.size()<=53){
                         for (int i = 0; i < quests.size(); i++) {
-                            quest.Quest quest = quests.get(i);
+                            Quest_CE.Quest quest = quests.get(i);
                             positionset.setItem(i+1, getItem("BOOK", quest.getQuestname(), quest.getQuestdescription()));
                         }
                         positionset.setItem(0,nonp());
@@ -527,18 +527,18 @@ public class showInvEvent implements Listener {
                     return;
                 }
                 if(Invclick.getSlot() == 7){//questreward
-                    setingstate.put(commander, quest.SettingType.QUESTREWARD);
+                    setingstate.put(commander, Quest_CE.SettingType.QUESTREWARD);
                     openRewardSettingUI(commander);
                     return;
                 }
                 if(Invclick.getSlot() == 6){//位置目标
-                    setingstate.put(commander, quest.SettingType.QUESTACTION);
+                    setingstate.put(commander, Quest_CE.SettingType.QUESTACTION);
                     isSetTorC.put(commander,true);
                     openActionSettingUI(commander);
                     return;
                 }
                 if(Invclick.getSlot() == 2){//位置目标
-                    setingstate.put(commander, quest.SettingType.QUESTACTION);
+                    setingstate.put(commander, Quest_CE.SettingType.QUESTACTION);
                     isSetTorC.put(commander,false);
                     openActionSettingUI(commander);
                     return;
@@ -592,7 +592,7 @@ public class showInvEvent implements Listener {
             }
 
             if(!questactionseting.containsKey(commander))
-                questactionseting.put(commander,new quest.QuestAction());
+                questactionseting.put(commander,new Quest_CE.QuestAction());
 
             switch (Invclick.getSlot()){
 
@@ -605,7 +605,7 @@ public class showInvEvent implements Listener {
                 case 6:
                 case 7:
                 case 8:
-                    questactionseting.get(commander).setQuestactiontype(quest.QuestActionType.getFromInt(Invclick.getSlot()+1));
+                    questactionseting.get(commander).setQuestactiontype(Quest_CE.QuestActionType.getFromInt(Invclick.getSlot()+1));
                     openActionCreateUI(commander);
                     return;
                 case 9:
@@ -666,22 +666,22 @@ public class showInvEvent implements Listener {
                 //玩家点击的是上面的设置内容
                 switch (Invclick.getSlot()){
                     case 1:
-                        questseting.get(commander).setQuesttype(quest.QuestType.MAIN);
+                        questseting.get(commander).setQuesttype(Quest_CE.QuestType.MAIN);
                         break;
                     case 2:
-                        questseting.get(commander).setQuesttype(quest.QuestType.SIDE);
+                        questseting.get(commander).setQuesttype(Quest_CE.QuestType.SIDE);
                         break;
                     case 3:
-                        questseting.get(commander).setQuesttype(quest.QuestType.TRIGGER);
+                        questseting.get(commander).setQuesttype(Quest_CE.QuestType.TRIGGER);
                         break;
                     case 5:
-                        questseting.get(commander).setQuesttype(quest.QuestType.DAILY);
+                        questseting.get(commander).setQuesttype(Quest_CE.QuestType.DAILY);
                         break;
                     case 6:
-                        questseting.get(commander).setQuesttype(quest.QuestType.REWARD);
+                        questseting.get(commander).setQuesttype(Quest_CE.QuestType.REWARD);
                         break;
                     case 7:
-                        questseting.get(commander).setQuesttype(quest.QuestType.DIY);
+                        questseting.get(commander).setQuesttype(Quest_CE.QuestType.DIY);
                         break;
                     default:
                         return;
@@ -708,9 +708,9 @@ public class showInvEvent implements Listener {
             if(Objects.requireNonNull(Invclick.getClickedInventory()).getSize()==9) {
                 //玩家点击的是上面的设置内容
 
-                quest.QuestReward tmpqr = questseting.get(commander).getQuestreward();
+                Quest_CE.QuestReward tmpqr = questseting.get(commander).getQuestreward();
                 if(tmpqr==null)
-                    tmpqr = new quest.QuestReward();
+                    tmpqr = new Quest_CE.QuestReward();
                 switch (Invclick.getSlot()){
                     case 0:
                         //if(commander.hasPermission("quest.reward.admin")){
@@ -753,9 +753,9 @@ public class showInvEvent implements Listener {
                 return;
             }
 
-            quest.QuestReward tmpqr = questseting.get(commander).getQuestreward();
+            Quest_CE.QuestReward tmpqr = questseting.get(commander).getQuestreward();
             if(tmpqr==null)
-                tmpqr = new quest.QuestReward();
+                tmpqr = new Quest_CE.QuestReward();
 
             if(cli.isLeftClick()){
                 HashMap<Integer, ItemStack> remains;
@@ -1036,7 +1036,7 @@ public class showInvEvent implements Listener {
 
         if(Invclick.getView().getTitle().equalsIgnoreCase(ChatColor.RED+"删除一个任务条件")){
             if (uiINIT(Invclick)) return;
-            List<quest.QuestAction> target = questseting.get(commander).getQuestacceptcondition();
+            List<Quest_CE.QuestAction> target = questseting.get(commander).getQuestacceptcondition();
             if(isSetTorC.get(commander)) target = questseting.get(commander).getQuesttarget();
             if(Invclick.getSlot()==17){
                 openActionSettingUI(commander);
@@ -1389,7 +1389,7 @@ public class showInvEvent implements Listener {
             return true;
         }
         if(Invclick.getSlot()==9){
-            questactionseting.put(commander, new quest.QuestAction());
+            questactionseting.put(commander, new Quest_CE.QuestAction());
             openActionCreateUI(commander);
             return true;
         }
@@ -1407,7 +1407,7 @@ public class showInvEvent implements Listener {
 
     private boolean workPositionSet(@NotNull String name) {
         if(name.equals("无父任务")){
-            quest.QuestPosition tmp = new quest.QuestPosition();
+            Quest_CE.QuestPosition tmp = new Quest_CE.QuestPosition();
             tmp.setParentquest(null);
             tmp.setQuestlevel(1);
             questseting.get(commander).setQuestposition(tmp);
@@ -1416,7 +1416,7 @@ public class showInvEvent implements Listener {
             return true;
         }
 
-        quest.QuestPosition tmp = new quest.QuestPosition();
+        Quest_CE.QuestPosition tmp = new Quest_CE.QuestPosition();
         tmp.setQuestpositionname(questseting.get(commander).getQuestname()+"position");
         tmp.setParentquest(name);
         if(questseting.get(commander).isPositionSet()){
@@ -1465,7 +1465,7 @@ public class showInvEvent implements Listener {
     }
 
     private @NotNull ItemStack getItem_QuestTypeSetting(String typname, String dpname, List<String> lore){
-        ItemStack a = new ItemStack(quest.QuestType.valueOf(typname).getSymbol(),1);
+        ItemStack a = new ItemStack(Quest_CE.QuestType.valueOf(typname).getSymbol(),1);
         ItemMeta b = a.getItemMeta();
         if(b != null) b.setLore(lore);
         assert b != null;

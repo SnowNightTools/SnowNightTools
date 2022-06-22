@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -154,8 +155,20 @@ public class Collector_CE implements CommandExecutor {
             sender.sendMessage("添加成功！");
             return true;
         }
+
         if(args[0].equals("save")&&sender.isOp()){
             new AutoSave().start();
+            return true;
+        }
+
+        if(args[0].equals("debug")&&sender.isOp()){
+            debug = !debug;
+            config_yml.set("debug",debug);
+            try {
+                config_yml.save(config_file);
+            } catch (IOException e) {
+                sendError(e.getLocalizedMessage());
+            }
             return true;
         }
 
@@ -330,9 +343,9 @@ public class Collector_CE implements CommandExecutor {
             ymlfile.set(path+".owner",owner);
             int cnt = 1;
             for (Range range : ranges) {
-                range.saveRangeToYml(ymlfile,path + "." + cnt++);
+                range.saveRangeToYml(ymlfile,path + ".range." + cnt++);
             }
-            ymlfile.set(path+"range_amount",cnt-1);
+            ymlfile.set(path+".range_amount",cnt-1);
             sendDebug("collector类存储完成，cnt="+(cnt-1));
         }
     }

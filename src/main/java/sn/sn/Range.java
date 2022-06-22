@@ -118,7 +118,7 @@ public class Range {
         ymlfile.set(path+".endX",endX);
         ymlfile.set(path+".endY",endY);
         ymlfile.set(path+".endY",endZ);
-        if(world != null) ymlfile.set(path+".world",world.getUID());
+        if(world != null) ymlfile.set(path+".world",world.getUID().toString());
     }
 
     public double getArea(){

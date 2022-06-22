@@ -87,7 +87,7 @@ import static sn.sn.Sn.*;
 
 */
 
-public class express implements CommandExecutor {
+public class Express_CE implements CommandExecutor {
 
     protected Player senderPlayer;
 

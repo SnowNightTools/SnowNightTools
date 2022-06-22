@@ -21,7 +21,7 @@ public class questLgInEvent implements Listener {
         if(!config_yml.getBoolean("login-load"))return;
 
         if(playerquest_yml.contains(event.getPlayer().getName()+".nowquest")){
-            if(quest.loadQuest(event.getPlayer(),playerquest_yml.getString(event.getPlayer().getName()+".nowquest")))
+            if(Quest_CE.loadQuest(event.getPlayer(),playerquest_yml.getString(event.getPlayer().getName()+".nowquest")))
                 event.getPlayer().sendMessage("你的任务已加载，你可以完成任务辣！");
             else event.getPlayer().sendMessage("你的任务加载失败了，请联系管理员！");
         } else {

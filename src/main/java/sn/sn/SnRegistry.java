@@ -15,24 +15,24 @@ public interface SnRegistry<T extends Keyed> extends Iterable<T> {
     /**
      * Sn Setting Type
      *
-     * @see quest.SettingType
+     * @see Quest_CE.SettingType
      */
-    SnRegistry<quest.SettingType> SETTINGTYPE = new SimpleSnRegistry<>(quest.SettingType.class);
+    SnRegistry<Quest_CE.SettingType> SETTINGTYPE = new SimpleSnRegistry<>(Quest_CE.SettingType.class);
 
 
     /**
      * Sn QuestType
      *
-     * @see quest.QuestType
+     * @see Quest_CE.QuestType
      */
-    SnRegistry<quest.QuestType> QUESTTYPE = new SimpleSnRegistry<>(quest.QuestType.class);
+    SnRegistry<Quest_CE.QuestType> QUESTTYPE = new SimpleSnRegistry<>(Quest_CE.QuestType.class);
 
     /**
      * Sn QuestType
      *
-     * @see quest.QuestActionType
+     * @see Quest_CE.QuestActionType
      */
-    SnRegistry<quest.QuestActionType> QUESTACTIONTYPE = new SimpleSnRegistry<>(quest.QuestActionType.class);
+    SnRegistry<Quest_CE.QuestActionType> QUESTACTIONTYPE = new SimpleSnRegistry<>(Quest_CE.QuestActionType.class);
 
 
     /**

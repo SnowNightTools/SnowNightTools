@@ -165,19 +165,19 @@ public class Sn extends JavaPlugin {
     public static Map<Player, List<Collector_CE.Collector>> collectors = new HashMap<>();
     public static boolean debug = true;
 
-    public static List<quest.Quest> quests = new ArrayList<>();
+    public static List<Quest_CE.Quest> quests = new ArrayList<>();
 
     public static String plugin_Path;
     {
         plugin_Path = getDataFolder().getPath();
     }
     public static YamlConfiguration share_yml,plugin_yml,config_yml,quest_yml,playerquest_yml,collector_yml;
-    public static Map<Player, quest.QuestAction> questactionseting = new HashMap<>();
+    public static Map<Player, Quest_CE.QuestAction> questactionseting = new HashMap<>();
     public static Map<Player, Inventory> showInv = new HashMap<>();
-    public static Map<Player, quest.Quest> questseting = new HashMap<>();
+    public static Map<Player, Quest_CE.Quest> questseting = new HashMap<>();
     public static Map<Player, Consumer<Object>> seting = new HashMap<>();
     public static Map<Player, Consumer<ArrayList<Object>>> settinglist = new HashMap<>();
-    public static Map<Player, quest.SettingType> setingstate = new HashMap<>();
+    public static Map<Player, Quest_CE.SettingType> setingstate = new HashMap<>();
     public static Map<Player, Consumer<Player>> uiopener = new HashMap<>();
     public static Map<Player, EntityType> entitytypeseting = new HashMap<>();
     public static Map<Player, Boolean> isSetTorC = new HashMap<>();//true when commander is setting Target
@@ -194,7 +194,7 @@ public class Sn extends JavaPlugin {
      */
     public static void sendInfo(String mes){
         CommandSender sender = Bukkit.getConsoleSender();
-        sender.sendMessage("[INFO]"+ mes);
+        sender.sendMessage("[sn][INFO]"+ mes);
     }
 
     /** 给Console发送debug信息
@@ -204,7 +204,7 @@ public class Sn extends JavaPlugin {
     public static void sendDebug(String mes){
         if(debug){
             CommandSender sender = Bukkit.getConsoleSender();
-            sender.sendMessage(ChatColor.BLUE+"[DEBUG]"+ mes);
+            sender.sendMessage(ChatColor.BLUE+"[sn][DEBUG]"+ mes);
         }
     }
 
@@ -214,7 +214,7 @@ public class Sn extends JavaPlugin {
      */
     public static void sendWarn(String mes){
         CommandSender sender = Bukkit.getConsoleSender();
-        sender.sendMessage(ChatColor.YELLOW+"[WARN]"+ mes);
+        sender.sendMessage(ChatColor.YELLOW+"[sn][WARN]"+ mes);
     }
 
     /** 给Console发送Error信息
@@ -223,7 +223,7 @@ public class Sn extends JavaPlugin {
      */
     public static void sendError(String mes){
         CommandSender sender = Bukkit.getConsoleSender();
-        sender.sendMessage(ChatColor.RED+"[Error]"+ mes);
+        sender.sendMessage(ChatColor.RED+"[sn][Error]"+ mes);
     }
 
 
@@ -1328,11 +1328,11 @@ public class Sn extends JavaPlugin {
     @Override
     public void onEnable() {
 
-        registerClass(quest.Quest.class);
-        registerClass(quest.QuestPosition.class);
-        registerClass(quest.QuestAction.class);
-        registerClass(quest.QuestReward.class);
-        registerClass(quest.QuestActionData.class);
+        registerClass(Quest_CE.Quest.class);
+        registerClass(Quest_CE.QuestPosition.class);
+        registerClass(Quest_CE.QuestAction.class);
+        registerClass(Quest_CE.QuestReward.class);
+        registerClass(Quest_CE.QuestActionData.class);
 
         config_file = new File(getDataFolder().getAbsolutePath()+ "\\config.yml");
         sendInfo(getDataFolder().getAbsolutePath()+ "\\config.yml");
@@ -1402,7 +1402,7 @@ public class Sn extends JavaPlugin {
             String questname;
             questname = quest_yml.getString("inside."+ i );
             if (quest_yml.getInt(questname +".type")== 1){
-                quests.add(new quest.Quest(questname));
+                quests.add(new Quest_CE.Quest(questname));
                 if(!quests.get(i).readQuestFromYml()){
                     sendInfo("警告！ 在加载"+questname+"时出现错误！");
                 }
@@ -1445,7 +1445,7 @@ public class Sn extends JavaPlugin {
             }
         };
 
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(this,task,0,1200);
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this,task,0,7000);
         Bukkit.getScheduler().runTaskTimerAsynchronously(this,()->{
             AutoSave as = new AutoSave();
             as.start();
@@ -1455,10 +1455,10 @@ public class Sn extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new rangeSelector(), this);
         Bukkit.getPluginManager().registerEvents(new showInvEvent(), this);
 
-        Objects.requireNonNull(getCommand("express")).setExecutor(new express());
+        Objects.requireNonNull(getCommand("express")).setExecutor(new Express_CE());
         Objects.requireNonNull(getCommand("collector")).setExecutor(new Collector_CE());
         //Objects.requireNonNull(getCommand("npc")).setExecutor(new sn.sn.npc());
-        Objects.requireNonNull(getCommand("quest")).setExecutor(new quest());
+        Objects.requireNonNull(getCommand("quest")).setExecutor(new Quest_CE());
 
         sendInfo("雪夜插件已加载~");
     }

@@ -12,6 +12,7 @@ public class AutoSave extends Thread{
 
     @Override
     public void run() {
+        sendInfo("开始自动保存配置。");
         for (Player player : collectors.keySet()) {
             for (Collector_CE.Collector collector : collectors.get(player)) {
                 collector.saveCollectorToYml(collector_yml,null);
@@ -26,5 +27,7 @@ public class AutoSave extends Thread{
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        sendInfo("配置保存成功。");
     }
 }
