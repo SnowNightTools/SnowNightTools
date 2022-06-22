@@ -51,6 +51,39 @@ public class Sn extends JavaPlugin {
     public static File config_file;
     public static File collector_file;
 
+    public static Map<Player, Location> startpoint = new HashMap<>();
+    public static Map<Player, Location> endpoint = new HashMap<>();
+    public static Map<Player, List<Collector_CE.Collector>> collectors = new HashMap<>();
+    public static boolean debug = true;
+
+    public static List<Quest_CE.Quest> quests = new ArrayList<>();
+
+    public static String plugin_Path;
+    public static YamlConfiguration share_yml,plugin_yml,config_yml,quest_yml,playerquest_yml,collector_yml;
+    public static Map<Player, Quest_CE.QuestAction> questactionseting = new HashMap<>();
+    public static Map<Player, Inventory> showInv = new HashMap<>();
+    public static Map<Player, Quest_CE.Quest> questseting = new HashMap<>();
+    public static Map<Player, Consumer<Object>> seting = new HashMap<>();
+    public static Map<Player, Consumer<ArrayList<Object>>> settinglist = new HashMap<>();
+    public static Map<Player, Quest_CE.SettingType> setingstate = new HashMap<>();
+    public static Map<Player, Consumer<Player>> uiopener = new HashMap<>();
+    public static Map<Player, EntityType> entitytypeseting = new HashMap<>();
+    public static Map<Player, Boolean> isSetTorC = new HashMap<>();//true when commander is setting Target
+    public static Map<Player, showInvEvent.LocSet> locseting = new HashMap<>();
+    public static Map<Player, Double> doubleseting = new HashMap<>();
+    public static Map<Player, Integer> intseting = new HashMap<>();
+    public static Map<Player, String> stringseting = new HashMap<>();
+    public static Map<Player, List<String>> liststrseting = new HashMap<>();
+    public static boolean eco_use_vault = true;
+    public static Permission snperm;
+    //public static Map<Player, Map<ItemStack, Map<String, String>>> spitemtags = new HashMap<>();
+    public static int questamount = 0;
+    public static Economy sneconomy;
+
+    {
+        plugin_Path = getDataFolder().getPath();
+    }
+
     /**Begin to ask question asynchronously,without sending message to the player.
      * Nothing will be done to consumers when time out(60s), and the n_done will be called.
      * As the threads are called one by one, you can use interruptAsking()
@@ -160,33 +193,7 @@ public class Sn extends JavaPlugin {
         thread.join();
         return a;
     }
-    public static Map<Player, Location> startpoint = new HashMap<>();
-    public static Map<Player, Location> endpoint = new HashMap<>();
-    public static Map<Player, List<Collector_CE.Collector>> collectors = new HashMap<>();
-    public static boolean debug = true;
 
-    public static List<Quest_CE.Quest> quests = new ArrayList<>();
-
-    public static String plugin_Path;
-    {
-        plugin_Path = getDataFolder().getPath();
-    }
-    public static YamlConfiguration share_yml,plugin_yml,config_yml,quest_yml,playerquest_yml,collector_yml;
-    public static Map<Player, Quest_CE.QuestAction> questactionseting = new HashMap<>();
-    public static Map<Player, Inventory> showInv = new HashMap<>();
-    public static Map<Player, Quest_CE.Quest> questseting = new HashMap<>();
-    public static Map<Player, Consumer<Object>> seting = new HashMap<>();
-    public static Map<Player, Consumer<ArrayList<Object>>> settinglist = new HashMap<>();
-    public static Map<Player, Quest_CE.SettingType> setingstate = new HashMap<>();
-    public static Map<Player, Consumer<Player>> uiopener = new HashMap<>();
-    public static Map<Player, EntityType> entitytypeseting = new HashMap<>();
-    public static Map<Player, Boolean> isSetTorC = new HashMap<>();//true when commander is setting Target
-    public static Map<Player, showInvEvent.LocSet> locseting = new HashMap<>();
-    public static Map<Player, Double> doubleseting = new HashMap<>();
-    public static Map<Player, Integer> intseting = new HashMap<>();
-    public static Map<Player, String> stringseting = new HashMap<>();
-    public static Map<Player, List<String>> liststrseting = new HashMap<>();
-    public static boolean eco_use_vault = false;
 
     /** 给Console发送信息
      * send message to console
@@ -227,11 +234,7 @@ public class Sn extends JavaPlugin {
     }
 
 
-    public static Permission snperm;
 
-    //public static Map<Player, Map<ItemStack, Map<String, String>>> spitemtags = new HashMap<>();
-    public static int questamount = 0;
-    public static Economy sneconomy;
 
     public static List<String> toStrList(Map<String,Object> map){
         List<String> list = new ArrayList<>();
@@ -1322,6 +1325,13 @@ public class Sn extends JavaPlugin {
             onlinePlayer.closeInventory();
         }
 
+        AutoSave a = new AutoSave();
+        a.start();
+        try {
+            a.join();
+        } catch (InterruptedException ignored) {
+        }
+
         sendInfo("雪夜插件已卸载~");
     }
 
@@ -1429,6 +1439,7 @@ public class Sn extends JavaPlugin {
 
         if(eco_use_vault)
             if(!initVault()) sendInfo("vault插件挂钩失败，请检查vault插件。");
+            else sendInfo("vault插件已被SnTools加载。");
         else eco_system_set = true;
 
         loadCollector();
@@ -1437,12 +1448,14 @@ public class Sn extends JavaPlugin {
         nt.runTaskTimerAsynchronously(this,0L,200L);
 
         Runnable task = () -> {
+            sendInfo("开始收集物品！");
             for (World world : Bukkit.getWorlds()) {
                 for (Entity entity : world.getEntities()) {
                     CollectorRuntime cr = new CollectorRuntime(entity);
                     Bukkit.getScheduler().runTask(this,cr);
                 }
             }
+            sendInfo("物品收集结束！");
         };
 
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this,task,0,7000);
@@ -1457,6 +1470,7 @@ public class Sn extends JavaPlugin {
 
         Objects.requireNonNull(getCommand("express")).setExecutor(new Express_CE());
         Objects.requireNonNull(getCommand("collector")).setExecutor(new Collector_CE());
+        Objects.requireNonNull(getCommand("collector")).setExecutor(new City_CE());
         //Objects.requireNonNull(getCommand("npc")).setExecutor(new sn.sn.npc());
         Objects.requireNonNull(getCommand("quest")).setExecutor(new Quest_CE());
 

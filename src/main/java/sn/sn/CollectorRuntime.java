@@ -22,7 +22,7 @@ public class CollectorRuntime implements Runnable {
 
     @Override
     public void run() {
-        sendInfo("开始收集物品！");
+
         sendDebug("Collector 1");
         for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
             sendDebug("Collector 2");
@@ -61,7 +61,6 @@ public class CollectorRuntime implements Runnable {
                 }
             }
         }
-        sendInfo("物品收集结束！");
     }
 
 

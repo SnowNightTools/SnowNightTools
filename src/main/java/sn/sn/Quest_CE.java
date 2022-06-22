@@ -223,7 +223,7 @@ import static sn.sn.showInvEvent.openQuestSettingUI;
 public class Quest_CE implements CommandExecutor {
 
 
-    public static Player questPlayer;
+    public Player questPlayer;
     static Plugin Snplugin = Sn.getPlugin(Sn.class);
 
     public static Boolean loadQuest(Player player, String name) {

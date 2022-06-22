@@ -6,4 +6,4 @@ quest-path: 'E:\\Mc server\'
 quest-path-ed: true
 login-load: true
 debug: true
-vault: false
+vault: true

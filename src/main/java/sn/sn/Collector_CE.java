@@ -340,7 +340,7 @@ public class Collector_CE implements CommandExecutor {
         public void saveCollectorToYml(YamlConfiguration ymlfile, @Nullable String path){
             if(path == null) path = name;
             else path = path + "." + name;
-            ymlfile.set(path+".owner",owner);
+            ymlfile.set(path+".owner",owner.toString());
             int cnt = 1;
             for (Range range : ranges) {
                 range.saveRangeToYml(ymlfile,path + ".range." + cnt++);

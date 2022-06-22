@@ -117,7 +117,7 @@ public class Range {
         ymlfile.set(path+".startZ",startZ);
         ymlfile.set(path+".endX",endX);
         ymlfile.set(path+".endY",endY);
-        ymlfile.set(path+".endY",endZ);
+        ymlfile.set(path+".endZ",endZ);
         if(world != null) ymlfile.set(path+".world",world.getUID().toString());
     }
 
