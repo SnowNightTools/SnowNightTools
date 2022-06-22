@@ -15,7 +15,7 @@ import static sn.sn.Sn.sneconomy;
 *
 *
 * City 城市系统
-* 作者 LtSeed
+* 作者:
 *
 *
 * 指令：
