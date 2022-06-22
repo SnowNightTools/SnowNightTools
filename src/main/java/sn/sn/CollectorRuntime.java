@@ -39,7 +39,7 @@ public class CollectorRuntime implements Runnable {
                             if (range.getWorld() != null) {
                                 if (range.isInRange(entity.getLocation())) {
                                     sendDebug("Collector 5");
-                                    Chest chest = null;
+                                    Chest chest;
                                     BlockState bs;
                                     try {
                                         Block block = range.getWorld().getBlockAt(collector.getBox());

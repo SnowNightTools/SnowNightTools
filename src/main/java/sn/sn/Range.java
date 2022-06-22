@@ -122,7 +122,11 @@ public class Range {
     }
 
     public double getArea(){
-        return abs(endX-startX)*abs(endY-startY)*abs(endZ-startZ);
+        double Dy = abs(endY - startY)+1;
+        double Dz = abs(endZ - startZ)+1;
+        double Dx = abs(endX - startX)+1;
+        return Dx * Dy * Dz;
+
     }
 
     public double countUnionArea(Range other){
