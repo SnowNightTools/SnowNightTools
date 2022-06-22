@@ -21,13 +21,15 @@ import static sn.sn.Sn.sneconomy;
 * 指令：
 * /city create <name> 发起一个城市的新建，在达到三个人时正式成立城市，使用这个指令的人会成为市长，拥有管理权限。
 * /city join <name> 加入一个城市，一个人只能加入一个城市，但是可以同时发很多请求，不储存请求，每次重启请求刷新。
-* /city accept [player name] 同意一个人的加入请求，不填写[player name]，将会打开所有申请人的面板，可以在面板上处理请求。
-* /city set [perm group name] 设置城市对特定权限组的权限，不填写则设置城市对居民的权限。
-* /city add <perm group name> <player name> 将一个特定的人添加进该权限组。
 * /city spawn 回到自己小镇的出生点。
-* /city quit 退出小镇
+* /city quit 退出小镇，小镇人数少于4人时不能退出小镇
+* /city my 打开小镇菜单（传送点，出生点，各个成员，点击可以tpa或者warp之类的）
 *
 * Only For Mayor:
+* /city setwarp <name> 在小镇的领土中设置传送点
+* /city accept [player name] 同意一个人的加入请求，不填写[player name]，将会打开所有申请人的面板，可以在面板上处理请求。
+* /city add <perm group name> <player name> 将一个特定的人添加进该权限组。
+* /city set [perm group name] 设置城市对特定权限组的权限，不填写则设置城市对居民的权限（打开面板）。
 * /city setspawn 设置小镇出生点
 * /city loadchunk 让插件常加载脚下的方块
 * /city manage 打开小镇管理面板（踢人之类的操作）
