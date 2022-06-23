@@ -26,10 +26,11 @@ import static sn.sn.Quest_CE.getQuest;
 /*
 
 
-    express 和 quest 的监听器类
+    express 、 quest 和 collector 的监听器类
 
     实现了 express show 面板打开后的点击物品处理 和关闭面板时保存文件的处理
     实现了 quest create 面板操作
+    实现了 collector bin 面板操作
 
     作者：LtSeed
 
@@ -45,10 +46,10 @@ public class showInvEvent implements Listener {
     Plugin plugin = Sn.getPlugin(Sn.class);
 
 
-    private static final ItemStack cancel = new ItemStack(Material.BARRIER);
-    private static final ItemStack confirm = new ItemStack(Material.EMERALD);
-    private static final ItemStack pgup = new ItemStack(Material.WRITABLE_BOOK);
-    private static final ItemStack pgdn = new ItemStack(Material.WRITABLE_BOOK);
+    public static final ItemStack cancel = new ItemStack(Material.BARRIER);
+    public static final ItemStack confirm = new ItemStack(Material.EMERALD);
+    public static final ItemStack pgup = new ItemStack(Material.WRITABLE_BOOK);
+    public static final ItemStack pgdn = new ItemStack(Material.WRITABLE_BOOK);
 
     showInvEvent(){
         ItemMeta confirmmeta = confirm.getItemMeta();
@@ -467,6 +468,40 @@ public class showInvEvent implements Listener {
                 }
 
             }
+        }
+
+        if(Invclick.getView().getTitle().contains("Bin")){
+
+            if(Invclick.getView().getTitle().contains("Page")){
+                List<ItemStack> items = item_temp.get(commander);
+                int pages = items.size()/45 +1;
+                String now_page_str = Invclick.getView().getTitle().split("Page")[1];
+                String time = Invclick.getView().getTitle().split("Page")[0];
+                now_page_str = now_page_str.split("of")[0];
+                now_page_str = now_page_str.split(" ")[1];
+                int now_page = Integer.parseInt(now_page_str);
+                if(Invclick.getSlot()==45&&now_page!=1){
+                    uiINIT(Invclick);
+                    now_page--;
+                }
+                if(Invclick.getSlot()==53&&now_page!=pages){
+                    uiINIT(Invclick);
+                    now_page++;
+                }
+                if(Invclick.getSlot()!=53&&Invclick.getSlot()!=45)return;
+                Inventory temp = Bukkit.createInventory(commander,54,time + "Page "+(now_page)+" of "+pages);
+                int now = (now_page-1)*45;
+                for (int i = now; (i < now+45)&&(i < items.size()); i++) {
+                    temp.addItem(items.get(i));
+                }
+                if(now_page != 1) temp.setItem(45,pgup);
+                if(now_page != pages) temp.setItem(53,pgdn);
+                commander.openInventory(temp);
+                return;
+            }
+
+            return;
+
         }
 
 

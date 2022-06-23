@@ -1,5 +1,6 @@
 package sn.sn;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -10,10 +11,12 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +24,9 @@ import java.util.Objects;
 import java.util.UUID;
 
 import static java.lang.Math.pow;
+import static sn.sn.CollectorThrowThread.rubbishes_folder;
 import static sn.sn.Sn.*;
+import static sn.sn.showInvEvent.pgdn;
 
 /*
 * Collector_CE 扫地机器人 与 简单收集系统 类
@@ -64,6 +69,7 @@ import static sn.sn.Sn.*;
 public class Collector_CE implements CommandExecutor {
 
     public static List<ItemStack> rubbishes;
+    public static List<String> bin;
 
     /**
      * Executes the given command, returning its success.
@@ -96,6 +102,7 @@ public class Collector_CE implements CommandExecutor {
             if (checkRange(commander)) return true;
             if (collector_names.contains(args[1])){
                 sender.sendMessage("换个名字吧，这个名字有人用过了……");
+                return true;
             }
 
             Chest chest;
@@ -273,19 +280,83 @@ public class Collector_CE implements CommandExecutor {
             return help(sender);
         }
 
-        if(args.length!=2) help(sender);
+        if(args.length < 2) return help(sender);
 
-        if(!args[0].equals("admin")) help(sender);
+        if(!args[0].equals("admin")) return help(sender);
 
         if(args[1].equals("list")){
             for (Player player : collectors.keySet()) {
-                commander.sendMessage(ChatColor.GREEN+"Player: "+player.getName());
+                commander.sendMessage(ChatColor.GREEN+"Player: "+player);
                 printCollectors(commander, player);
             }
         }
 
+        if(args[1].equals("now")){
+            runCollector(true);
+            sender.sendMessage("开始准备扫地！");
+            return true;
+        }
+
+        if(args.length < 3) return help(sender);
+
+        if(args[1].equals("bin")&&args[2].equals("list")){
+            for (int i = 0, binSize = bin.size(); i < binSize; i++) {
+                String s = bin.get(i);
+                sender.sendMessage(i + ": " + s);
+            }
+            return true;
+        }
+
+        if(args[1].equals("bin")){
+            if(bin.contains(args[2])){
+                foundRubbishes(args[2],sender);
+                return true;
+            }
+            int index;
+            try {
+                index = Integer.parseInt(args[2]);
+            } catch (NumberFormatException e) {
+                sender.sendMessage("未能找到你描述的垃圾箱");
+                return true;
+            }
+            foundRubbishes(bin.get(index),sender);
+            return true;
+        }
+
 
         return help(sender);
+    }
+
+    private void foundRubbishes(String time, CommandSender sender) {
+        Player commander;
+        try {
+            commander = (Player)sender;
+        } catch (Exception e) {
+            return;
+        }
+        sendDebug(time);
+        File file = new File(rubbishes_folder,time);
+        YamlConfiguration ymlfile = YamlConfiguration.loadConfiguration(file);
+        int amount = ymlfile.getInt("amount");
+        List<ItemStack> items = new ArrayList<>();
+        for (int i = 0; i < amount; i++) {
+            items.add(readItemStackFromYml(ymlfile, String.valueOf(i)));
+        }
+        if(items.size()<=54){
+            Inventory temp = Bukkit.createInventory(commander,54,"Bin-"+time);
+            for (ItemStack item : items) {
+                temp.addItem(item);
+            }
+            commander.openInventory(temp);
+            return;
+        }
+        Inventory temp = Bukkit.createInventory(commander,54,"Bin-"+time+"-Page 1 of"+(items.size()/45 +1)+" ");
+        item_temp.put(commander,items);
+        for (int i = 0; i < 45; i++) {
+            temp.addItem(items.get(i));
+        }
+        temp.setItem(53,pgdn);
+        commander.openInventory(temp);
     }
 
     private void printCollectors(Player commander, Player player) {
@@ -371,6 +442,7 @@ public class Collector_CE implements CommandExecutor {
             if(path == null) path = name;
             else path = path + "." + name;
             ymlfile.set(path+".owner",owner.toString());
+            saveLocationToYml(ymlfile,path+".box",this.box);
             int cnt = 1;
             for (Range range : ranges) {
                 range.saveRangeToYml(ymlfile,path + ".range." + cnt++);

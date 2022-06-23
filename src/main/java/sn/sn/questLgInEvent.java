@@ -10,6 +10,8 @@ public class questLgInEvent implements Listener {
 
     @EventHandler
     public void JoinLoadQuest(PlayerJoinEvent event){
+        loadCollectors();
+
         if(!eco_system_set)
             if(!initVault()) {
                 sendInfo("[SN][WARNING]vault插件挂钩失败，请检查vault插件。");

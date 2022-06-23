@@ -45,6 +45,16 @@ commands:
       sn.npc
     #没有权限的提示消息
     permission-message: 你缺少必要的权限.
+  city:
+    #描述这个命令
+    description: city系统~
+    #用法
+    usage: /city
+    #执行此命令的人所需的权限
+    permission:
+      sn.city
+    #没有权限的提示消息
+    permission-message: 你缺少必要的权限.
 
 permission:
   sn.express:
@@ -98,4 +108,7 @@ permission:
         default: true
   sn.collector.admin:
     description: 雪夜任务系统的管理员权限
+    default: op
+  sn.city.admin:
+    description: 雪夜city系统的管理员权限
     default: op
