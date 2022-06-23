@@ -14,7 +14,7 @@ import java.util.Objects;
 
 import static sn.sn.Sn.*;
 
-public class rangeSelector implements Listener {
+public class RangeSelector implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH)
     public void selectEvent(PlayerInteractEvent event){
@@ -25,11 +25,13 @@ public class rangeSelector implements Listener {
             if(event.getAction()== Action.LEFT_CLICK_BLOCK){
                 Location t = Objects.requireNonNull(event.getClickedBlock()).getLocation();
                 startpoint.put(event.getPlayer(), t);
-                event.getPlayer().sendMessage(ChatColor.GREEN+"[Sn]你的第一个点设置为"+t.getWorld()+",("+t.getX()+","+t.getY()+","+t.getZ()+")");
+                if(t.getWorld()!=null)
+                event.getPlayer().sendMessage(ChatColor.GREEN+"[Sn]你的第一个点设置为"+t.getWorld().getName()+",("+t.getX()+","+t.getY()+","+t.getZ()+")");
             } else if(event.getAction()==Action.RIGHT_CLICK_BLOCK){
                 Location t = Objects.requireNonNull(event.getClickedBlock()).getLocation();
                 endpoint.put(event.getPlayer(), t);
-                event.getPlayer().sendMessage(ChatColor.GREEN+"[Sn]你的第二个点设置为"+t.getWorld()+",("+t.getX()+","+t.getY()+","+t.getZ()+")");
+                if(t.getWorld()!=null)
+                event.getPlayer().sendMessage(ChatColor.GREEN+"[Sn]你的第二个点设置为"+t.getWorld().getName()+",("+t.getX()+","+t.getY()+","+t.getZ()+")");
             }
         } catch (Exception e) {
             sendError(e.getLocalizedMessage());

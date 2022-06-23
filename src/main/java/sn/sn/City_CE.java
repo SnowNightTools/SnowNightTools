@@ -1,6 +1,5 @@
 package sn.sn;
 
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -9,8 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import static sn.sn.Sn.sneconomy;
 /*
 *
 *
@@ -43,13 +40,6 @@ import static sn.sn.Sn.sneconomy;
 *
 *
 *
-*
-*
-*
-*
-*
-*
-*
 * */
 public class City_CE implements CommandExecutor {
     /**
@@ -66,10 +56,12 @@ public class City_CE implements CommandExecutor {
      */
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if(args[0].equals("test")){
-            sneconomy.depositPlayer((OfflinePlayer) sender,1000);
-            sender.sendMessage(sneconomy.getName());
-        }
+
+
+
+
+
+
         return false;
     }
 
@@ -80,6 +72,7 @@ public class City_CE implements CommandExecutor {
         Map<String, List<UUID>> perm_group;
         UUID mayor;
         List<Range> territorial;
+        Map<String, Boolean> perm;
 
         public String getName() {
             return name;

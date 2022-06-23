@@ -56,6 +56,7 @@ public class Sn extends JavaPlugin {
     public static Map<Player, Location> startpoint = new HashMap<>();
     public static Map<Player, Location> endpoint = new HashMap<>();
     public static Map<Player, List<Collector_CE.Collector>> collectors = new HashMap<>();
+    public static List<String> collector_names = new ArrayList<>();
     public static boolean debug = true;
 
     public static List<Quest_CE.Quest> quests = new ArrayList<>();
@@ -1392,17 +1393,17 @@ public class Sn extends JavaPlugin {
         sendInfo("quest_path=" + quest_Path);
         sendInfo("playerquest_Path=" + playerquest_Path);
 
-        collector_file = new File(data_folder,"collector.yml");
-        quest_file = new File(quest_Path + "quest.yml");
-        playerquest_file = new File(playerquest_Path + "playerquest.yml");
 
         try {
+            collector_file = new File(data_folder,"collector.yml");
+            //noinspection ResultOfMethodCallIgnored
             collector_file.createNewFile();
+            quest_file = checkFile(quest_Path + "quest.yml");
+            playerquest_file = checkFile(playerquest_Path + "playerquest.yml");
         } catch (IOException e) {
             sendError(e.getLocalizedMessage());
         }
-        quest_file = checkFile(quest_file,quest_Path + "quest.yml");
-        playerquest_file = checkFile(playerquest_file,playerquest_Path + "playerquest.yml");
+
 
         collector_yml = YamlConfiguration.loadConfiguration(collector_file);
         quest_yml = YamlConfiguration.loadConfiguration(quest_file);
@@ -1410,42 +1411,18 @@ public class Sn extends JavaPlugin {
 
         //plugin_yml = YamlConfiguration.loadConfiguration(plugin_file);
 
-        int n = quest_yml.getInt("Amount");
-        for(int i = 0; i < n; i++){
-            String questname;
-            questname = quest_yml.getString("inside."+ i );
-            if (quest_yml.getInt(questname +".type")== 1){
-                quests.add(new Quest_CE.Quest(questname));
-                if(!quests.get(i).readQuestFromYml()){
-                    sendInfo("警告！ 在加载"+questname+"时出现错误！");
-                }
-            }
-        }
-            /*
-            *
-            * 1:Quest
-                2:QusetPosition
-                3:QusetAction
-                4:QusetActionData
-                5:QusetReward
-                6：int（直接值）
-                7：String（直接值）
-                8：String[]（直接值）
-                9：char（直接值）
-                10：ItemStack
-                11:ItemStack[]
-                12:Entity
-                13:Entity[]
-                14：double（直接值）
-                15：block
-            * */
+        // load quests
+        loadQuests();
+
+        // load collectors
+        loadCollectors();
 
         if(eco_use_vault)
             if(!initVault()) sendInfo("vault插件挂钩失败，请检查vault插件。");
             else sendInfo("vault插件已被SnTools加载。");
         else eco_system_set = true;
 
-        loadCollector();
+
 
         BukkitRunnable nt = new questRuntime();
         nt.runTaskTimerAsynchronously(this,0L,200L);
@@ -1462,15 +1439,15 @@ public class Sn extends JavaPlugin {
             new CollectorThrowThread().start();
             sendInfo("物品收集结束！");
         };
-
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(this,task,0,7000);
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this,()-> new SayToEveryoneThread("扫地即将开始！").start(),0,36000);
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this,task,200,36000);
         Bukkit.getScheduler().runTaskTimerAsynchronously(this,()->{
             AutoSave as = new AutoSave();
             as.start();
         },0,72000);
 
         Bukkit.getPluginManager().registerEvents(new questLgInEvent(), this);
-        Bukkit.getPluginManager().registerEvents(new rangeSelector(), this);
+        Bukkit.getPluginManager().registerEvents(new RangeSelector(), this);
         Bukkit.getPluginManager().registerEvents(new showInvEvent(), this);
 
         Objects.requireNonNull(getCommand("express")).setExecutor(new Express_CE());
@@ -1482,12 +1459,27 @@ public class Sn extends JavaPlugin {
         sendInfo("雪夜插件已加载~");
     }
 
-    private void loadCollector() {
+    private void loadQuests() {
+        int n = quest_yml.getInt("Amount");
+        for(int i = 0; i < n; i++){
+            String questname;
+            questname = quest_yml.getString("inside."+ i );
+            if (quest_yml.getInt(questname +".type")== 1){
+                quests.add(new Quest_CE.Quest(questname));
+                if(!quests.get(i).readQuestFromYml()){
+                    sendInfo("警告！ 在加载"+questname+"时出现错误！");
+                }
+            }
+        }
+    }
+
+    private void loadCollectors() {
         int n = collector_yml.getInt("amount",0);
         String name,uuid;
         int cn;
         for (int i = 0; i < n; i++) {
             name = collector_yml.getString("list."+i);
+            collector_names.add(name);
             uuid = collector_yml.getString(name+".owner","d59beeb3-6c24-3f22-8888-f8c83bc38cfa");
             cn = collector_yml.getInt(name+".range_amount",1);
             Collector_CE.Collector temp = new Collector_CE.Collector();
@@ -1518,16 +1510,11 @@ public class Sn extends JavaPlugin {
         ymlfile.set(path+".z", loc.getZ());
     }
 
-    private File checkFile(File file,String path) {
-        while (!file.exists()){
-            try {
-                Process runtime = Runtime.getRuntime().exec("fsutil file createnew \""+path+"\" 0");
-                sendInfo("创建文件"+file.getName()+" at "+path);
-                Thread.sleep(50);
-            } catch (IOException | InterruptedException e) {
-                e.printStackTrace();
-            }
-            file = new File(path);
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private File checkFile(String path) throws IOException {
+        File file = new File(path);
+        while (!file.exists()) {
+            file.createNewFile();
         }
         return file;
     }

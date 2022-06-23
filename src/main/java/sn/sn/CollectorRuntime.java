@@ -81,6 +81,7 @@ public class CollectorRuntime implements Runnable {
                 im.setLore(lore);
                 item.setItemMeta(im);
                 rubbishes.add(item);
+                entity.remove();
             }
         }
     }

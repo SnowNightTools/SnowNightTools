@@ -17,6 +17,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import static java.lang.Math.pow;
@@ -92,11 +93,9 @@ public class Collector_CE implements CommandExecutor {
 
         if(args[0].equals("create")){
             if(args.length!=2)return help(sender);
-
-
-            if(!startpoint.containsKey(commander)||!endpoint.containsKey(commander)){
-                commander.sendMessage(ChatColor.GREEN+"请先选择两个点哦~");
-                return true;
+            if (checkRange(commander)) return true;
+            if (collector_names.contains(args[1])){
+                sender.sendMessage("换个名字吧，这个名字有人用过了……");
             }
 
             Chest chest;
@@ -107,8 +106,6 @@ public class Collector_CE implements CommandExecutor {
                 commander.sendMessage("请指向一个箱子！");
                 return true;
             }
-
-
             int amount_perm = 0,range_perm = 0;
             while(true){
                 if(sender.hasPermission("sn.collector.amount." + amount_perm))break;
@@ -154,6 +151,7 @@ public class Collector_CE implements CommandExecutor {
             List<Collector> g = collectors.getOrDefault(commander, new ArrayList<>());
             g.add(temp);
             collectors.put(commander,g);
+            collector_names.add(args[1]);
             sender.sendMessage("添加成功！");
             return true;
         }
@@ -176,10 +174,7 @@ public class Collector_CE implements CommandExecutor {
 
         if(args[0].equals("add")){
             if(args.length<=1)return help(sender);
-            if(!startpoint.containsKey(commander)||!endpoint.containsKey(commander)){
-                commander.sendMessage(ChatColor.GREEN+"请先选择两个点哦~");
-                return true;
-            }
+            if (checkRange(commander)) return true;
             List<Collector> get = collectors.get(commander);
             for (int i = 0, getSize = get.size(); i < getSize; i++) {
                 Collector collector = get.get(i);
@@ -217,14 +212,7 @@ public class Collector_CE implements CommandExecutor {
                 return true;
             }
             commander.sendMessage("即将打印你的所有收集器的信息~");
-            for (Collector collector : collectors.get(commander)) {
-                commander.sendMessage("Name: "+collector.getName());
-                commander.sendMessage("Ranges: ");
-                for (Range range : collector.getRanges()) {
-                    commander.sendMessage("("+range.getStartX()+","+range.getStartY()+","+range.getStartZ()+")->("+range.getEndX()+","+range.getEndY()+","+range.getEndZ()+")");
-                }
-                commander.sendMessage("Volume: "+collector.getRangeArea());
-            }
+            printCollectors(commander, commander);
             return true;
         }
 
@@ -246,6 +234,7 @@ public class Collector_CE implements CommandExecutor {
                 }
                 if (found) {
                     collectors.get(commander).remove(i);
+                    collector_names.remove(args[1]);
                     commander.sendMessage(ChatColor.GREEN+"你的收集器"+args[1]+"被删除了哦~");
                 } else {
                     commander.sendMessage("没有找到你的收集器哦~");
@@ -280,7 +269,46 @@ public class Collector_CE implements CommandExecutor {
             }
         }
 
+        if (!sender.hasPermission("sn.collector.admin") && !sender.isOp()) {
+            return help(sender);
+        }
+
+        if(args.length!=2) help(sender);
+
+        if(!args[0].equals("admin")) help(sender);
+
+        if(args[1].equals("list")){
+            for (Player player : collectors.keySet()) {
+                commander.sendMessage(ChatColor.GREEN+"Player: "+player.getName());
+                printCollectors(commander, player);
+            }
+        }
+
+
         return help(sender);
+    }
+
+    private void printCollectors(Player commander, Player player) {
+        for (Collector collector : collectors.get(player)) {
+            commander.sendMessage("Name: "+collector.getName());
+            commander.sendMessage("Ranges: ");
+            for (Range range : collector.getRanges()) {
+                commander.sendMessage("("+range.getStartX()+","+range.getStartY()+","+range.getStartZ()+")->("+range.getEndX()+","+range.getEndY()+","+range.getEndZ()+")");
+            }
+            commander.sendMessage("Volume: "+collector.getRangeArea());
+        }
+    }
+
+    private boolean checkRange(Player commander) {
+        if(!startpoint.containsKey(commander)||!endpoint.containsKey(commander)){
+            commander.sendMessage(ChatColor.GREEN+"请先选择两个点哦~");
+            return true;
+        }
+        if(!Objects.equals(startpoint.get(commander).getWorld(), endpoint.get(commander).getWorld())){
+            commander.sendMessage(ChatColor.GREEN+"不要跨世界选区哦~");
+            return true;
+        }
+        return false;
     }
 
     private void noPermission(Player p,String s) {
