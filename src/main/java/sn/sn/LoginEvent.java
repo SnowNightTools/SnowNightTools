@@ -6,10 +6,11 @@ import org.bukkit.event.player.PlayerJoinEvent;
 
 import static sn.sn.Sn.*;
 
-public class questLgInEvent implements Listener {
+public class LoginEvent implements Listener {
 
     @EventHandler
     public void JoinLoadQuest(PlayerJoinEvent event){
+
         loadCollectors();
 
         if(!eco_system_set)

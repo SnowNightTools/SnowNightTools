@@ -26,7 +26,7 @@ import java.util.UUID;
 import static java.lang.Math.pow;
 import static sn.sn.CollectorThrowThread.rubbishes_folder;
 import static sn.sn.Sn.*;
-import static sn.sn.showInvEvent.pgdn;
+import static sn.sn.InvOperateEvent.pgdn;
 
 /*
 * Collector_CE 扫地机器人 与 简单收集系统 类
@@ -340,7 +340,7 @@ public class Collector_CE implements CommandExecutor {
         int amount = ymlfile.getInt("amount");
         List<ItemStack> items = new ArrayList<>();
         for (int i = 0; i < amount; i++) {
-            items.add(readItemStackFromYml(ymlfile, String.valueOf(i)));
+            items.add(SnFileIO.readItemStackFromYml(ymlfile, String.valueOf(i)));
         }
         if(items.size()<=54){
             Inventory temp = Bukkit.createInventory(commander,54,"Bin-"+time);
@@ -442,7 +442,7 @@ public class Collector_CE implements CommandExecutor {
             if(path == null) path = name;
             else path = path + "." + name;
             ymlfile.set(path+".owner",owner.toString());
-            saveLocationToYml(ymlfile,path+".box",this.box);
+            SnFileIO.saveLocationToYml(ymlfile,path+".box",this.box);
             int cnt = 1;
             for (Range range : ranges) {
                 range.saveRangeToYml(ymlfile,path + ".range." + cnt++);

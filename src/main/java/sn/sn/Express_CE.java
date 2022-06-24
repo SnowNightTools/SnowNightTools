@@ -79,7 +79,7 @@ import static sn.sn.Sn.*;
 
    类：
         主类: express
-        附属类：showInvEvent
+        附属类：InvOperateEvent
 
    方法：
         private boolean help()
@@ -297,7 +297,7 @@ public class Express_CE implements CommandExecutor {
 
                     Inventory temp = Bukkit.createInventory(null, 54);
                     for(int i=0;i<n;i++)
-                        temp.addItem(readItemStackFromYml(share_yml,sender.getName() + ".items"+'.'+i));
+                        temp.addItem(SnFileIO.readItemStackFromYml(share_yml,sender.getName() + ".items"+'.'+i));
 
                     ItemStack hand = senderPlayer.getInventory().getItemInMainHand();
 
@@ -316,7 +316,7 @@ public class Express_CE implements CommandExecutor {
                     share_yml.set(sender.getName() + ".items",null);
 
                     for(int i=0;i<nown;i++)
-                        saveItemStackToYml(share_yml,sender.getName() + ".items."+ i, Objects.requireNonNull(temp.getItem(i)));
+                        SnFileIO.saveItemStackToYml(share_yml,sender.getName() + ".items."+ i, Objects.requireNonNull(temp.getItem(i)));
 
 
                     try {
@@ -372,14 +372,14 @@ public class Express_CE implements CommandExecutor {
                     Inventory temp = Bukkit.createInventory(null, 54);
                     Inventory remains = Bukkit.createInventory(null, 27);
                     for(int i=0;i<n;i++)
-                        temp.addItem(readItemStackFromYml(share_yml,sender.getName() + ".items"+'.'+i));
+                        temp.addItem(SnFileIO.readItemStackFromYml(share_yml,sender.getName() + ".items"+'.'+i));
 
                     for(ItemStack tmpim:storeitemlist){
                         HashMap<Integer, ItemStack> remain = temp.addItem(tmpim);
                         if(!remain.isEmpty())remains.addItem(remain.get(0));
                     }
 
-                    if(!saveInvToYml(share_yml,share_file,senderPlayer.getName(),temp)){
+                    if(!SnFileIO.saveInvToYml(share_yml,share_file,senderPlayer.getName(),temp)){
                         senderPlayer.sendMessage("文件保存可能出错！");
                         if(remains.isEmpty()) chest.getBlockInventory().clear();
                         else chest.getBlockInventory().setContents(remains.getContents());
@@ -409,11 +409,11 @@ public class Express_CE implements CommandExecutor {
                 String strline = sender.getName() + ".line";
                 int n = Sn.share_yml.getInt(strline);
                 for(int i=0;i<n;i++){
-                    ItemStack tempstack = readItemStackFromYml(share_yml,sender.getName() + ".items"+'.'+i);
+                    ItemStack tempstack = SnFileIO.readItemStackFromYml(share_yml,sender.getName() + ".items"+'.'+i);
                     showInv.get(senderPlayer).addItem(tempstack);//添加
                     showInv.get(senderPlayer).setItem(i,tempstack);//设置GUI
                 }
-                showInvEvent.showInv_nmax = n;
+                InvOperateEvent.showInv_nmax = n;
 
 
                 //打开GUI

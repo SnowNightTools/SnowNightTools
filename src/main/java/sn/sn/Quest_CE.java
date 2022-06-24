@@ -22,7 +22,7 @@ import java.io.Serializable;
 import java.util.*;
 
 import static sn.sn.Sn.*;
-import static sn.sn.showInvEvent.openQuestSettingUI;
+import static sn.sn.InvOperateEvent.openQuestSettingUI;
 
 /*
 
@@ -259,7 +259,7 @@ public class Quest_CE implements CommandExecutor {
             }
         }
 
-        questRuntime a = new questRuntime();
+        QuestRuntime a = new QuestRuntime();
         a.runTaskAsynchronously(Snplugin);
         playerquest_yml.set(player.getName()+".nowtaskid",a.getTaskId());
 
@@ -1715,7 +1715,7 @@ public class Quest_CE implements CommandExecutor {
             if(questtargetitem != null) {
                 int i = 0;
                 for (ItemStack a : questtargetitem) {
-                    saveItemStackToYml(ymlfile, questActndtname + ".property-inherit.questtargetitem." + i++, a);
+                    SnFileIO.saveItemStackToYml(ymlfile, questActndtname + ".property-inherit.questtargetitem." + i++, a);
                 }
             }
             if(questtimelimit != -1)
@@ -1764,7 +1764,7 @@ public class Quest_CE implements CommandExecutor {
             int i = 0;
             if(ymlfile.contains(name+".property-inherit.questtargetitem")){
                 while (ymlfile.contains(name + ".property-inherit.questtargetitem." + i))
-                    questtargetitem.set(i++, readItemStackFromYml(ymlfile, name + ".property-inherit.questtargetitem" + i));
+                    questtargetitem.set(i++, SnFileIO.readItemStackFromYml(ymlfile, name + ".property-inherit.questtargetitem" + i));
             }
 
             if(ymlfile.contains(name+".property-set.defaultdistance")){
@@ -2116,7 +2116,7 @@ public class Quest_CE implements CommandExecutor {
             if(ymlfile.contains(name+".property-set.rewarditemamount")) {
                 rewarditemamount = ymlfile.getInt(name + ".property-set.rewarditemamount");
                 for(int i=0 ;i<rewarditemamount ;i++){
-                    rewarditems.set(i, readItemStackFromYml(ymlfile, name + ".property-set.rewarditem." + i));
+                    rewarditems.set(i, SnFileIO.readItemStackFromYml(ymlfile, name + ".property-set.rewarditem." + i));
                 }
             }
             if(ymlfile.contains(name+".property-set.rewardmoney")) {
@@ -2143,7 +2143,7 @@ public class Quest_CE implements CommandExecutor {
             if(rewarditemamount !=0){
                 ymlfile.set(questrewardname+".property-set.rewarditemamount",rewarditemamount);
                 for (int i = 0; i < rewarditemamount; i++) {
-                    saveItemStackToYml(ymlfile,questrewardname+".property-set.rewarditem."+i, rewarditems.get(i));
+                    SnFileIO.saveItemStackToYml(ymlfile,questrewardname+".property-set.rewarditem."+i, rewarditems.get(i));
                 }
             }
             if(rewardpermissionamount !=0){

@@ -43,7 +43,7 @@ public class CollectorThrowThread extends Thread{
         YamlConfiguration rubbish_yml = new YamlConfiguration();
         int amount = 0;
         for (ItemStack item : rubbishes) {
-            saveItemStackToYml(rubbish_yml, String.valueOf(amount++),item);
+            SnFileIO.saveItemStackToYml(rubbish_yml, String.valueOf(amount++),item);
         }
         rubbish_yml.set("amount",amount);
         bin.add(now_str);

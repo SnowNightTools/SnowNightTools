@@ -14,7 +14,7 @@ import java.util.*;
 
 import static sn.sn.Sn.*;
 
-public class questRuntime extends BukkitRunnable {
+public class QuestRuntime extends BukkitRunnable {
 
 
 

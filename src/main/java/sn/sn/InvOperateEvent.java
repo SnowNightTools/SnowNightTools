@@ -39,7 +39,7 @@ import static sn.sn.Quest_CE.getQuest;
 
 
 
-public class showInvEvent implements Listener {
+public class InvOperateEvent implements Listener {
 
     public static Player commander;
     public static int showInv_nmax = 0;
@@ -51,7 +51,7 @@ public class showInvEvent implements Listener {
     public static final ItemStack pgup = new ItemStack(Material.WRITABLE_BOOK);
     public static final ItemStack pgdn = new ItemStack(Material.WRITABLE_BOOK);
 
-    showInvEvent(){
+    InvOperateEvent(){
         ItemMeta confirmmeta = confirm.getItemMeta();
         assert confirmmeta != null;
         confirmmeta.setDisplayName(ChatColor.GREEN+"确认");
@@ -396,7 +396,7 @@ public class showInvEvent implements Listener {
         commander = Bukkit.getPlayer(Invclose.getPlayer().getUniqueId());
         if(Invclose.getView().getTitle().equalsIgnoreCase(ChatColor.BLUE+"雪花速递")){
 
-            saveInvToYml(share_yml,share_file,commander.getName(),showInv.get(commander));
+            SnFileIO.saveInvToYml(share_yml,share_file,commander.getName(),showInv.get(commander));
 
             //保存文件
             Express_CE.setstatefalse(commander);
@@ -658,12 +658,12 @@ public class showInvEvent implements Listener {
                     return;
                 case 12:
                     seting.put(commander, loc -> questactionseting.get(commander).getQuestactiondata().setTargetlocation((Location) loc));
-                    uiopener.put(commander, showInvEvent::openActionCreateUI);
+                    uiopener.put(commander, InvOperateEvent::openActionCreateUI);
                     openLocSettingUI(commander);
                     return;
                 case 13:
                     seting.put(commander, set -> questactionseting.get(commander).getQuestactiondata().setQuesttimelimit((Integer) set));
-                    uiopener.put(commander, showInvEvent::openActionCreateUI);
+                    uiopener.put(commander, InvOperateEvent::openActionCreateUI);
                     openIntSettingUI(commander);
                     return;
                 case 17:
@@ -757,7 +757,7 @@ public class showInvEvent implements Listener {
                         return;
                     case 3:
                         openIntSettingUI(commander);
-                        uiopener.put(commander,showInvEvent::openRewardSettingUI);
+                        uiopener.put(commander, InvOperateEvent::openRewardSettingUI);
                         return;
                     case 5:
                         Inventory rwrditmstng = Bukkit.createInventory(commander,18,ChatColor.GREEN+"请放入物品奖励");
@@ -941,7 +941,7 @@ public class showInvEvent implements Listener {
             } catch (IllegalArgumentException | NullPointerException ignore) {
             }
 
-            uiopener.put(commander,showInvEvent::openActionCreateUI);
+            uiopener.put(commander, InvOperateEvent::openActionCreateUI);
             if(seting.containsKey(commander)) seting.put(commander,p -> putEntitySet(commander,p));
             else seting.put(commander,p -> putEntitySet(commander,p));
             openIntSettingUI(commander);
