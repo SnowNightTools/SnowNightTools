@@ -1,6 +1,6 @@
 package sn.sn;
 
-import org.bukkit.entity.Player;
+import org.bukkit.OfflinePlayer;
 
 import java.io.IOException;
 
@@ -13,7 +13,7 @@ public class AutoSave extends Thread{
     @Override
     public void run() {
         sendInfo("开始自动保存配置。");
-        for (Player player : collectors.keySet()) {
+        for (OfflinePlayer player : collectors.keySet()) {
             for (Collector_CE.Collector collector : collectors.get(player)) {
                 collector.saveCollectorToYml(collector_yml,null);
                 collector_yml.set("list."+n,collector.getName());

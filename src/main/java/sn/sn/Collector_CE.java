@@ -1,9 +1,6 @@
 package sn.sn;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.command.Command;
@@ -179,9 +176,9 @@ public class Collector_CE implements CommandExecutor {
     }
 
     private boolean workCollectorAdminListCE(Player commander) {
-        for (Player player : collectors.keySet()) {
+        for (OfflinePlayer player : collectors.keySet()) {
             commander.sendMessage(ChatColor.GREEN+"Player: "+player);
-            printCollectors(commander, player);
+            printCollectors(commander, (Player) player);
         }
         return true;
     }

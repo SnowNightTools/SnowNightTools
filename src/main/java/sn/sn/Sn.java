@@ -39,7 +39,7 @@ public class Sn extends JavaPlugin {
 
     public static Map<Player, Location> start_point = new HashMap<>();
     public static Map<Player, Location> end_point = new HashMap<>();
-    public static Map<Player, List<Collector_CE.Collector>> collectors = new HashMap<>();
+    public static Map<OfflinePlayer, List<Collector_CE.Collector>> collectors = new HashMap<>();
     public static Map<Player, Quest_CE.QuestAction> quest_action_setting = new HashMap<>();
     public static Map<Player, Inventory> show_inv = new HashMap<>();
     public static Map<Player, List<ItemStack>> item_temp = new HashMap<>();
@@ -259,9 +259,9 @@ public class Sn extends JavaPlugin {
             for (int i1 = 1; i1 <= cn; i1++) {
                 temp.addRange(SnFileIO.readRangeFromYml(collector_yml,name+".range."+i1));
             }
-            List<Collector_CE.Collector> t = collectors.getOrDefault(Bukkit.getPlayer(uuid), new ArrayList<>());
+            List<Collector_CE.Collector> t = collectors.getOrDefault(Bukkit.getOfflinePlayer(UUID.fromString(uuid)), new ArrayList<>());
             t.add(temp);
-            collectors.put(Bukkit.getPlayer(uuid),t);
+            collectors.put(Bukkit.getOfflinePlayer(UUID.fromString(uuid)),t);
         }
     }
 

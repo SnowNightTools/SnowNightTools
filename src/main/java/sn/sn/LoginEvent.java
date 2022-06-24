@@ -17,9 +17,7 @@ public class LoginEvent implements Listener {
             if(!initVault()) {
                 sendInfo("[SN][WARNING]vault插件挂钩失败，请检查vault插件。");
                 return;
-            }
-
-        if(!sn_economy.hasAccount(event.getPlayer())) sn_economy.createPlayerAccount(event.getPlayer());
+            } else if(!sn_economy.hasAccount(event.getPlayer())) sn_economy.createPlayerAccount(event.getPlayer());
 
         if(!config_yml.getBoolean("login-load"))return;
 
