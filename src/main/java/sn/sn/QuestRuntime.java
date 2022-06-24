@@ -30,14 +30,14 @@ public class QuestRuntime extends BukkitRunnable {
                 if(!initVault()) {
                     sendInfo("[SN][WARNING]vault插件挂钩失败，请检查vault插件。");
                 }
-
+        sendDebug("Quest Runtime 1");
         for (Player player: Bukkit.getServer().getOnlinePlayers()) {
             if(playerquest_yml.contains(player.getName())){
                 if(playerquest_yml.contains(player.getName()+".nowtaskid")){
                     if(playerquest_yml.getInt(player.getName()+".nowtaskid")==this.getTaskId()){
                         if(debug) player.sendMessage("snQuest在线程"+this.getTaskId()+"检测你的任务情况~");
                         while(playerquest_yml.getBoolean(player.getName()+".check",true)) {
-
+                            sendDebug("Quest Runtime 3");
                             int checktime = playerquest_yml.getInt(player.getName()+".checktime",5000);
                             try {
                                 Thread.sleep(checktime);
@@ -184,6 +184,7 @@ public class QuestRuntime extends BukkitRunnable {
         if((x- firstblock.getX())*(x- firstblock.getX())+(y- firstblock.getY())*(y- firstblock.getY())+(z- firstblock.getZ())*(z- firstblock.getZ())>distance*distance) {
             return now;
         }
+        sendDebug("Quest Runtime 5");
         getBlockInDistance(firstblock,distance,x+1,y,z,now);
         getBlockInDistance(firstblock,distance,x,y+1,z,now);
         getBlockInDistance(firstblock,distance,x,y,z+1,now);

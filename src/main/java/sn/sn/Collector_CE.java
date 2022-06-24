@@ -137,11 +137,11 @@ public class Collector_CE implements CommandExecutor {
 
         if(args.length < 3) return help(sender);
 
-        if(args[1].equals("bin")&&args[2].equals("list")){
+        if(args[1].equals("bins")&&args[2].equals("list")){
             return workBinListCE(sender);
         }
 
-        if(args[1].equals("bin")){
+        if(args[1].equals("bins")){
             return workBinOpenCE(sender, args);
         }
 
@@ -149,7 +149,7 @@ public class Collector_CE implements CommandExecutor {
     }
 
     private boolean workBinOpenCE(@NotNull CommandSender sender,@NotNull String[] args) {
-        if(bin.contains(args[2])){
+        if(bins.contains(args[2])){
             foundRubbishes(args[2], sender);
             return true;
         }
@@ -160,13 +160,13 @@ public class Collector_CE implements CommandExecutor {
             sender.sendMessage("未能找到你描述的垃圾箱");
             return true;
         }
-        foundRubbishes(bin.get(index), sender);
+        foundRubbishes(bins.get(index), sender);
         return true;
     }
 
     private boolean workBinListCE(@NotNull CommandSender sender) {
-        for (int i = 0, binSize = bin.size(); i < binSize; i++) {
-            String s = bin.get(i);
+        for (int i = 0, binSize = bins.size(); i < binSize; i++) {
+            String s = bins.get(i);
             sender.sendMessage(i + ": " + s);
         }
         return true;

@@ -309,8 +309,6 @@ public class Quest_CE implements CommandExecutor {
         return quests.get(id);
     }
 
-
-
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, String label,@NotNull String[] args) {
 

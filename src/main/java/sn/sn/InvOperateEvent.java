@@ -28,7 +28,7 @@ import static sn.sn.Sn.*;
 
     实现了 express show 面板打开后的点击物品处理 和关闭面板时保存文件的处理
     实现了 quest create 面板操作
-    实现了 collector bin 面板操作
+    实现了 collector bins 面板操作
 
     作者：LtSeed
 
@@ -764,7 +764,6 @@ public class InvOperateEvent implements Listener {
                 } catch (IOException ignored) {
                 }
                 quests.add(quest_setting.get(commander));
-                quest_amount++;
                 List<String> a = new ArrayList<>();
                 a.add("任务信息如下:");
                 try {

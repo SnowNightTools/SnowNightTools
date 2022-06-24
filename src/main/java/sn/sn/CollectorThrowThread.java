@@ -44,7 +44,7 @@ public class CollectorThrowThread extends Thread{
             SnFileIO.saveItemStackToYml(rubbish_yml, String.valueOf(amount++),item);
         }
         rubbish_yml.set("amount",amount);
-        bin.add(now_str);
+        bins.add(now_str);
         int n = bin_yml.getInt("amount",0);
         bin_yml.set("amount",n+1);
         bin_yml.set(String.valueOf(n),now_str);

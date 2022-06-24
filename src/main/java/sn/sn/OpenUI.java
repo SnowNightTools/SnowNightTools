@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static sn.sn.Sn.*;
+import static sn.sn.SnFileIO.getSkull;
 
 @SuppressWarnings("SpellCheckingInspection")
 public class OpenUI {
@@ -479,5 +480,36 @@ public class OpenUI {
 
     public static @NotNull ItemStack getItem(String typname, String dpname, List<String> lore){
         return getItem(typname,dpname,lore,false);
+    }
+
+    public static boolean openMyCityUI(Player player){
+        City_CE.City city = City_CE.City.getCity(player);
+        if(city == null){
+            player.sendMessage("找不到你的小镇哦~");
+            return true;
+        }
+        Inventory temp = Bukkit.createInventory(player,54,city.getName());
+        ItemStack is = city.getIcon();
+        if(is==null) is = getItem("SNOWBALL",city.getName(),city.getDescription());
+        temp.setItem(4,is);
+        if(city.getWarp("spawn")!=null){
+            List<String> lore = new ArrayList<>();
+            lore.add("点击此处传送回出生点");
+            temp.setItem(31,getItem("OAK_DOOR","SPAWN",lore));
+        }
+        List<String> lore = new ArrayList<>();
+        lore.add("传送点列表");
+        temp.setItem(40,getItem("PAPER","Warp",lore));
+
+        lore = new ArrayList<>();
+        lore.add("市长: "+Bukkit.getOfflinePlayer(city.getMayor()).getName());
+        temp.setItem(27,getSkull(city.getMayor(),lore));
+
+        lore = new ArrayList<>();
+        lore.add("城市居民列表");
+        temp.setItem(36,getItem("PLAYER_HEAD","城市居民列表",lore));
+
+        player.openInventory(temp);
+        return true;
     }
 }

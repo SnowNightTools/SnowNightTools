@@ -1037,4 +1037,15 @@ public class SnFileIO {
         ymlfile.set(path+".y", loc.getY());
         ymlfile.set(path+".z", loc.getZ());
     }
+
+    public static ItemStack getSkull(UUID player, List<String> lore){
+        ItemStack head = new ItemStack(Material.PLAYER_HEAD,1);
+        SkullMeta meta = (SkullMeta) head.getItemMeta();
+        assert meta != null;
+        meta.setOwningPlayer(Bukkit.getOfflinePlayer(player));
+        if(lore != null) meta.setLore(lore);
+        meta.setDisplayName(Bukkit.getOfflinePlayer(player).getName());
+        head.setItemMeta(meta);
+        return head;
+    }
 }

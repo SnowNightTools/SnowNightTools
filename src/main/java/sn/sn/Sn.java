@@ -28,7 +28,6 @@ public class Sn extends JavaPlugin {
 
     public static Plugin sn = null;
 
-    public static boolean eco_system_set = false;
     public static File share_file;
     public static File quest_file;
     public static File playerquest_file;
@@ -36,18 +35,11 @@ public class Sn extends JavaPlugin {
     public static File collector_file;
     public static File bin_file;
     public static File data_folder;
+    public static YamlConfiguration share_yml,bin_yml,config_yml,quest_yml,playerquest_yml,collector_yml;
 
     public static Map<Player, Location> start_point = new HashMap<>();
     public static Map<Player, Location> end_point = new HashMap<>();
     public static Map<Player, List<Collector_CE.Collector>> collectors = new HashMap<>();
-    public static List<String> collector_names = new ArrayList<>();
-    public static boolean debug = true;
-
-    public static List<Quest_CE.Quest> quests = new ArrayList<>();
-
-    public static String plugin_path;
-    public static String share_path;
-    public static YamlConfiguration share_yml,bin_yml,config_yml,quest_yml,playerquest_yml,collector_yml;
     public static Map<Player, Quest_CE.QuestAction> quest_action_setting = new HashMap<>();
     public static Map<Player, Inventory> show_inv = new HashMap<>();
     public static Map<Player, List<ItemStack>> item_temp = new HashMap<>();
@@ -58,18 +50,31 @@ public class Sn extends JavaPlugin {
     public static Map<Player, Consumer<Player>> ui_opener = new HashMap<>();
     public static Map<Player, EntityType> entity_type_setting = new HashMap<>();
     public static Map<Player, Boolean> isSetTorC = new HashMap<>();//true when commander is setting Target
+    public static Map<OfflinePlayer, Boolean> city_joined = new HashMap<>();//true when commander has joint a city.
     public static Map<Player, InvOperateEvent.LocSet> loc_setting = new HashMap<>();
     public static Map<Player, Double> double_setting = new HashMap<>();
     public static Map<Player, Integer> int_setting = new HashMap<>();
     public static Map<Player, String> string_setting = new HashMap<>();
     public static Map<Player, List<String>> list_str_setting = new HashMap<>();
+
+    public static boolean eco_system_set = false;
     public static boolean eco_use_vault = true;
+    public static boolean debug = true;
+
+    public static String plugin_path;
+    public static String share_path;
+
     public static Permission sn_perm;
-    //public static Map<Player, Map<ItemStack, Map<String, String>>> sp_item_tags = new HashMap<>();
-    public static int quest_amount = 0;
     public static Economy sn_economy;
+
     public static List<ItemStack> rubbishes;
-    public static List<String> bin;
+    public static List<Quest_CE.Quest> quests = new ArrayList<>();
+    public static Map<String, City_CE.City> cities = new HashMap<>();
+
+    public static List<String> bins;
+    public static List<String> collector_names = new ArrayList<>();
+    public static List<String> city_names = new ArrayList<>();
+
 
     /** 给Console发送信息
      * send message to console
@@ -108,8 +113,6 @@ public class Sn extends JavaPlugin {
         CommandSender sender = Bukkit.getConsoleSender();
         sender.sendMessage(ChatColor.RED+"[sn][Error]"+ mes);
     }
-
-
 
 
     public static List<String> toStrList(Map<String,Object> map){
@@ -325,7 +328,7 @@ public class Sn extends JavaPlugin {
             collector_file = new File(data_folder,"collector.yml");
             //noinspection ResultOfMethodCallIgnored
             collector_file.createNewFile();
-            bin_file = new File(data_folder,"bin.yml");
+            bin_file = new File(data_folder,"bins.yml");
             //noinspection ResultOfMethodCallIgnored
             bin_file.createNewFile();
             quest_file = checkFile(quest_Path + "quest.yml");
@@ -378,11 +381,11 @@ public class Sn extends JavaPlugin {
     }
 
     private void loadBin() {
-        bin = new ArrayList<>();
+        bins = new ArrayList<>();
         int n = bin_yml.getInt("amount",0);
         for (int i = 0; i < n; i++) {
             String s = bin_yml.getString(String.valueOf(i));
-            bin.add(s);
+            bins.add(s);
         }
     }
 
