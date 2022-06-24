@@ -22,7 +22,7 @@ import java.io.Serializable;
 import java.util.*;
 
 import static sn.sn.Sn.*;
-import static sn.sn.InvOperateEvent.openQuestSettingUI;
+import static sn.sn.OpenUI.openQuestSettingUI;
 
 /*
 
@@ -218,8 +218,7 @@ import static sn.sn.InvOperateEvent.openQuestSettingUI;
         6、自编 DIY
 
         */
-
-
+@SuppressWarnings({"unchecked", "unused", "SpellCheckingInspection", "UnusedReturnValue"})
 public class Quest_CE implements CommandExecutor {
 
 
@@ -313,14 +312,13 @@ public class Quest_CE implements CommandExecutor {
 
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, String label,@NotNull String[] args) {
+
         if(!label.equalsIgnoreCase("quest")){
             return true;
         }
 
-
-
-        if(args==null||args.length==0) return help();
+        if(args.length == 0) return help();
 
         //获取玩家背包信息
         if(sender instanceof Player){
@@ -330,48 +328,15 @@ public class Quest_CE implements CommandExecutor {
             return true;
         }
 
-
         //quest show now：打印现在正在进行的任务信息
         //quest show other [questname]打印特定任务信息。
         if(args[0].equalsIgnoreCase("show")){
-            if(args[1].equalsIgnoreCase("now")) {
-                int taskid = playerquest_yml.getInt(questPlayer.getName()+".nowtaskid");
-
-                String nowquestname;
-                nowquestname = playerquest_yml.getString(questPlayer.getName() + ".nowquest");
-                show(nowquestname, questPlayer);
-            }
-            if(args[1].equalsIgnoreCase("other")) {
-                if(isQuestExist(args[2])) show(args[2], questPlayer);
-                else questPlayer.sendMessage("任务不存在！");
-            }
+            workQuestShowCE(args);
         }
 
         //quest done打印以前已经完成过的任务信息和时间
         if(args[0].equalsIgnoreCase("done")){
-            if(!args[1].isEmpty()){
-                int i = Integer.parseInt(args[1]);
-                String tmpname = playerquest_yml.getString(questPlayer.getName()+".donelist."+i);
-                questPlayer.sendMessage("第"+i+"个任务，任务名："+tmpname);
-                questPlayer.sendMessage("开始时间："+playerquest_yml.getString(questPlayer.getName()+".done."+tmpname+".starttime"));
-                questPlayer.sendMessage("完成时间："+playerquest_yml.getString(questPlayer.getName()+".done."+tmpname+".endtime"));
-                questPlayer.sendMessage("用时："+playerquest_yml.getString(questPlayer.getName()+".done."+tmpname+".usedtime"));
-                ++i;
-                return true;
-            }
-            if(playerquest_yml.contains(questPlayer.getName()+".done")){
-                int i=0;
-                while(i<playerquest_yml.getInt(questPlayer.getName()+".doneamount")){
-                    String tmpname = playerquest_yml.getString(questPlayer.getName()+".donelist."+i);
-                    questPlayer.sendMessage("第"+i+"个任务，任务名："+tmpname);
-                    questPlayer.sendMessage("开始时间："+playerquest_yml.getString(questPlayer.getName()+".done."+tmpname+".starttime"));
-                    questPlayer.sendMessage("完成时间："+playerquest_yml.getString(questPlayer.getName()+".done."+tmpname+".endtime"));
-                    questPlayer.sendMessage("用时："+playerquest_yml.getString(questPlayer.getName()+".done."+tmpname+".usedtime"));
-                    ++i;
-                }
-                questPlayer.sendMessage("以上~");
-            } else questPlayer.sendMessage("你好像还没有完成过任务哦~");
-            return true;
+            return workQuestDoneCE(args);
         }
 
         //quest list：打印现在你可以进行的任务列表
@@ -381,79 +346,30 @@ public class Quest_CE implements CommandExecutor {
         //            1: name2
         //            ……
         if(args[0].equalsIgnoreCase("list")){
-            int amount = playerquest_yml.getInt(questPlayer.getName()+".enableamount");
-            if(amount == 0){
-                questPlayer.sendMessage("你现在没有可以选择的任务~");
-                return true;
-            }
-            questPlayer.sendMessage("你现在可以选择以下任务：");
-            for (int i = 0; i < amount; i++) {
-                questPlayer.sendMessage(Objects.requireNonNull(playerquest_yml.getString(questPlayer.getName() + ".questenable." + i)));
-            }
-            return true;
+            return workQuestListCE();
         }
-
 
         //quest select [index]：选择你现在想要进行的任务，进行切换（如果你有多个可以进行的任务）
         if(args[0].equalsIgnoreCase("select")){
-            int amount = playerquest_yml.getInt(questPlayer.getName()+".enableamount");
-            if(amount == 0){
-                questPlayer.sendMessage("你现在没有可以选择的任务~");
-                return true;
-            }
-            int index = Integer.parseInt(args[1]);
-            if(index>=0&&index<=amount){
-                String questname = playerquest_yml.getString(questPlayer.getName() + ".questenable." + index);
-                if(!loadQuest(questPlayer,questname)){
-                    questPlayer.sendMessage("任务选择失败！");
-                    return false;
-                } else return true;
-            } else {
-                questPlayer.sendMessage("请输入正确的序号！");
-                return false;
-            }
+            return workQuestSelectCE(args);
 
         }
 
         //getreward:当任务完成时无法领取奖励，可以使用这个指令重新领取，并跳到下一个任务
         if(args[0].equalsIgnoreCase("getreward")){
-            if(playerquest_yml.getBoolean(questPlayer.getName()+".rewarding",false)){
-                playerquest_yml.set(questPlayer.getName()+".rewarding",null);
-                String name = playerquest_yml.getString(questPlayer.getName()+".nowquest");
-                getQuest(name).succeed(questPlayer);
-            }else questPlayer.sendMessage("你没有需要领取的奖励！");
-            return true;
+            return workQuestGetRewardCE();
         }
-
 
         //create [questname]：
         if(args[0].equalsIgnoreCase("create")){
-            if(args.length==2){
-
-                if(args[1].contains("\\")||args[1].contains("\'")||args[1].contains("\"")||args[1].contains(" ")||args[1].contains(".")){
-                    questPlayer.sendMessage(ChatColor.RED+"非法的任务名！");
-                    return false;
-                }
-                String name = args[1];
-                if(quest_yml.contains(name)){
-                    questPlayer.sendMessage(ChatColor.YELLOW+"任务名被占用！");
-                    return false;
-                }
-
-                if(questseting.containsKey(questPlayer)){
-                    questPlayer.sendMessage("请继续处理你未完成的任务！");
-                } else questseting.put(questPlayer,new Quest(name));
-
-
-                openQuestSettingUI(questPlayer,name);
-
-            }
+            if (workQuestCreateCE(args)) return false;
 
         }
+
         //set
         if(args[0].equalsIgnoreCase("set")){
             if(args.length==1){
-                if(!questseting.containsKey(questPlayer)){
+                if(!quest_setting.containsKey(questPlayer)){
                     questPlayer.sendMessage("请先新建一个任务！");
                     return false;
                 }
@@ -462,8 +378,112 @@ public class Quest_CE implements CommandExecutor {
             }
         }
 
-
         return true;
+    }
+
+    private boolean workQuestCreateCE(String[] args) {
+        if(args.length==2){
+
+            if(args[1].contains("\\")|| args[1].contains("'")|| args[1].contains("\"")|| args[1].contains(" ")|| args[1].contains(".")){
+                questPlayer.sendMessage(ChatColor.RED+"非法的任务名！");
+                return true;
+            }
+            String name = args[1];
+            if(quest_yml.contains(name)){
+                questPlayer.sendMessage(ChatColor.YELLOW+"任务名被占用！");
+                return true;
+            }
+
+            if(quest_setting.containsKey(questPlayer)){
+                questPlayer.sendMessage("请继续处理你未完成的任务！");
+            } else quest_setting.put(questPlayer,new Quest(name));
+
+
+            openQuestSettingUI(questPlayer,name);
+
+        }
+        return false;
+    }
+
+    private boolean workQuestGetRewardCE() {
+        if(playerquest_yml.getBoolean(questPlayer.getName()+".rewarding",false)){
+            playerquest_yml.set(questPlayer.getName()+".rewarding",null);
+            String name = playerquest_yml.getString(questPlayer.getName()+".nowquest");
+            getQuest(name).succeed(questPlayer);
+        }else questPlayer.sendMessage("你没有需要领取的奖励！");
+        return true;
+    }
+
+    private boolean workQuestSelectCE(String[] args) {
+        int amount = playerquest_yml.getInt(questPlayer.getName()+".enableamount");
+        if(amount == 0){
+            questPlayer.sendMessage("你现在没有可以选择的任务~");
+            return true;
+        }
+        int index = Integer.parseInt(args[1]);
+        if(index>=0&&index<=amount){
+            String questname = playerquest_yml.getString(questPlayer.getName() + ".questenable." + index);
+            if(!loadQuest(questPlayer,questname)){
+                questPlayer.sendMessage("任务选择失败！");
+                return false;
+            } else return true;
+        } else {
+            questPlayer.sendMessage("请输入正确的序号！");
+            return false;
+        }
+    }
+
+    private boolean workQuestListCE() {
+        int amount = playerquest_yml.getInt(questPlayer.getName()+".enableamount");
+        if(amount == 0){
+            questPlayer.sendMessage("你现在没有可以选择的任务~");
+            return true;
+        }
+        questPlayer.sendMessage("你现在可以选择以下任务：");
+        for (int i = 0; i < amount; i++) {
+            questPlayer.sendMessage(Objects.requireNonNull(playerquest_yml.getString(questPlayer.getName() + ".questenable." + i)));
+        }
+        return true;
+    }
+
+    private boolean workQuestDoneCE(String[] args) {
+        if(!args[1].isEmpty()){
+            int i = Integer.parseInt(args[1]);
+            String tmpname = playerquest_yml.getString(questPlayer.getName()+".donelist."+i);
+            questPlayer.sendMessage("第"+i+"个任务，任务名："+tmpname);
+            questPlayer.sendMessage("开始时间："+playerquest_yml.getString(questPlayer.getName()+".done."+tmpname+".starttime"));
+            questPlayer.sendMessage("完成时间："+playerquest_yml.getString(questPlayer.getName()+".done."+tmpname+".endtime"));
+            questPlayer.sendMessage("用时："+playerquest_yml.getString(questPlayer.getName()+".done."+tmpname+".usedtime"));
+            ++i;
+            return true;
+        }
+        if(playerquest_yml.contains(questPlayer.getName()+".done")){
+            int i=0;
+            while(i<playerquest_yml.getInt(questPlayer.getName()+".doneamount")){
+                String tmpname = playerquest_yml.getString(questPlayer.getName()+".donelist."+i);
+                questPlayer.sendMessage("第"+i+"个任务，任务名："+tmpname);
+                questPlayer.sendMessage("开始时间："+playerquest_yml.getString(questPlayer.getName()+".done."+tmpname+".starttime"));
+                questPlayer.sendMessage("完成时间："+playerquest_yml.getString(questPlayer.getName()+".done."+tmpname+".endtime"));
+                questPlayer.sendMessage("用时："+playerquest_yml.getString(questPlayer.getName()+".done."+tmpname+".usedtime"));
+                ++i;
+            }
+            questPlayer.sendMessage("以上~");
+        } else questPlayer.sendMessage("你好像还没有完成过任务哦~");
+        return true;
+    }
+
+    private void workQuestShowCE(String[] args) {
+        if(args[1].equalsIgnoreCase("now")) {
+            int taskid = playerquest_yml.getInt(questPlayer.getName()+".nowtaskid");
+
+            String nowquestname;
+            nowquestname = playerquest_yml.getString(questPlayer.getName() + ".nowquest");
+            show(nowquestname, questPlayer);
+        }
+        if(args[1].equalsIgnoreCase("other")) {
+            if(isQuestExist(args[2])) show(args[2], questPlayer);
+            else questPlayer.sendMessage("任务不存在！");
+        }
     }
 
     private boolean help() {
@@ -761,6 +781,7 @@ public class Quest_CE implements CommandExecutor {
         }
     }
 
+
     @SerializableAs("SnQuest")
     public static class Quest implements Cloneable ,ConfigurationSerializable, Serializable{
         private int questnumber;
@@ -880,9 +901,7 @@ public class Quest_CE implements CommandExecutor {
 
             ymlfile.set(winner.getName()+".done."+quest.getQuestname()+".id",quest.getQuestnumber());
             ymlfile.set(winner.getName()+".done."+quest.getQuestname()+".starttime",ymlfile.getString(winner.getName()+".starttime"));
-            Date now = new Date();
-            Calendar nowc = null,starttime = readCalendarFromString(ymlfile.getString(winner.getName()+".starttime"));
-            nowc.setTime(now);
+            Calendar nowc = Calendar.getInstance(),starttime = readCalendarFromString(ymlfile.getString(winner.getName()+".starttime"));
             String time = recordCalendarToString(nowc);
             double usedtime = starttime.compareTo(nowc) /1000.0 /60.0;
             ymlfile.set(winner.getName()+".done."+quest.getQuestname()+".endtime",time);
@@ -906,6 +925,7 @@ public class Quest_CE implements CommandExecutor {
             int sec = Integer.parseInt(str,str.indexOf("::")+2,str.length(),10);
 
             assert false;
+            //noinspection MagicConstant
             time.set(year,(mon-1),day,hour,min,sec);
 
             return time;
@@ -1639,6 +1659,7 @@ public class Quest_CE implements CommandExecutor {
         }
     }
 
+    @SuppressWarnings("unused")
     @SerializableAs("SnQuestActionData")
     public static class QuestActionData implements Cloneable ,ConfigurationSerializable, Serializable  {
         public double defaultdistance = -1;
@@ -1732,16 +1753,6 @@ public class Quest_CE implements CommandExecutor {
                     ++i;
                 }
             }
-/*
-            if(questtargetblock != null){
-                int i=0;
-                for(Block key:questtargetblock.keySet()){
-                    ymlfile.set(questActndtname+".property-set.questtargetblock."+ i +"blockdata",key.getBlockData().get);
-                    ymlfile.set(questActndtname+".property-set.questtargetblock."+ i +"amount",questtargetblock.get(key));
-                    ++i;
-                }
-            }*/
-
             ymlfile.set(questActndtname+".property-set.targetpositionx",targetpositionx);
             ymlfile.set(questActndtname+".property-set.targetpositiony",targetpositiony);
             ymlfile.set(questActndtname+".property-set.targetpositionz",targetpositionz);
@@ -1777,7 +1788,7 @@ public class Quest_CE implements CommandExecutor {
             if(ymlfile.contains(name+".property-set.questtargetentity")) {
                 while(ymlfile.contains(name+".property-set.questtargetentity."+i)) {
                     if(!ymlfile.contains(name + ".property-set.questtargetentity."+i+".amount")||!ymlfile.contains(name + ".property-set.questtargetentity."+i+".entitytype")){
-                        sendInfo("[WARNING]读取QuestAction数据错误，数据非法："+this.toString());
+                        sendInfo("[WARNING]读取QuestAction数据错误，数据非法："+ this);
                         sendInfo("[WARNING]读取QuestAction数据错误，数据非法："+i);
                         continue;
                     }
@@ -1834,14 +1845,6 @@ public class Quest_CE implements CommandExecutor {
         public void removeQuesttargetentity(EntityType key){
             questtargetentity.remove(key);
         }
-/*
-        public void addQuesttargetblock(Block key,int value){
-            questtargetblock.put(key,value);
-        }
-
-        public void removeQuesttargetblock(Block key){
-            questtargetblock.remove(key);
-        }*/
 
         public Location getTargetlocation() {
             return targetlocation;
@@ -1985,6 +1988,7 @@ public class Quest_CE implements CommandExecutor {
         }
     }
 
+    @SuppressWarnings("unused")
     @SerializableAs("SnQuestReward")
     public static class QuestReward implements Cloneable ,ConfigurationSerializable, Serializable  {
         private String questrewardname;
@@ -2041,10 +2045,10 @@ public class Quest_CE implements CommandExecutor {
                 player.getInventory().addItem(item);
                 player.updateInventory();
             }
-            sneconomy.depositPlayer(player,rewarditemamount);
+            sn_economy.depositPlayer(player,rewarditemamount);
             for (String prm:
                     rewardpermission) {
-                snperm.playerAdd(null,player,prm);
+                sn_perm.playerAdd(null,player,prm);
 
             }
             player.sendMessage(ChatColor.GREEN+"奖励发送完成~");

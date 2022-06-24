@@ -10,6 +10,7 @@ import java.util.Objects;
 
 import static java.lang.Math.*;
 
+@SuppressWarnings("unused")
 public class Range {
 
     final private double startX,startY,startZ;

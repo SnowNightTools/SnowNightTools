@@ -15,12 +15,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-import static sn.sn.Collector_CE.rubbishes;
 import static sn.sn.Sn.*;
 
 public class CollectorRuntime implements Runnable {
 
-    Entity entity;
+    final Entity entity;
     CollectorRuntime (Entity entity){
         this.entity = entity;
     }

@@ -10,14 +10,19 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static sn.sn.Sn.*;
 
+@SuppressWarnings("SpellCheckingInspection")
 public class QuestRuntime extends BukkitRunnable {
 
 
 
+    @SuppressWarnings("BusyWait")
     @Override
     public void run() {
         if(eco_use_vault)
@@ -170,122 +175,7 @@ public class QuestRuntime extends BukkitRunnable {
     private List<Block> getBlockList(World world,Location location,double distance) {
         Block block = world.getBlockAt(location);
         int x=block.getX(),y=block.getY(),z=block.getZ();
-        List<Block> now =new List<Block>() {
-            @Override
-            public int size() {
-                return 0;
-            }
-
-            @Override
-            public boolean isEmpty() {
-                return false;
-            }
-
-            @Override
-            public boolean contains(Object o) {
-                return false;
-            }
-
-            @Override
-            public Iterator<Block> iterator() {
-                return null;
-            }
-
-            @Override
-            public Object[] toArray() {
-                return new Object[0];
-            }
-
-            @Override
-            public <T> T[] toArray(T[] a) {
-                return null;
-            }
-
-            @Override
-            public boolean add(Block block) {
-                return false;
-            }
-
-            @Override
-            public boolean remove(Object o) {
-                return false;
-            }
-
-            @Override
-            public boolean containsAll(Collection<?> c) {
-                return false;
-            }
-
-            @Override
-            public boolean addAll(Collection<? extends Block> c) {
-                return false;
-            }
-
-            @Override
-            public boolean addAll(int index, Collection<? extends Block> c) {
-                return false;
-            }
-
-            @Override
-            public boolean removeAll(Collection<?> c) {
-                return false;
-            }
-
-            @Override
-            public boolean retainAll(Collection<?> c) {
-                return false;
-            }
-
-            @Override
-            public void clear() {
-
-            }
-
-            @Override
-            public Block get(int index) {
-                return null;
-            }
-
-            @Override
-            public Block set(int index, Block element) {
-                return null;
-            }
-
-            @Override
-            public void add(int index, Block element) {
-
-            }
-
-            @Override
-            public Block remove(int index) {
-                return null;
-            }
-
-            @Override
-            public int indexOf(Object o) {
-                return 0;
-            }
-
-            @Override
-            public int lastIndexOf(Object o) {
-                return 0;
-            }
-
-            @Override
-            public ListIterator<Block> listIterator() {
-                return null;
-            }
-
-            @Override
-            public ListIterator<Block> listIterator(int index) {
-                return null;
-            }
-
-            @Override
-            public List<Block> subList(int fromIndex, int toIndex) {
-                return null;
-            }
-        };
+        List<Block> now = new ArrayList<>();
         return getBlockInDistance(block,distance,x,y,z,now);
 
     }

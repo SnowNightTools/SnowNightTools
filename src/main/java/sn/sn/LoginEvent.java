@@ -19,7 +19,7 @@ public class LoginEvent implements Listener {
                 return;
             }
 
-        if(!sneconomy.hasAccount(event.getPlayer()))sneconomy.createPlayerAccount(event.getPlayer());
+        if(!sn_economy.hasAccount(event.getPlayer())) sn_economy.createPlayerAccount(event.getPlayer());
 
         if(!config_yml.getBoolean("login-load"))return;
 

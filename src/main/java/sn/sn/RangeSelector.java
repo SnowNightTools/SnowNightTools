@@ -24,12 +24,12 @@ public class RangeSelector implements Listener {
         try {
             if(event.getAction()== Action.LEFT_CLICK_BLOCK){
                 Location t = Objects.requireNonNull(event.getClickedBlock()).getLocation();
-                startpoint.put(event.getPlayer(), t);
+                start_point.put(event.getPlayer(), t);
                 if(t.getWorld()!=null)
                 event.getPlayer().sendMessage(ChatColor.GREEN+"[Sn]你的第一个点设置为"+t.getWorld().getName()+",("+t.getX()+","+t.getY()+","+t.getZ()+")");
             } else if(event.getAction()==Action.RIGHT_CLICK_BLOCK){
                 Location t = Objects.requireNonNull(event.getClickedBlock()).getLocation();
-                endpoint.put(event.getPlayer(), t);
+                end_point.put(event.getPlayer(), t);
                 if(t.getWorld()!=null)
                 event.getPlayer().sendMessage(ChatColor.GREEN+"[Sn]你的第二个点设置为"+t.getWorld().getName()+",("+t.getX()+","+t.getY()+","+t.getZ()+")");
             }

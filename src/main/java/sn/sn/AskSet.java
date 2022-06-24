@@ -16,6 +16,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+@SuppressWarnings("unused")
 public class AskSet implements Listener {
 
     private final UUID uuid;
@@ -26,7 +27,7 @@ public class AskSet implements Listener {
         this.consumer = consumer;
     }
 
-    public static List<String> askSet(Player commander, List<String> questions, int timelimit, Consumer<Player> done, Consumer<Player> n_done ) throws InterruptedException {
+    public static List<String> askSet(Player commander, List<String> questions, int time_limit, Consumer<Player> done, Consumer<Player> n_done ) throws InterruptedException {
         int amount = questions.size();
         commander.sendMessage("开始设置变量：");
 
@@ -38,10 +39,11 @@ public class AskSet implements Listener {
             Bukkit.getPluginManager().registerEvents(task, Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("Sn")));
 
             while (tmpl.size() != i+1){
+                //noinspection BusyWait
                 Thread.sleep(1000);
-                commander.sendMessage("你设置了"+tmpl.size()+"/"+amount+"个参数,你还有"+(timelimit-waiting)+"秒来完成设置");
+                commander.sendMessage("你设置了"+tmpl.size()+"/"+amount+"个参数,你还有"+(time_limit -waiting)+"秒来完成设置");
                 commander.sendMessage(questions.get(i));
-                if(waiting++ >= timelimit){
+                if(waiting++ >= time_limit){
                     commander.sendMessage("设置取消");
                     if(n_done!=null)
                         n_done.accept(commander);
@@ -113,13 +115,13 @@ public class AskSet implements Listener {
      * @param commander who to ask
      * @param questions the messages to send while asking
      * @param consumers the answers
-     * @param timelimit time limit
+     * @param time_limit time limit
      * @param done the thing to do when the asks were all done.
      * @param n_done the thing to do when the asks were not done.
      * @throws IllegalArgumentException - throw when the questions size do
      * not match the consumer size
      */
-    public static synchronized void askSetAsync(@NotNull Player commander,List<String> questions,@NotNull List<Consumer<String>> consumers, int timelimit,@Nullable Consumer<Player> done,@Nullable Consumer<Player> n_done) throws IllegalArgumentException {
+    public static synchronized void askSetAsync(@NotNull Player commander, List<String> questions, @NotNull List<Consumer<String>> consumers, int time_limit, @Nullable Consumer<Player> done, @Nullable Consumer<Player> n_done) throws IllegalArgumentException {
 
         if(questions.size()!=consumers.size()){
             String a = "the questions size "+questions.size()+" do not match the consumer size "+consumers.size();
@@ -128,12 +130,12 @@ public class AskSet implements Listener {
 
         commander.sendMessage("设置变量中：");
         commander.sendMessage("直接将变量输入来设置变量。");
-        AskSetThread thread = new AskSetThread(commander,questions,consumers, timelimit,done,n_done);
+        AskSetThread thread = new AskSetThread(commander,questions,consumers, time_limit,done,n_done);
         thread.start();
 
     }
 
-    /**Begin to ask some question from specified player, but
+    /**@deprecated Begin to ask some question from specified player, but
      * without sending question content.
      * Best never use it. Because it will block the main thread
      * until the settings are all done.

@@ -7,8 +7,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
-import static sn.sn.Collector_CE.bin;
-import static sn.sn.Collector_CE.rubbishes;
 import static sn.sn.Sn.*;
 
 @SuppressWarnings("ResultOfMethodCallIgnored")

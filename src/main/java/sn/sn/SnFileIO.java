@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+@SuppressWarnings({"unused", "SpellCheckingInspection"})
 public class SnFileIO {
 
 
@@ -263,7 +264,7 @@ public class SnFileIO {
 
         if(ymlfile.contains(path + ".enchantmentstorage")) {
             EnchantmentStorageMeta tmpesm = (EnchantmentStorageMeta) tmpmeta;
-            List<Map<?, ?>> tmplis = new ArrayList<>();
+            List<Map<?, ?>> tmplis;
             tmplis = ymlfile.getMapList(path+ ".enchantmentstorage");
             for(Map<?, ?> tmpmap:tmplis){
                 String enname = tmpmap.keySet().toArray()[0].toString();
@@ -840,7 +841,7 @@ public class SnFileIO {
 
         }
 
-        int i=0;
+        int i;
         /* 该部分内容过时，故注释
         Map<Enchantment,Integer> tenm = itemtosave.getEnchantments();
 

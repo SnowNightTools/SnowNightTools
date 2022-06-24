@@ -6,7 +6,9 @@ import org.bukkit.*;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
@@ -20,15 +22,13 @@ import java.util.*;
 import java.util.function.Consumer;
 
 import static org.bukkit.configuration.serialization.ConfigurationSerialization.registerClass;
-import static sn.sn.Collector_CE.bin;
-import static sn.sn.Collector_CE.rubbishes;
 
+@SuppressWarnings({"SpellCheckingInspection", "unused"})
 public class Sn extends JavaPlugin {
 
     public static Plugin sn = null;
 
     public static boolean eco_system_set = false;
-    public static File plugin_file;
     public static File share_file;
     public static File quest_file;
     public static File playerquest_file;
@@ -37,41 +37,39 @@ public class Sn extends JavaPlugin {
     public static File bin_file;
     public static File data_folder;
 
-    public static Map<Player, Location> startpoint = new HashMap<>();
-    public static Map<Player, Location> endpoint = new HashMap<>();
+    public static Map<Player, Location> start_point = new HashMap<>();
+    public static Map<Player, Location> end_point = new HashMap<>();
     public static Map<Player, List<Collector_CE.Collector>> collectors = new HashMap<>();
     public static List<String> collector_names = new ArrayList<>();
     public static boolean debug = true;
 
     public static List<Quest_CE.Quest> quests = new ArrayList<>();
 
-    public static String plugin_Path;
+    public static String plugin_path;
+    public static String share_path;
     public static YamlConfiguration share_yml,bin_yml,config_yml,quest_yml,playerquest_yml,collector_yml;
-    public static Map<Player, Quest_CE.QuestAction> questactionseting = new HashMap<>();
-    public static Map<Player, Inventory> showInv = new HashMap<>();
+    public static Map<Player, Quest_CE.QuestAction> quest_action_setting = new HashMap<>();
+    public static Map<Player, Inventory> show_inv = new HashMap<>();
     public static Map<Player, List<ItemStack>> item_temp = new HashMap<>();
-    public static Map<Player, Quest_CE.Quest> questseting = new HashMap<>();
-    public static Map<Player, Consumer<Object>> seting = new HashMap<>();
-    public static Map<Player, Consumer<ArrayList<Object>>> settinglist = new HashMap<>();
-    public static Map<Player, Quest_CE.SettingType> setingstate = new HashMap<>();
-    public static Map<Player, Consumer<Player>> uiopener = new HashMap<>();
-    public static Map<Player, EntityType> entitytypeseting = new HashMap<>();
+    public static Map<Player, Quest_CE.Quest> quest_setting = new HashMap<>();
+    public static Map<Player, Consumer<Object>> setting = new HashMap<>();
+    public static Map<Player, Consumer<ArrayList<Object>>> setting_list = new HashMap<>();
+    public static Map<Player, Quest_CE.SettingType> setting_state = new HashMap<>();
+    public static Map<Player, Consumer<Player>> ui_opener = new HashMap<>();
+    public static Map<Player, EntityType> entity_type_setting = new HashMap<>();
     public static Map<Player, Boolean> isSetTorC = new HashMap<>();//true when commander is setting Target
-    public static Map<Player, InvOperateEvent.LocSet> locseting = new HashMap<>();
-    public static Map<Player, Double> doubleseting = new HashMap<>();
-    public static Map<Player, Integer> intseting = new HashMap<>();
-    public static Map<Player, String> stringseting = new HashMap<>();
-    public static Map<Player, List<String>> liststrseting = new HashMap<>();
+    public static Map<Player, InvOperateEvent.LocSet> loc_setting = new HashMap<>();
+    public static Map<Player, Double> double_setting = new HashMap<>();
+    public static Map<Player, Integer> int_setting = new HashMap<>();
+    public static Map<Player, String> string_setting = new HashMap<>();
+    public static Map<Player, List<String>> list_str_setting = new HashMap<>();
     public static boolean eco_use_vault = true;
-    public static Permission snperm;
-    //public static Map<Player, Map<ItemStack, Map<String, String>>> spitemtags = new HashMap<>();
-    public static int questamount = 0;
-    public static Economy sneconomy;
-
-    {
-        plugin_Path = getDataFolder().getPath();
-    }
-
+    public static Permission sn_perm;
+    //public static Map<Player, Map<ItemStack, Map<String, String>>> sp_item_tags = new HashMap<>();
+    public static int quest_amount = 0;
+    public static Economy sn_economy;
+    public static List<ItemStack> rubbishes;
+    public static List<String> bin;
 
     /** 给Console发送信息
      * send message to console
@@ -125,24 +123,20 @@ public class Sn extends JavaPlugin {
     public String share_Path,quest_Path,playerquest_Path;
 
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public static boolean initVault(){
         RegisteredServiceProvider<Economy> economyProvider = Bukkit.getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
         RegisteredServiceProvider<Permission> perProvider = Bukkit.getServicesManager().getRegistration(net.milkbowl.vault.permission.Permission.class);
 
         if(economyProvider != null && perProvider != null){
-            sneconomy = economyProvider.getProvider();
-            snperm = perProvider.getProvider();
+            sn_economy = economyProvider.getProvider();
+            sn_perm = perProvider.getProvider();
             eco_system_set = true;
             return true;
         } else return false;
     }
 
 
-
-
-     /*Permission basicio=new Permission("sn.express.basicio") ,admin= new Permission("sn.express.admin");
-        basicio.setDefault(PermissionDefault.TRUE);
-        admin.setDefault(PermissionDefault.OP);*/
 
         /*
         1.玩家任务执行信息（存储在playerquest.yml）每个玩家都有自己的任务信息，它们形如：
@@ -272,6 +266,8 @@ public class Sn extends JavaPlugin {
     public void onEnable() {
 
         sn = this;
+        data_folder = getDataFolder();
+        plugin_path = getDataFolder().getPath();
 
         registerClass(Quest_CE.Quest.class);
         registerClass(Quest_CE.QuestPosition.class);
@@ -279,7 +275,7 @@ public class Sn extends JavaPlugin {
         registerClass(Quest_CE.QuestReward.class);
         registerClass(Quest_CE.QuestActionData.class);
 
-        data_folder = getDataFolder();
+
         config_file = new File(data_folder.getAbsolutePath()+ "\\config.yml");
         sendInfo(data_folder.getAbsolutePath()+ "\\config.yml");
 
