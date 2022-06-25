@@ -12,6 +12,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -167,6 +168,31 @@ public class InvOperateEvent implements Listener {
 
         if(inv_click.getView().getTitle().equalsIgnoreCase("整数型变量设置")){
             workIntVarSetIO(inv_click);
+        }
+
+        if(inv_click.getView().getTitle().contains("MyCity: ")){
+            if (OpenUI.uiINIT(inv_click)) return;
+            OfflinePlayer p;
+            try {
+                ItemMeta itemMeta = Objects.requireNonNull(inv_click.getCurrentItem()).getItemMeta();
+                p = ((SkullMeta) Objects.requireNonNull(itemMeta)).getOwningPlayer();
+            } catch (Exception e) {
+                sendError(e.getLocalizedMessage());
+                return;
+            }
+            if(p == null) {
+                commander.sendMessage("发送了错误：无法获得玩家信息！");
+                return;
+            }
+            City_CE.City city = City_CE.checkMayorAndGetCity(commander);
+            if(city == null) return;
+            List<UUID> applications = city.getApplications();
+            List<String> conf = new ArrayList<>();
+            conf.add(ChatColor.GREEN+"你确认要添加"+p.getName()+"到城市中吗？");
+            conf.add(ChatColor.LIGHT_PURPLE+"请注意，这代表着城市需要对该玩家的行为负责！");
+            conf.add(ChatColor.GREEN+"若确定，请在60s内直接输入confirm add "+p.getName());
+            conf.add(ChatColor.GREEN+"严格区分大小写，请不要添加其他任何符号，不要删减空格");
+
         }
     }
 

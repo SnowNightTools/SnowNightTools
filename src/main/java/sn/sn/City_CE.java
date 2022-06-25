@@ -13,7 +13,7 @@ import java.util.*;
 import java.util.function.Consumer;
 
 import static sn.sn.AskSet.askSetAsync;
-import static sn.sn.OpenUI.openMyCityUI;
+import static sn.sn.OpenUI.*;
 import static sn.sn.Sn.*;
 
 /*
@@ -50,6 +50,22 @@ import static sn.sn.Sn.*;
 *
 * */
 public class City_CE implements CommandExecutor {
+    @Nullable
+    public static City checkMayorAndGetCity(Player commander) {
+        City city;
+        city = City.getCity(commander);
+        try {
+            if(!Objects.requireNonNull(city).getMayor().equals(commander.getUniqueId())){
+                commander.sendMessage("这个操作只能由市长完成！");
+                return null;
+            }
+        } catch (Exception e) {
+            commander.sendMessage("你好像还没有加入城市！");
+            return null;
+        }
+        return city;
+    }
+
     /**
      * Executes the given command, returning its success.
      * <br>
@@ -114,9 +130,16 @@ public class City_CE implements CommandExecutor {
             return workCityAddWarpCE(args, commander);
         }
 
-        // /city accept [player name] 同意一个人的加入请求，不填写[player name]，将会打开所有申请人的面板，可以在面板上处理请求。
+        // /city accept [player name/Offline player uuid] 同意一个人的加入请求，不填写[player name]，将会打开所有申请人的面板，可以在面板上处理请求。
+        if(args[0].equals("accept")){
+            return workCityAcceptCE(sender, args, commander);
+        }
+
         // /city add <perm group name> <player name> 将一个特定的人添加进该权限组。
         // /city set [perm group name] 设置城市对特定权限组的权限，不填写则设置城市对居民的权限（打开面板）。
+        // /city range add 向小镇中添加区域 体积上限与人数（用单独的枚举类CITY_TYPE来实现）有关。
+        // /city range list 列出所有区域。
+        // /city range remove <index> 向小镇中删除区域。
         // /city setspawn 设置小镇出生点
         // /city loadchunk 让插件常加载脚下的方块
         // /city manage 打开小镇管理面板（踢人之类的操作）
@@ -131,18 +154,33 @@ public class City_CE implements CommandExecutor {
         return false;
     }
 
-    private boolean workCityAddWarpCE( @NotNull String[] args, Player commander) {
-        if(args.length < 2) return help();
-        City city = City.getCity(commander);
-        try {
-            if(!Objects.requireNonNull(city).getMayor().equals(commander.getUniqueId())){
-                commander.sendMessage("这个操作只能由市长完成！");
-                return true;
-            }
-        } catch (Exception e) {
-            commander.sendMessage("你好像还没有加入城市！");
+    private boolean workCityAcceptCE(@NotNull CommandSender sender, @NotNull String[] args, Player commander) {
+        City city = checkMayorAndGetCity(commander);
+        if (city==null) {
             return true;
         }
+        if(args.length==1){
+            return openCityApplicationAcceptUI(city, commander);
+        }
+        UUID uuid;
+        OfflinePlayer player = Bukkit.getPlayer(args[1]);
+        if(player!=null){
+            uuid = player.getUniqueId();
+        } else uuid = UUID.fromString(args[1]);
+        if (city.getApplications().contains(uuid)) {
+            city.acceptApplication(uuid);
+            sender.sendMessage("已经接受了该玩家的请求！");
+        } else {
+            sender.sendMessage("没有找到该玩家的请求！");
+        }
+        return true;
+    }
+
+    private boolean workCityAddWarpCE( @NotNull String[] args, Player commander) {
+        if(args.length < 2) return help();
+        City city;
+        city = checkMayorAndGetCity(commander);
+        if (city == null) return true;
         if(city.addWarp(args[1], commander.getLocation())){
             commander.sendMessage("成功添加传送点"+ args[1]+"！");
         } else {
@@ -347,7 +385,7 @@ public class City_CE implements CommandExecutor {
         }
 
         public void addApplication(UUID applier){
-            application.add(applier);
+            if(!application.contains(applier)) application.add(applier);
         }
 
         public void acceptApplication(UUID applier){
@@ -363,7 +401,7 @@ public class City_CE implements CommandExecutor {
             return activated;
         }
 
-        public List<UUID> getApplication() {
+        public List<UUID> getApplications() {
             return application;
         }
 

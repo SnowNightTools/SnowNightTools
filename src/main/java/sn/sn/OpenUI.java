@@ -15,7 +15,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
+import static sn.sn.InvOperateEvent.*;
 import static sn.sn.Sn.*;
 import static sn.sn.SnFileIO.getSkull;
 
@@ -263,7 +265,7 @@ public class OpenUI {
             Quest_CE.Quest quest = quests.get(i);
             positionset.setItem(nowindex + i, getItem("BOOK", quest.getQuestname(), quest.getQuestdescription()));
         }
-        if(pgindex != 1)positionset.setItem(45, InvOperateEvent.pg_up);
+        if(pgindex != 1)positionset.setItem(45, pg_up);
         if(quests.size() > nowindex + 45)positionset.setItem(53, InvOperateEvent.pg_dn);
         commander.openInventory(positionset);
     }
@@ -334,7 +336,7 @@ public class OpenUI {
 
     }
 
-    public static long Tpower(int mi) {
+    public static long powerTen(int mi) {
         long res = 10;
         for (int i = 0; i < mi; i++) {
             res *= 10;
@@ -374,12 +376,12 @@ public class OpenUI {
         else mZ = '-';
 
         for (int i = 0; i < 5; i++) {
-            tmpls.setItem((i+1) * 9, getItem("PAPER","X"+mX+ Tpower(i),a));
-            tmpls.setItem((i+1)*9+1, getItem("PAPER","X"+mX+5* Tpower(i),a));
-            tmpls.setItem((i+1)*9+2, getItem("PAPER","Y"+mY+ Tpower(i),a));
-            tmpls.setItem((i+1)*9+3, getItem("PAPER","Y"+mY+5* Tpower(i),a));
-            tmpls.setItem((i+1)*9+4, getItem("PAPER","Z"+mZ+ Tpower(i),a));
-            tmpls.setItem((i+1)*9+5, getItem("PAPER","Z"+mZ+5* Tpower(i),a));
+            tmpls.setItem((i+1) * 9, getItem("PAPER","X"+mX+ powerTen(i),a));
+            tmpls.setItem((i+1)*9+1, getItem("PAPER","X"+mX+5* powerTen(i),a));
+            tmpls.setItem((i+1)*9+2, getItem("PAPER","Y"+mY+ powerTen(i),a));
+            tmpls.setItem((i+1)*9+3, getItem("PAPER","Y"+mY+5* powerTen(i),a));
+            tmpls.setItem((i+1)*9+4, getItem("PAPER","Z"+mZ+ powerTen(i),a));
+            tmpls.setItem((i+1)*9+5, getItem("PAPER","Z"+mZ+5* powerTen(i),a));
         }
         List<World> lw = Bukkit.getWorlds();
         int worldsize = Bukkit.getWorlds().size();
@@ -488,7 +490,7 @@ public class OpenUI {
             player.sendMessage("找不到你的小镇哦~");
             return true;
         }
-        Inventory temp = Bukkit.createInventory(player,54,city.getName());
+        Inventory temp = Bukkit.createInventory(player,54,"MyCity: "+city.getName());
         ItemStack is = city.getIcon();
         if(is==null) is = getItem("SNOWBALL",city.getName(),city.getDescription());
         temp.setItem(4,is);
@@ -512,4 +514,32 @@ public class OpenUI {
         player.openInventory(temp);
         return true;
     }
+
+    public static boolean openCityApplicationAcceptUI(City_CE.City city, Player player){
+        List<UUID> applications = city.getApplications();
+        if(applications.size()<=54){
+            Inventory temp = Bukkit.createInventory(player,54,ChatColor.GREEN+city.getName()+"城市加入申请管理面板");
+            for (UUID application : applications) {
+                temp.addItem(getSkull(application,null));
+            }
+            player.openInventory(temp);
+            return true;
+        }
+        openCityApplicationAcceptUI(city,player,1);
+        return true;
+    }
+    public static void openCityApplicationAcceptUI(City_CE.City city, Player player, int page){
+        List<UUID> applications = city.getApplications();
+        int page_total = applications.size()/45 + 1;
+        Inventory temp = Bukkit.createInventory(player,54,ChatColor.GREEN+city.getName()+"城市加入申请管理面板 Page "+page+" of "+page_total);
+        int now = (page-1)*45;
+        for (int i = now; (i < now+45)&&(i < applications.size()); i++) {
+            temp.addItem(getSkull(applications.get(i),null));
+        }
+        if(page!=1) temp.setItem(45,pg_up);
+        if(page!=page_total) temp.setItem(53,pg_dn);
+        player.openInventory(temp);
+    }
+
+
 }
