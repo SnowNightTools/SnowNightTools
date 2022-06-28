@@ -586,5 +586,13 @@ public class OpenUI {
         player.openInventory(temp);
     }
 
-
+    public static void openCityPermGroupChooseUI(Player commander) {
+        City_CE.City city = City_CE.City.checkMayorAndGetCity(commander);
+        if(city == null) return;
+        Inventory temp = Bukkit.createInventory(commander,54,"权限组选择界面: "+city.getName());
+        for (String s : city.getPermGroup().keySet()) {
+            temp.addItem(getItem("PAPER",s,null));
+        }
+        commander.openInventory(temp);
+    }
 }

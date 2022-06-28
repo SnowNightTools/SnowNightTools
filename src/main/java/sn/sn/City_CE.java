@@ -12,7 +12,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.function.Consumer;
 
+import static java.lang.Math.pow;
 import static sn.sn.AskSet.askSetAsync;
+import static sn.sn.City_CE.City.getCity;
+import static sn.sn.Collector_CE.getRange;
 import static sn.sn.OpenUI.*;
 import static sn.sn.Sn.*;
 
@@ -20,7 +23,7 @@ import static sn.sn.Sn.*;
 *
 *
 * City 城市系统
-* 作者:
+* 作者: LtSeed
 *
 *
 * 指令：
@@ -50,24 +53,10 @@ import static sn.sn.Sn.*;
 *
 * */
 public class City_CE implements CommandExecutor {
-    @Nullable
-    public static City checkMayorAndGetCity(Player commander) {
-        City city;
-        city = City.getCity(commander);
-        try {
-            if(!Objects.requireNonNull(city).getMayor().equals(commander.getUniqueId())){
-                commander.sendMessage("这个操作只能由市长完成！");
-                return null;
-            }
-        } catch (Exception e) {
-            commander.sendMessage("你好像还没有加入城市！");
-            return null;
-        }
-        return city;
-    }
+
 
     public static boolean workCityWarp(Player commander, String warp, String message) {
-        City temp = City.getCity(commander);
+        City temp = getCity(commander);
         if (temp!=null) {
             if(temp.getWarp(warp)!=null) {
                 commander.teleport(temp.getWarp(warp));
@@ -77,44 +66,6 @@ public class City_CE implements CommandExecutor {
             return true;
         }
         commander.sendMessage("你……你的小镇呢？");
-        return true;
-    }
-
-    private boolean workCityAcceptCE(@NotNull CommandSender sender, @NotNull String[] args, Player commander) {
-        City city = checkMayorAndGetCity(commander);
-        if (city==null) {
-            return true;
-        }
-        if(args.length==1){
-            return openCityApplicationAcceptUI(city, commander);
-        }
-        UUID uuid;
-        OfflinePlayer player = Bukkit.getPlayer(args[1]);
-        if(player!=null){
-            uuid = player.getUniqueId();
-        } else uuid = UUID.fromString(args[1]);
-        if (city.getApplications().contains(uuid)) {
-            city.acceptApplication(uuid);
-            sender.sendMessage("已经接受了该玩家的请求！");
-        } else {
-            sender.sendMessage("没有找到该玩家的请求！");
-        }
-        return true;
-    }
-
-    private boolean workCityAddWarpCE( @NotNull String[] args, Player commander) {
-        if(args.length < 2) return help();
-        City city;
-        city = checkMayorAndGetCity(commander);
-        if (city == null) return true;
-        if(city.addWarp(args[1], commander.getLocation())){
-            commander.sendMessage("成功添加传送点"+ args[1]+"！");
-        } else {
-            commander.sendMessage("传送点"+ args[1]+"添加失败了，可能的原因有：");
-            commander.sendMessage("1.权限不足，或已经添加了太多warp");
-            commander.sendMessage("2.该位置未在城市领土范围内");
-            commander.sendMessage("3.该warp名已经被占用");
-        }
         return true;
     }
 
@@ -197,16 +148,39 @@ public class City_CE implements CommandExecutor {
             return workCityAcceptCE(sender, args, commander);
         }
 
-        // /city add <perm group name> <player name> 将一个特定的人添加进该权限组。
+        // /city perm add <perm group name> <player name> 将一个特定的人添加进该权限组，需要玩家在线。
+        if (args[0].equals("perm"))
+            if(args.length > 1) {
+                if (args[1].equals("add")) {
+                    return workPermAddPlayerCE(args, commander);
+                }
+            } else return help();
 
-        // /city set [perm group name] 设置城市对特定权限组的权限，不填写则设置城市对居民的权限（打开面板）。
+        // /city perm set [perm group name] 反转城市对特定权限组的权限，不填写则设置城市对居民的权限（打开面板）。
+        if(args[0].equals("perm")&&args[1].equals("set")) {
+            return workPermGroupSetCE(sender, args, commander);
+        }
+
         // /city range add 向小镇中添加区域 体积上限与人数（用单独的枚举类CITY_TYPE来实现）有关。
         // /city range list 列出所有区域。
         // /city range remove <index> 向小镇中删除区域。
+        if(args[0].equals("range")){
+            return workCityRangeOperationCE(args, commander);
+        }
+
         // /city setspawn 设置小镇出生点
+        if(args[0].equals("setspawn")){
+            return workCitySetWarpCE(commander, "spawn");
+        }
+
         // /city loadchunk 让插件常加载脚下的方块
+        if(args[0].equals("loadchunk")){
+            return workCityChunkForceLoadCE(commander);
+        }
+
         // /city manage 打开小镇管理面板（踢人之类的操作）
-        //
+
+
         // Only For OP:
         // /city admin remove <name> 删除一个城市，需要op操作。
         // /city admin add <perm> 添加一个可以被城主设置的权限。
@@ -217,8 +191,147 @@ public class City_CE implements CommandExecutor {
         return false;
     }
 
+    private boolean workCityAcceptCE(@NotNull CommandSender sender, @NotNull String[] args, Player commander) {
+        City city = City.checkMayorAndGetCity(commander);
+        if (city==null) {
+            return true;
+        }
+        if(args.length==1){
+            return openCityApplicationAcceptUI(city, commander);
+        }
+        UUID uuid;
+        OfflinePlayer player = Bukkit.getPlayer(args[1]);
+        if(player!=null){
+            uuid = player.getUniqueId();
+        } else uuid = UUID.fromString(args[1]);
+        if (city.getApplications().contains(uuid)) {
+            city.acceptApplication(uuid);
+            sender.sendMessage("已经接受了该玩家的请求！");
+        } else {
+            sender.sendMessage("没有找到该玩家的请求！");
+        }
+        return true;
+    }
+
+    private boolean workCityAddWarpCE( @NotNull String[] args, Player commander) {
+        if(args.length < 2) return help();
+        return workCitySetWarpCE(commander, args[1]);
+    }
+
+    private boolean workCityChunkForceLoadCE(Player commander) {
+        City city = City.checkMayorAndGetCity(commander);
+        if(city == null) return true;
+        if (city.addChunks(commander.getLocation().getChunk())) {
+            commander.sendMessage("添加成功！");
+        } else {
+            commander.sendMessage("添加失败！");
+        }
+        return true;
+    }
+
+    private boolean workCitySetWarpCE(Player commander, String spawn) {
+        City city;
+        city = City.checkMayorAndGetCity(commander);
+        if (city == null) return true;
+        if(city.addWarp(spawn, commander.getLocation())){
+            commander.sendMessage("成功添加传送点"+ spawn +"！");
+        } else {
+            commander.sendMessage("传送点"+ spawn +"添加失败了，可能的原因有：");
+            commander.sendMessage("1.权限不足，或已经添加了太多warp");
+            commander.sendMessage("2.该位置未在城市领土范围内");
+        }
+        return true;
+    }
+
+    private boolean workCityRangeOperationCE( @NotNull String[] args, Player commander) {
+        if(args.length==1) {
+            help();
+            return true;
+        }
+        if(args[1].equals("add")){
+            Range tr = getRange(commander);
+            City city = City.checkMayorAndGetCity(commander);
+            if(tr == null||city==null) return true;
+            if (city.addTerritorial(tr)) {
+                commander.sendMessage("添加成功！");
+            } else {
+                commander.sendMessage("添加失败！");
+            }
+            return true;
+        }
+        if(args[1].equals("list")){
+            City city = getCity(commander);
+            if(city==null) return true;
+            commander.sendMessage("========================================");
+            commander.sendMessage("下面是你的城市的所有区域：");
+            int index = 0;
+            for (Range range : city.getTerritorial()) {
+                commander.sendMessage("--------------------------");
+                commander.sendMessage("Index: " + index++);
+                commander.sendMessage("World: " + range.getWorld().getName());
+                commander.sendMessage("Start: " + range.toString_StartPoint());
+                commander.sendMessage("End: " + range.toString_EndPoint());
+                commander.sendMessage("Area: " + range.getArea());
+                commander.sendMessage("--------------------------");
+            }
+            commander.sendMessage("TotalArea: " + Range.countUnionAreaFromDifferentWorld(city.getTerritorial()));
+            commander.sendMessage("========================================");
+            return true;
+        }
+        if(args.length == 2) {
+            help();
+            return true;
+        }
+        if(args[1].equals("remove")){
+            City city = City.checkMayorAndGetCity(commander);
+            if(city==null) return true;
+            int index;
+            try {
+                index = Integer.parseInt(args[2]);
+            } catch (NumberFormatException e) {
+                commander.sendMessage("请输入正确的整数格式，用以表示序号");
+                return true;
+            }
+            if(index < 0 || index >= city.getTerritorial().size()){
+                commander.sendMessage("整数越界！");
+                return true;
+            }
+            city.removeTerritorial(index);
+            commander.sendMessage("已经删除Index = " + index + "的区域！");
+            return true;
+        }
+        return false;
+    }
+
+    private boolean workPermGroupSetCE(@NotNull CommandSender sender, @NotNull String[] args, Player commander) {
+        if(args.length == 2) {
+            OpenUI.openCityPermGroupChooseUI(commander);
+            return true;
+        }
+        City city = City.checkMayorAndGetCity(commander);
+        if(city == null) return true;
+        Boolean p = city.getPerm().getOrDefault(args[2], false);
+        city.setPerm(args[2],!p);
+        sender.sendMessage("权限"+ args[2]+"已经被设置为"+!p);
+        return true;
+    }
+
+    private boolean workPermAddPlayerCE( @NotNull String[] args, Player commander) {
+        if(args.length!=4) return help();
+        Player ad = Bukkit.getPlayer(args[3]);
+        if(ad == null){
+            commander.sendMessage("玩家未在线！");
+            return true;
+        }
+        City city = City.checkMayorAndGetCity(commander);
+        if(city == null) return true;
+        city.addPermGroup(args[2],ad.getUniqueId());
+        commander.sendMessage("已经将"+ad.getName()+"添加到权限组"+ args[2]);
+        return true;
+    }
+
     private boolean workCityQuitCE(Player commander) {
-        City temp = City.getCity(commander);
+        City temp = getCity(commander);
         if (temp==null){
             commander.sendMessage("你……你的小镇呢？");
             return true;
@@ -238,7 +351,7 @@ public class City_CE implements CommandExecutor {
         check.add((str)->{
             if(str.equals(ans)){
                 try {
-                    Objects.requireNonNull(City.getCity(commander)).removeResident(commander);
+                    Objects.requireNonNull(getCity(commander)).removeResident(commander);
                 } catch (Exception e) {
                     sendError(e.getLocalizedMessage());
                 }
@@ -322,9 +435,71 @@ public class City_CE implements CommandExecutor {
         return true;
     }
 
+    public enum CITY_TYPE {
+        METROPOLIS("FIRST-TIER_CITY",5,5000,36,50,120),
+        CITY("SECOND-TIER_CITY",4,3000,30,40,80),
+        TOWN("THIRD-TIER_CITY",3,1000,24,30,50),
+        TOWNSHIP("FOURTH-TIER_CITY",2,500,18,20,30),
+        VILLAGE("FIFTH-TIER_CITY",1,300,12,10,10),
+        NOT_ACTIVE("NOT_ACTIVE",0,100,6,2,2),
+        ADMIN("ADMIN",6,0x7FFFFFFF,0x7FFFFFFF,0x7FFFFFFF,0x7FFFFFFF);
+
+        private final String name;
+        private final int range_perm;
+        private final int perm_level;
+        private final int warp_amount_perm;
+        private final int max_resident;
+        private final int perm_group_amount;
+
+        CITY_TYPE(String name, int perm_level, int range_perm, int warp_amount_perm, int perm_group_amount, int max_resident){
+            this.max_resident = max_resident;
+            this.name = name;
+            this.warp_amount_perm = warp_amount_perm;
+            this.perm_group_amount = perm_group_amount;
+            this.perm_level = perm_level;
+            this.range_perm = range_perm;
+        }
+
+        @Nullable
+        public static CITY_TYPE getCityTypeByLevel(int level){
+            for (CITY_TYPE value : CITY_TYPE.values()) {
+                if(value.getPermLevel() == level) return value;
+            }
+            return null;
+        }
+
+        public int getPermGroupAmount() {
+            return perm_group_amount;
+        }
+
+        public int getPermLevel() {
+            return perm_level;
+        }
+
+        public int getRangePerm() {
+            return range_perm;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public int getWarpAmountPerm() {
+            return warp_amount_perm;
+        }
+
+        public int getMaxResident(){
+            return max_resident;
+        }
+
+        public int getChunkPerm() {
+            //强加载区块权限与warp权限公用一个数据
+            return warp_amount_perm;
+        }
+    }
+
     public static class City {
 
-        private final int warp_amount_perm = 3;
         private ItemStack icon;
         private String name;
         private List<String> description;
@@ -336,6 +511,7 @@ public class City_CE implements CommandExecutor {
         private List<Chunk> chunks;
         private boolean activated = false;
         private Map<String, Location> warps = new HashMap<>();
+        private CITY_TYPE type = CITY_TYPE.NOT_ACTIVE;
 
         @Nullable
         public static City getCity(OfflinePlayer player){
@@ -354,6 +530,22 @@ public class City_CE implements CommandExecutor {
             return null;
         }
 
+        @Nullable
+        public static City checkMayorAndGetCity(Player commander) {
+            City city;
+            city = getCity(commander);
+            try {
+                if(!Objects.requireNonNull(city).getMayor().equals(commander.getUniqueId())){
+                    commander.sendMessage("这个操作只能由市长完成！");
+                    return null;
+                }
+            } catch (Exception e) {
+                commander.sendMessage("你好像还没有加入城市！");
+                return null;
+            }
+            return city;
+        }
+
 
         public ItemStack getIcon() {
             return icon;
@@ -367,10 +559,6 @@ public class City_CE implements CommandExecutor {
             return warps;
         }
 
-        public void setWarps(Map<String, Location> warps) {
-            this.warps = warps;
-        }
-
         public Location getWarp(String warp) {
             return warps.get(warp);
         }
@@ -380,11 +568,16 @@ public class City_CE implements CommandExecutor {
             for (Range range : this.territorial) {
                 if (range.isInRange(loc)) in = true;
             }
-            if(!in)return false;
-            for (String s : warps.keySet()) {
-                if(s.equals(name))return false;
+            if(!in) {
+                return false;
             }
-            if(warps.size() + 1 <= warp_amount_perm){
+            for (String s : warps.keySet()) {
+                if(s.equals(name)) {
+                    this.warps.put(name, loc);
+                    return true;
+                }
+            }
+            if(warps.size() < type.getWarpAmountPerm()){
                 this.warps.put(name, loc);
                 return true;
             } else return false;
@@ -411,10 +604,6 @@ public class City_CE implements CommandExecutor {
             return application;
         }
 
-        public void setApplication(List<UUID> application) {
-            this.application = application;
-        }
-
         public List<UUID> getResidents() {
             return residents;
         }
@@ -429,16 +618,27 @@ public class City_CE implements CommandExecutor {
             return chunks;
         }
 
-        public void setChunks(List<Chunk> chunks) {
-            this.chunks = chunks;
+        public boolean addChunks(Chunk chunk) {
+            if (chunk.isForceLoaded()) return false;
+            for (Chunk c : chunks) {
+                if(c.equals(chunk)) return false;
+            }
+            Range chunk_range = new Range(chunk);
+            if(!chunk_range.isInRange(territorial)) return false;
+            if(chunks.size()<type.getChunkPerm()) {
+                this.chunks.add(chunk);
+                chunk.setForceLoaded(true);
+                return true;
+            }
+            return false;
         }
 
         public Map<String, Boolean> getPerm() {
             return perm;
         }
 
-        public void setPerm(Map<String, Boolean> perm) {
-            this.perm = perm;
+        public void setPerm(String perm_name, boolean perm) {
+            this.perm.put(perm_name,perm);
         }
 
         public UUID getMayor() {
@@ -449,26 +649,61 @@ public class City_CE implements CommandExecutor {
             this.mayor = mayor;
         }
 
-        public Map<String, List<UUID>> getPerm_group() {
+        public Map<String, List<UUID>> getPermGroup() {
             return perm_group;
         }
 
-        public void setPerm_group(Map<String, List<UUID>> perm_group) {
-            this.perm_group = perm_group;
+        public void addPermGroup(String perm_name, UUID player) {
+            List<UUID> list = this.perm_group.getOrDefault(perm_name, new ArrayList<>());
+            list.add(player);
+            perm_group.put(perm_name, list);
         }
 
         public void addResident(UUID resident) {
             this.residents.add(resident);
             city_joined.put(Bukkit.getOfflinePlayer(resident),true);
-            this.checkActivation();
+            this.checkType();
         }
 
-        private void checkActivation() {
-            activated = residents.size() >= 2;
+        private void checkType() {
+            while (residents.size()>type.getMaxResident()) {
+                if (!this.upgrade()) {
+                    break;
+                }
+            }
+            while ((type.getPermLevel() >= 2) && (residents.size() <= Objects.requireNonNull(CITY_TYPE.getCityTypeByLevel(type.getPermLevel() - 1)).getMaxResident())) {
+                if (!this.downgrade()) {
+                    break;
+                }
+            }
         }
 
-        public void setTerritorial(List<Range> territorial) {
-            this.territorial = territorial;
+        public boolean upgrade(){
+            CITY_TYPE new_type = CITY_TYPE.getCityTypeByLevel(type.getPermLevel()+1);
+            if(new_type == null) return false;
+            activated = new_type.getPermLevel() >= 1;
+            this.type = new_type;
+            return true;
+        }
+
+        public boolean downgrade(){
+            CITY_TYPE new_type = CITY_TYPE.getCityTypeByLevel(type.getPermLevel()-1);
+            if(new_type == null) return false;
+            activated = new_type.getPermLevel() >= 1;
+            this.type = new_type;
+            return true;
+        }
+
+        public boolean addTerritorial(Range territorial) {
+            List<Range> temp = new ArrayList<>(this.territorial);
+            double ori_a = Range.countUnionAreaFromDifferentWorld(temp);
+            temp.add(territorial);
+            double new_a = Range.countUnionAreaFromDifferentWorld(temp);
+            if(ori_a == new_a) return false;
+            if (new_a <= pow(type.getRangePerm(),3)) {
+                this.territorial = temp;
+                return true;
+            } return false;
         }
 
         public String getName() {
@@ -487,8 +722,11 @@ public class City_CE implements CommandExecutor {
             return perm_group.get(perm_name);
         }
 
-        public void addPerm_group(String name, List<UUID> perm_group) {
-            this.perm_group.put(name,perm_group);
+        public boolean addPerm_group(String name, List<UUID> perm_group) {
+            if(perm.size() < type.getPermGroupAmount()) {
+                this.perm_group.put(name, perm_group);
+                return true;
+            } return false;
         }
 
         public List<Range> getTerritorial() {
@@ -497,6 +735,10 @@ public class City_CE implements CommandExecutor {
 
         public void removeResident(Player commander) {
             residents.remove(commander.getUniqueId());
+        }
+
+        public void removeTerritorial(int index) {
+            territorial.remove(index);
         }
     }
 

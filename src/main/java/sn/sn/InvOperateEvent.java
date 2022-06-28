@@ -294,7 +294,7 @@ public class InvOperateEvent implements Listener {
             commander.sendMessage("发生了错误：无法获得玩家信息！");
             return;
         }
-        City_CE.City city = City_CE.checkMayorAndGetCity(commander);
+        City_CE.City city = City_CE.City.checkMayorAndGetCity(commander);
         if (city == null) return;
         List<String> conf = new ArrayList<>();
         conf.add(ChatColor.GREEN + "你确认要添加" + p.getName() + "到城市中吗？");

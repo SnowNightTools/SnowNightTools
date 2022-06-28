@@ -35,7 +35,12 @@ public class Sn extends JavaPlugin {
     public static File collector_file;
     public static File bin_file;
     public static File data_folder;
-    public static YamlConfiguration share_yml,bin_yml,config_yml,quest_yml,playerquest_yml,collector_yml;
+    public static YamlConfiguration share_yml;
+    public static YamlConfiguration bin_yml;
+    public static YamlConfiguration config_yml;
+    public static YamlConfiguration quest_yml;
+    public static YamlConfiguration playerquest_yml;
+    public static YamlConfiguration collector_yml;
 
     public static Map<Player, Location> start_point = new HashMap<>();
     public static Map<Player, Location> end_point = new HashMap<>();

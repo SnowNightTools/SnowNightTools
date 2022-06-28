@@ -245,6 +245,20 @@ public class Collector_CE implements CommandExecutor {
         return false;
     }
 
+    @Nullable
+    public static Range getRange(Player commander) {
+        if(!start_point.containsKey(commander)){
+            commander.sendMessage("你还没有设置第一个点！");
+            return null;
+        }
+        if(!end_point.containsKey(commander)){
+            commander.sendMessage("你还没有设置第二个点！");
+            return null;
+        }
+        Location s = start_point.get(commander), e = end_point.get(commander);
+        return new Range(s.getX(), s.getY(), s.getZ(), e.getX(), e.getY(), e.getZ());
+    }
+
     private boolean workCollectorAddCE(@NotNull CommandSender sender,@NotNull String[] args, Player commander) {
         if (checkRange(commander)) return true;
         List<Collector> get = collectors.get(commander);
@@ -263,11 +277,10 @@ public class Collector_CE implements CommandExecutor {
                 if (sender.hasPermission("sn.collector.admin")) {
                     range_perm = 0x7FFFFFFF;
                 }
-                Location s = start_point.get(commander), e = end_point.get(commander);
-                Range tr = new Range(s.getX(), s.getY(), s.getZ(), e.getX(), e.getY(), e.getZ());
+                Range tr = getRange(commander);
                 List<Range> temp_range = new ArrayList<>(collector.getRanges());
                 temp_range.add(tr);
-                double area = Range.countUnionArea(temp_range);
+                double area = Range.countUnionAreaFromDifferentWorld(temp_range);
                 if (area >= pow(range_perm, 3)) {
                     sender.sendMessage(ChatColor.RED + "添加区域后的体积（" + area + "）大于你的权限（" + pow(range_perm, 3) + "）");
                     return true;
@@ -328,8 +341,7 @@ public class Collector_CE implements CommandExecutor {
             range_perm = 0x7FFFFFFF;
         }
 
-        Location s = start_point.get(commander), e = end_point.get(commander);
-        Range tr = new Range(s.getX(),s.getY(),s.getZ(),e.getX(),e.getY(),e.getZ());
+        Range tr = getRange(commander);
         if(tr.getArea() > range_perm){
             sender.sendMessage(ChatColor.RED+"你选区的大小（"+tr.getArea()+"）大于你的权限（"+range_perm*range_perm*range_perm+"）");
             return true;
@@ -434,7 +446,7 @@ public class Collector_CE implements CommandExecutor {
         }
 
         public double getRangeArea(){
-            return Range.countUnionArea(ranges);
+            return Range.countUnionAreaFromDifferentWorld(ranges);
         }
 
         public void setOwner(UUID owner) {

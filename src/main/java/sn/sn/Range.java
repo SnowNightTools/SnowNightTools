@@ -1,12 +1,11 @@
 package sn.sn;
 
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static java.lang.Math.*;
 
@@ -27,7 +26,31 @@ public class Range {
 
     }
 
-    public static double countUnionArea(List<Range> ranges){
+    public Range(Chunk chunk) {
+        this.startX = chunk.getX()*16;
+        this.startZ = chunk.getZ()*16;
+        this.endX = startX + 15;
+        this.endZ = startZ + 15;
+        this.endY = chunk.getWorld().getMaxHeight();
+        this.startY = chunk.getWorld().getMinHeight();
+        this.world = chunk.getWorld();
+    }
+
+    public static double countUnionAreaFromDifferentWorld(List<Range> ranges){
+        Map<World, List<Range>> t = new HashMap<>();
+        for (Range range : ranges) {
+            List<Range> list = t.getOrDefault(range.getWorld(), new ArrayList<>());
+            list.add(range);
+            t.put(range.getWorld(),list);
+        }
+        double cnt = 0;
+        for (World world : t.keySet()) {
+            cnt += countUnionArea(t.get(world));
+        }
+        return cnt;
+    }
+
+    private static double countUnionArea(List<Range> ranges){
         double cnt = 0,i_area;
         int n = ranges.size();
         for (Range range : ranges) {
@@ -94,6 +117,17 @@ public class Range {
         return temp.getArea();
     }
 
+    public boolean isInRange(List<Range> other){
+        List<Range> same_range = new ArrayList<>();
+        for (Range range : other) {
+            if(range.getWorld().equals(world)) same_range.add(range);
+        }
+        double ori_a = countUnionArea(same_range);
+        same_range.add(this);
+        double now_a = countUnionArea(same_range);
+        return now_a == ori_a;
+    }
+
     public boolean isInRange(Location loc){
         if(world != null)
             if (Objects.equals(loc.getWorld(), world))
@@ -131,7 +165,7 @@ public class Range {
     }
 
     public double countUnionArea(Range other){
-        return this.getArea()+other.getArea()-this.getIntersection(other).getArea();
+        return this.getArea() + other.getArea()- this.getIntersection(other).getArea();
     }
 
     public Range getIntersection(Range other){
@@ -188,5 +222,12 @@ public class Range {
 
     public double getStartZ() {
         return startZ;
+    }
+
+    public String toString_StartPoint() {
+        return "("+this.startX+","+this.startY+","+this.startZ+")";
+    }
+    public String toString_EndPoint() {
+        return "("+this.endX+","+this.endY+","+this.endZ+")";
     }
 }
