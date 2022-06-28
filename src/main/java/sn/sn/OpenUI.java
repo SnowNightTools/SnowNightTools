@@ -1,9 +1,6 @@
 package sn.sn;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -13,9 +10,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static sn.sn.InvOperateEvent.*;
 import static sn.sn.Sn.*;
@@ -484,6 +479,55 @@ public class OpenUI {
         return getItem(typname,dpname,lore,false);
     }
 
+    public static void openCityResidentsListUI(Player player,int now_page){
+        City_CE.City city = City_CE.City.getCity(player);
+        if(city == null){
+            player.sendMessage("找不到你的小镇哦~");
+            return;
+        }
+        int page_amount = (city.getResidents().size()-1)/45 + 1;
+        Inventory temp = Bukkit.createInventory(player,54,"Residents List: "+city.getName()+" Page "+now_page+" of "+page_amount);
+        int now = (now_page-1) * 45;
+        List<UUID> residents = city.getResidents();
+        for (int i = now, residentsSize = residents.size(); (i < residentsSize)&&(i < now+45); i++) {
+            UUID resident = residents.get(i);
+            if (resident.equals(player.getUniqueId())) continue;
+            temp.addItem(getSkull(resident, null));
+        }
+        if(now_page != 1)temp.setItem(45,pg_up);
+        if(now_page != page_amount)temp.setItem(53,pg_dn);
+        temp.setItem(52,getItem("PAPER","共有"+(city.getResidents().size()+1)+"人",null));
+        player.openInventory(temp);
+    }
+
+    public static void openCityWarpListUI(Player player,int now_page){
+        City_CE.City city = City_CE.City.getCity(player);
+        if(city == null){
+            player.sendMessage("找不到你的小镇哦~");
+            return;
+        }
+        int page_amount = (city.getWarps().size()-1)/45 + 1;
+        Inventory temp = Bukkit.createInventory(player,54,"Warp List: "+city.getName()+" Page "+now_page+" of "+page_amount);
+        int now = (now_page-1) * 45;
+        Map<String, Location> warps = city.getWarps();
+        int i = 0;
+        for (String s : warps.keySet()) {
+            i++;
+            if((i < now+45)&&(i >= now)){
+                List<String> lore = new ArrayList<>();
+                lore.add("X= " + warps.get(s).getX());
+                lore.add("Y= " + warps.get(s).getY());
+                lore.add("Z= " + warps.get(s).getZ());
+                lore.add("World= "+ Objects.requireNonNull(warps.get(s).getWorld()).getName());
+                temp.addItem(getItem("PAPER",s,lore));
+            }
+        }
+        if(now_page != 1)temp.setItem(45,pg_up);
+        if(now_page != page_amount)temp.setItem(53,pg_dn);
+        temp.setItem(52,getItem("PAPER","共有"+(city.getWarps().size())+"个Warp",null));
+        player.openInventory(temp);
+    }
+
     public static boolean openMyCityUI(Player player){
         City_CE.City city = City_CE.City.getCity(player);
         if(city == null){
@@ -528,6 +572,7 @@ public class OpenUI {
         openCityApplicationAcceptUI(city,player,1);
         return true;
     }
+
     public static void openCityApplicationAcceptUI(City_CE.City city, Player player, int page){
         List<UUID> applications = city.getApplications();
         int page_total = applications.size()/45 + 1;

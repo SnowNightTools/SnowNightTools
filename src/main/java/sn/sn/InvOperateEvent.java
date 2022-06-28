@@ -14,10 +14,13 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Consumer;
 
+import static sn.sn.City_CE.workCityWarp;
 import static sn.sn.Quest_CE.getQuest;
 import static sn.sn.Sn.*;
 
@@ -168,32 +171,170 @@ public class InvOperateEvent implements Listener {
 
         if(inv_click.getView().getTitle().equalsIgnoreCase("整数型变量设置")){
             workIntVarSetIO(inv_click);
+            return;
         }
 
-        if(inv_click.getView().getTitle().contains("MyCity: ")){
-            if (OpenUI.uiINIT(inv_click)) return;
-            OfflinePlayer p;
-            try {
-                ItemMeta itemMeta = Objects.requireNonNull(inv_click.getCurrentItem()).getItemMeta();
-                p = ((SkullMeta) Objects.requireNonNull(itemMeta)).getOwningPlayer();
-            } catch (Exception e) {
-                sendError(e.getLocalizedMessage());
-                return;
-            }
-            if(p == null) {
-                commander.sendMessage("发送了错误：无法获得玩家信息！");
-                return;
-            }
-            City_CE.City city = City_CE.checkMayorAndGetCity(commander);
-            if(city == null) return;
-            List<UUID> applications = city.getApplications();
-            List<String> conf = new ArrayList<>();
-            conf.add(ChatColor.GREEN+"你确认要添加"+p.getName()+"到城市中吗？");
-            conf.add(ChatColor.LIGHT_PURPLE+"请注意，这代表着城市需要对该玩家的行为负责！");
-            conf.add(ChatColor.GREEN+"若确定，请在60s内直接输入confirm add "+p.getName());
-            conf.add(ChatColor.GREEN+"严格区分大小写，请不要添加其他任何符号，不要删减空格");
-
+        if(inv_click.getView().getTitle().contains("城市加入申请管理面板")) {
+            workCityApplicationAcceptIO(inv_click);
+            return;
         }
+
+        if(inv_click.getView().getTitle().contains("Warps List: ")){
+            workWarpListIO(inv_click);
+            return;
+        }
+
+        if(inv_click.getView().getTitle().contains("Residents List: ")){
+            workResidentsListIO(inv_click);
+            return;
+        }
+
+        if(inv_click.getView().getTitle().contains("MyCity")) {
+            workMyCityIO(inv_click);
+        }
+    }
+
+    private void workWarpListIO(InventoryClickEvent inv_click) {
+        if (OpenUI.uiINIT(inv_click)) return;
+        City_CE.City city = City_CE.City.getCity(commander);
+        if (city == null) return;
+        String page_str = getPage(inv_click);
+        if(page_str == null) return;
+        int page = Integer.parseInt(page_str);
+        int page_amount = (city.getResidents().size()-1)/45 +1;
+        switch (inv_click.getSlot()){
+            case 53:
+                if(page != page_amount){
+                    OpenUI.openCityWarpListUI(commander,page+1);
+                }
+                return;
+            case 45:
+                if(page != 1){
+                    OpenUI.openCityWarpListUI(commander,page-1);
+                }
+                return;
+            default:
+                ItemStack item = inv_click.getCurrentItem();
+                if(item==null) return;
+                String warp_name = Objects.requireNonNull(item.getItemMeta()).getDisplayName();
+                if(warp_name.contains("共有")) return;
+                workCityWarp(commander,warp_name,"发送了未知的错误。");
+        }
+    }
+
+    private void workResidentsListIO(InventoryClickEvent inv_click) {
+        if (OpenUI.uiINIT(inv_click)) return;
+        City_CE.City city = City_CE.City.getCity(commander);
+        if (city == null) return;
+        String page_str = getPage(inv_click);
+        if(page_str == null) return;
+        int page = Integer.parseInt(page_str);
+        int page_amount = (city.getResidents().size()-1)/45 +1;
+        switch (inv_click.getSlot()){
+            case 53:
+                if(page != page_amount){
+                    OpenUI.openCityResidentsListUI(commander,page+1);
+                }
+                return;
+            case 45:
+                if(page != 1){
+                    OpenUI.openCityResidentsListUI(commander,page-1);
+                }
+                return;
+            default:
+                ItemStack item = inv_click.getCurrentItem();
+                if(item==null) return;
+                if(item.getItemMeta() instanceof SkullMeta){
+                    OfflinePlayer player = ((SkullMeta) item.getItemMeta()).getOwningPlayer();
+                    if(player==null) return;
+                    if(!player.isOnline()) return;
+                    commander.performCommand("/cmi tpa "+ player.getName());
+                }
+        }
+    }
+
+    private void workMyCityIO(InventoryClickEvent inv_click) {
+        if (OpenUI.uiINIT(inv_click)) return;
+        City_CE.City city = City_CE.City.getCity(commander);
+        if (city == null) return;
+        switch (inv_click.getSlot()) {
+            case 36:
+                OpenUI.openCityResidentsListUI(commander, 1);
+                return;
+            case 27:
+                Player mayor = Bukkit.getPlayer(city.getMayor());
+                if(mayor == null){
+                    commander.closeInventory();
+                    commander.sendMessage("你的市长不在线，无法进行传送。");
+                    return;
+                }
+                commander.performCommand("/cmi tpa "+ mayor.getName());
+                return;
+            case 40:
+                OpenUI.openCityWarpListUI(commander,1);
+                return;
+            case 31:
+                workCityWarp(commander, "spawn", "你的小镇没有设置spawn传送点！");
+                return;
+            default:
+        }
+    }
+
+    private void workCityApplicationAcceptIO(InventoryClickEvent inv_click) {
+        if (OpenUI.uiINIT(inv_click)) return;
+        OfflinePlayer p;
+        try {
+            ItemMeta itemMeta = Objects.requireNonNull(inv_click.getCurrentItem()).getItemMeta();
+            p = ((SkullMeta) Objects.requireNonNull(itemMeta)).getOwningPlayer();
+        } catch (Exception e) {
+            sendError(e.getLocalizedMessage());
+            return;
+        }
+        if (p == null) {
+            commander.sendMessage("发生了错误：无法获得玩家信息！");
+            return;
+        }
+        City_CE.City city = City_CE.checkMayorAndGetCity(commander);
+        if (city == null) return;
+        List<String> conf = new ArrayList<>();
+        conf.add(ChatColor.GREEN + "你确认要添加" + p.getName() + "到城市中吗？");
+        conf.add(ChatColor.LIGHT_PURPLE + "请注意，这代表着城市需要对该玩家的行为负责！");
+        conf.add(ChatColor.GREEN + "若确定，请在60s内直接输入confirm add " + p.getName());
+        conf.add(ChatColor.GREEN + "严格区分大小写，请不要添加其他任何符号，不要删减空格");
+        for (String s : conf) {
+            commander.sendMessage(s);
+        }
+        String ans = "confirm add " + p.getName();
+        List<Consumer<String>> list = new ArrayList<>();
+        Consumer<String> consumer = (str) -> {
+            if (str.equals(ans)) {
+                city.acceptApplication(p.getUniqueId());
+                commander.sendMessage(p.getName() + "已经添加到小镇中！");
+            } else {
+                commander.sendMessage(p.getName() + "添加失败！");
+            }
+        };
+        list.add(consumer);
+        String finalSp = getPage(inv_click);
+        AskSet.askSetAsync(commander, list,
+                (player) -> {
+                    if (finalSp != null)
+                    OpenUI.openCityApplicationAcceptUI(
+                            Objects.requireNonNull(City_CE.City.getCity(player)), player, Integer.parseInt(finalSp));
+                    else OpenUI.openCityApplicationAcceptUI(
+                            Objects.requireNonNull(City_CE.City.getCity(player)), player);
+                },
+                (player) -> player.sendMessage("操作被打断或终止。"));
+    }
+
+    @Nullable
+    private String getPage(InventoryClickEvent inv_click) {
+        String sp = null;
+        if (inv_click.getView().getTitle().contains("Page ")) {
+            sp = inv_click.getView().getTitle().split("Page ")[1];
+            sp = sp.split(" ")[0];
+        }
+        return sp;
     }
 
     private void workIntVarSetIO(InventoryClickEvent inv_click) {

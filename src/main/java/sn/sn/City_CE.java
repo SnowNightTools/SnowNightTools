@@ -66,92 +66,18 @@ public class City_CE implements CommandExecutor {
         return city;
     }
 
-    /**
-     * Executes the given command, returning its success.
-     * <br>
-     * If false is returned, then the "usage" plugin.yml entry for this command
-     * (if defined) will be sent to the player.
-     *
-     * @param sender  Source of the command
-     * @param command Command which was executed
-     * @param label   Alias of the command which was used
-     * @param args    Passed command arguments
-     * @return true if a valid command, otherwise false
-     */
-    @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-
-        if(!label.equals("city"))return help();
-        if(args.length==0) return help();
-        if(args[0].equals("help")||args[0].equals("?")||args[0].equals("？")) return help();
-
-        if(!(sender instanceof Player)){
+    public static boolean workCityWarp(Player commander, String warp, String message) {
+        City temp = City.getCity(commander);
+        if (temp!=null) {
+            if(temp.getWarp(warp)!=null) {
+                commander.teleport(temp.getWarp(warp));
+                return true;
+            }
+            commander.sendMessage(message);
             return true;
         }
-        Player commander = (Player) sender;
-        // /city create <name> 发起一个城市的新建，在达到三个人时正式成立城市，使用这个指令的人会成为市长，拥有管理权限。
-        if(args[0].equals("create")){
-            return workCityCreateCE(sender, args, commander);
-        }
-
-        // /city create-give-up 放弃一个城市的新建。
-        if(args[0].equals("create-give-up")){
-            return workCityCreateGiveUpCE(commander);
-        }
-
-        // /city join <name> 加入一个城市，一个人只能加入一个城市，但是可以同时发很多请求，不储存请求，每次重启请求刷新。
-        if(args[0].equals("join")){
-            return workCityJoinCE(sender, args, commander);
-        }
-
-        // /city spawn 回到自己小镇的出生点。
-        if(args[0].equals("spawn")){
-            return workCitySpawnCE(commander, "spawn", "你的小镇没有设置spawn传送点！");
-        }
-
-        // /city warp <warp> 回到自己小镇的出生点。
-        if(args[0].equals("warp")){
-            return wordCityWarpCE(args, commander);
-        }
-
-        // /city quit 退出小镇，小镇人数少于4人时不能退出小镇
-        if(args[0].equals("quit")){
-            return workCityQuitCE(commander);
-        }
-
-        // /city my 打开小镇菜单（传送点，出生点，各个成员，点击可以tpa或者warp之类的）
-        if(args[0].equals("my")){
-            return openMyCityUI(commander);
-        }
-
-        // Only For Mayor:
-        // /city setwarp <name> 在小镇的领土中设置传送点
-        if(args[0].equals("setwarp")){
-            return workCityAddWarpCE(args, commander);
-        }
-
-        // /city accept [player name/Offline player uuid] 同意一个人的加入请求，不填写[player name]，将会打开所有申请人的面板，可以在面板上处理请求。
-        if(args[0].equals("accept")){
-            return workCityAcceptCE(sender, args, commander);
-        }
-
-        // /city add <perm group name> <player name> 将一个特定的人添加进该权限组。
-        // /city set [perm group name] 设置城市对特定权限组的权限，不填写则设置城市对居民的权限（打开面板）。
-        // /city range add 向小镇中添加区域 体积上限与人数（用单独的枚举类CITY_TYPE来实现）有关。
-        // /city range list 列出所有区域。
-        // /city range remove <index> 向小镇中删除区域。
-        // /city setspawn 设置小镇出生点
-        // /city loadchunk 让插件常加载脚下的方块
-        // /city manage 打开小镇管理面板（踢人之类的操作）
-        //
-        // Only For OP:
-        // /city admin remove <name> 删除一个城市，需要op操作。
-        // /city admin add <perm> 添加一个可以被城主设置的权限。
-        // /city admin 打开小镇系统管理面板
-
-
-
-        return false;
+        commander.sendMessage("你……你的小镇呢？");
+        return true;
     }
 
     private boolean workCityAcceptCE(@NotNull CommandSender sender, @NotNull String[] args, Player commander) {
@@ -192,6 +118,105 @@ public class City_CE implements CommandExecutor {
         return true;
     }
 
+    public static boolean wordCityWarpCE( @NotNull String[] args, Player commander) {
+        if(args.length==1){
+            commander.sendMessage("请输入warp名！");
+            return true;
+        }
+        return workCityWarp(commander, args[1], "你的小镇没有设置" + args[1] + "传送点！");
+    }
+
+    /**
+     * Executes the given command, returning its success.
+     * <br>
+     * If false is returned, then the "usage" plugin.yml entry for this command
+     * (if defined) will be sent to the player.
+     *
+     * @param sender  Source of the command
+     * @param command Command which was executed
+     * @param label   Alias of the command which was used
+     * @param args    Passed command arguments
+     * @return true if a valid command, otherwise false
+     */
+    @Override
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+
+        if(!label.equals("city"))return help();
+        if(args.length==0) return help();
+        if(args[0].equals("help")||args[0].equals("?")||args[0].equals("？")) return help();
+
+        if(!(sender instanceof Player)){
+            return true;
+        }
+        Player commander = (Player) sender;
+
+
+        // /city create <name> 发起一个城市的新建，在达到三个人时正式成立城市，使用这个指令的人会成为市长，拥有管理权限。
+        if(args[0].equals("create")){
+            return workCityCreateCE(sender, args, commander);
+        }
+
+        // /city create-give-up 放弃一个城市的新建。
+        if(args[0].equals("create-give-up")){
+            return workCityCreateGiveUpCE(commander);
+        }
+
+        // /city join <name> 加入一个城市，一个人只能加入一个城市，但是可以同时发很多请求，不储存请求，每次重启请求刷新。
+        if(args[0].equals("join")){
+            return workCityJoinCE(sender, args, commander);
+        }
+
+        // /city spawn 回到自己小镇的出生点。
+        if(args[0].equals("spawn")){
+            return workCityWarp(commander, "spawn", "你的小镇没有设置spawn传送点！");
+        }
+
+        // /city warp <warp> 回到自己小镇的出生点。
+        if(args[0].equals("warp")){
+            return wordCityWarpCE(args, commander);
+        }
+
+        // /city quit 退出小镇，小镇人数少于4人时不能退出小镇
+        if(args[0].equals("quit")){
+            return workCityQuitCE(commander);
+        }
+
+        // /city my 打开小镇菜单（传送点，出生点，各个成员，点击可以tpa或者warp之类的）
+        if(args[0].equals("my")){
+            return openMyCityUI(commander);
+        }
+
+        // Only For Mayor:
+        // /city setwarp <name> 在小镇的领土中设置传送点
+        if(args[0].equals("setwarp")){
+            return workCityAddWarpCE(args, commander);
+        }
+
+        // /city accept [player name/Offline player uuid] 同意一个人的加入请求，不填写[player name]，将会打开所有申请人的面板，可以在面板上处理请求。
+        if(args[0].equals("accept")){
+            return workCityAcceptCE(sender, args, commander);
+        }
+
+        // /city add <perm group name> <player name> 将一个特定的人添加进该权限组。
+
+        // /city set [perm group name] 设置城市对特定权限组的权限，不填写则设置城市对居民的权限（打开面板）。
+        // /city range add 向小镇中添加区域 体积上限与人数（用单独的枚举类CITY_TYPE来实现）有关。
+        // /city range list 列出所有区域。
+        // /city range remove <index> 向小镇中删除区域。
+        // /city setspawn 设置小镇出生点
+        // /city loadchunk 让插件常加载脚下的方块
+        // /city manage 打开小镇管理面板（踢人之类的操作）
+        //
+        // Only For OP:
+        // /city admin remove <name> 删除一个城市，需要op操作。
+        // /city admin add <perm> 添加一个可以被城主设置的权限。
+        // /city admin 打开小镇系统管理面板
+
+
+
+        return false;
+    }
+
     private boolean workCityQuitCE(Player commander) {
         City temp = City.getCity(commander);
         if (temp==null){
@@ -205,6 +230,9 @@ public class City_CE implements CommandExecutor {
         List<String> q = new ArrayList<>();
         q.add("你确定要退出你的城市吗？");
         q.add("如果确认，请在60s内在聊天框直接输入“confirm to quit "+temp.getName()+"”，不需要引号，句末也不空格");
+        for (String s : q) {
+            commander.sendMessage(s);
+        }
         String ans = "confirm to quit "+temp.getName();
         List<Consumer<String>> check = new ArrayList<>();
         check.add((str)->{
@@ -220,30 +248,8 @@ public class City_CE implements CommandExecutor {
                 commander.sendMessage("放弃离开城市！");
             }
         });
-        askSetAsync(commander,q,check,60,null,null);
+        askSetAsync(commander,check,null,null);
         return false;
-    }
-
-    private boolean workCitySpawnCE(Player commander, String spawn, String message) {
-        City temp = City.getCity(commander);
-        if (temp!=null) {
-            if(temp.getWarp(spawn)!=null) {
-                commander.teleport(temp.getWarp(spawn));
-                return true;
-            }
-            commander.sendMessage(message);
-            return true;
-        }
-        commander.sendMessage("你……你的小镇呢？");
-        return true;
-    }
-
-    private boolean wordCityWarpCE( @NotNull String[] args, Player commander) {
-        if(args.length==1){
-            commander.sendMessage("请输入warp名！");
-            return true;
-        }
-        return workCitySpawnCE(commander, args[1], "你的小镇没有设置" + args[1] + "传送点！");
     }
 
     private boolean workCityJoinCE(@NotNull CommandSender sender, @NotNull String [] args, Player commander) {
