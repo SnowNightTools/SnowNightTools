@@ -133,7 +133,13 @@ public class City_CE implements CommandExecutor {
         }
 
         // /city my 打开小镇菜单（传送点，出生点，各个成员，点击可以tpa或者warp之类的）
+        // 若是Mayor打开小镇菜单， 则打开小镇管理面板
         if(args[0].equals("my")){
+            City city = City.getCity(commander);
+            if(city == null) return true;
+            if (city.getMayor().equals(commander.getUniqueId())) {
+                return openCityManageUI(commander,false);
+            }
             return openMyCityUI(commander);
         }
 
@@ -177,8 +183,6 @@ public class City_CE implements CommandExecutor {
         if(args[0].equals("loadchunk")){
             return workCityChunkForceLoadCE(commander);
         }
-
-        // /city manage 打开小镇管理面板（踢人之类的操作）
 
 
         // Only For OP:
@@ -527,6 +531,7 @@ public class City_CE implements CommandExecutor {
                     }
                 }
             }
+            if(player.isOnline()) Objects.requireNonNull(player.getPlayer()).sendMessage("未能找到你的小镇！");
             return null;
         }
 

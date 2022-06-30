@@ -488,10 +488,14 @@ public class OpenUI {
         int page_amount = (city.getResidents().size()-1)/45 + 1;
         Inventory temp = Bukkit.createInventory(player,54,"Residents List: "+city.getName()+" Page "+now_page+" of "+page_amount);
         int now = (now_page-1) * 45;
+        int in_page = 0;
         List<UUID> residents = city.getResidents();
-        for (int i = now, residentsSize = residents.size(); (i < residentsSize)&&(i < now+45); i++) {
+        for (int i = now, residentsSize = residents.size(); (i < residentsSize)&&(i < now+45+in_page);i++) {
             UUID resident = residents.get(i);
-            if (resident.equals(player.getUniqueId())) continue;
+            if (resident.equals(player.getUniqueId())) {
+                in_page = 1;
+                continue;
+            }
             temp.addItem(getSkull(resident, null));
         }
         if(now_page != 1)temp.setItem(45,pg_up);
@@ -528,10 +532,57 @@ public class OpenUI {
         player.openInventory(temp);
     }
 
+    public static boolean openCityManageUI(Player player,boolean edit){
+        City_CE.City city = City_CE.City.checkMayorAndGetCity(player);
+        if(city == null){
+            return true;
+        }
+        List<String> lore = new ArrayList<>(city.getDescription());
+        Inventory temp;
+        if (edit) {
+            temp = Bukkit.createInventory(player,54,"CityManage(Edit): "+city.getName());
+        } else temp = Bukkit.createInventory(player,54,"CityManage: "+city.getName());
+
+        ItemStack is = city.getIcon();
+
+        if(is==null) is = getItem("SNOWBALL",city.getName(),lore);
+        else {
+            Objects.requireNonNull(is.getItemMeta()).setLore(lore);
+        }
+        temp.setItem(4,is);
+
+        if(city.getWarp("spawn")!=null){
+            lore = new ArrayList<>();
+            if (edit) {
+                lore.add("点击此处设置出生点");
+            } else lore.add("点击此处传送回出生点");
+            temp.setItem(31,getItem("OAK_DOOR","SPAWN",lore));
+        }
+
+        lore = new ArrayList<>();
+        lore.add("传送点列表");
+        if (edit) {
+            lore.add(ChatColor.GREEN+"点击进入传送点管理界面");
+        }
+        temp.setItem(40,getItem("PAPER","Warp",lore));
+
+        lore = new ArrayList<>();
+        lore.add("市长: "+Bukkit.getOfflinePlayer(city.getMayor()).getName());
+        temp.setItem(27,getSkull(city.getMayor(),lore));
+
+        lore = new ArrayList<>();
+        lore.add("城市居民列表");
+        lore.add(ChatColor.GREEN+"点击进入城市居民管理界面");
+        temp.setItem(36,getItem("PLAYER_HEAD","城市居民列表",lore));
+
+        player.openInventory(temp);
+        return true;
+    }
+
+
     public static boolean openMyCityUI(Player player){
         City_CE.City city = City_CE.City.getCity(player);
         if(city == null){
-            player.sendMessage("找不到你的小镇哦~");
             return true;
         }
         Inventory temp = Bukkit.createInventory(player,54,"MyCity: "+city.getName());

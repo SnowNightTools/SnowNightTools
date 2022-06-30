@@ -11,7 +11,7 @@ public class AutoSave extends Thread{
     int n = 0;
 
     @Override
-    public void run() {
+    synchronized public void run() {
         sendInfo("开始自动保存配置。");
         for (OfflinePlayer player : collectors.keySet()) {
             for (Collector_CE.Collector collector : collectors.get(player)) {
@@ -22,8 +22,21 @@ public class AutoSave extends Thread{
         }
         collector_yml.set("amount",n);
 
+        int n = bin_yml.getInt("amount",0);
+        for (int i = 0; i < n; i++) {
+            bin_yml.set(String.valueOf(i),null);
+        }
+
+        n = bins.size();
+        bin_yml.set("amount",n);
+        for (int i = 0; i < n; i++) {
+            bin_yml.set(String.valueOf(i),bins.get(i));
+        }
+
+
         try {
             collector_yml.save(collector_file);
+            bin_yml.save(bin_file);
         } catch (IOException e) {
             e.printStackTrace();
         }

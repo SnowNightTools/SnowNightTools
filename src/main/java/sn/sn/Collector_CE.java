@@ -138,11 +138,34 @@ public class Collector_CE implements CommandExecutor {
             return workBinListCE(sender);
         }
 
+        if(args[1].equals("bins")&&args[2].equals("remove")){
+            return workBinRemoveCE(args, commander);
+        }
+
+        if(args[1].equals("bins")&&args[2].equals("clean_file")){
+            new CollectorFileCleanThread().start();
+            return true;
+        }
+
         if(args[1].equals("bins")){
             return workBinOpenCE(sender, args);
         }
 
         return help(sender);
+    }
+
+    private boolean workBinRemoveCE( @NotNull String[] args, Player commander) {
+        if(args.length != 4) return help(commander);
+        int rem_amt;
+        try {
+            rem_amt = Integer.parseInt(args[3]);
+        } catch (NumberFormatException e) {
+            commander.sendMessage("请输入正确的数字格式");
+            return true;
+        }
+        bins = new ArrayList<>(bins.subList(rem_amt,bins.size()));
+        new AutoSave().start();
+        return true;
     }
 
     private boolean workBinOpenCE(@NotNull CommandSender sender,@NotNull String[] args) {

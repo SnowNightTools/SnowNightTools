@@ -395,8 +395,6 @@ public class Quest_CE implements CommandExecutor {
             if(quest_setting.containsKey(questPlayer)){
                 questPlayer.sendMessage("请继续处理你未完成的任务！");
             } else quest_setting.put(questPlayer,new Quest(name));
-
-
             openQuestSettingUI(questPlayer,name);
 
         }
