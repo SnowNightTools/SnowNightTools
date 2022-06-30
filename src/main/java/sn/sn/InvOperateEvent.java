@@ -393,16 +393,16 @@ public class InvOperateEvent implements Listener {
 
     private boolean workQuestConditionRemoveIO(InventoryClickEvent inv_click) {
         if (OpenUI.uiINIT(inv_click)) return true;
-        List<QuestAction> target = quest_setting.get(commander).getQuestacceptcondition();
-        if(isSetTorC.get(commander)) target = quest_setting.get(commander).getQuesttarget();
+        List<QuestAction> target = quest_setting.get(commander).getQuest_accept_condition();
+        if(isSetTorC.get(commander)) target = quest_setting.get(commander).getQuest_target();
         if(inv_click.getSlot()==17){
             OpenUI.openActionSettingUI(commander);
             return true;
         }
         try {
             target.remove(inv_click.getSlot());
-            if(isSetTorC.get(commander)) quest_setting.get(commander).setQuesttarget(target);
-            quest_setting.get(commander).setQuestacceptcondition(target);
+            if(isSetTorC.get(commander)) quest_setting.get(commander).setQuest_target(target);
+            quest_setting.get(commander).setQuest_accept_condition(target);
         } catch (UnsupportedOperationException|IndexOutOfBoundsException|NullPointerException ignore) {
         }
         OpenUI.openActionDeleteUI(commander);
@@ -855,7 +855,7 @@ public class InvOperateEvent implements Listener {
             if(inv_click.getSlot() == 8){//isOn
                 if(quest_setting.get(commander).isOn()) {
                     if(!quest_setting.get(commander).turnOff()) return true;
-                    sendInfo("打开了任务"+ quest_setting.get(commander).getQuestname());
+                    sendInfo("打开了任务"+ quest_setting.get(commander).getQuest_name());
                     ItemStack temp = inv_click.getClickedInventory().getItem(2);
                     assert temp != null;
                     temp.setType(Material.BARRIER);
@@ -888,7 +888,7 @@ public class InvOperateEvent implements Listener {
                 if(quests.size()<=53){
                     for (int i = 0; i < quests.size(); i++) {
                         Quest quest = quests.get(i);
-                        position_set.setItem(i+1, OpenUI.getItem("BOOK", quest.getQuestname(), quest.getQuestdescription()));
+                        position_set.setItem(i+1, OpenUI.getItem("BOOK", quest.getQuest_name(), quest.getQuest_description()));
                     }
                     position_set.setItem(0, non_p());
                     commander.openInventory(position_set);
@@ -1052,7 +1052,7 @@ public class InvOperateEvent implements Listener {
         }
 
         QuestPosition tmp = new QuestPosition();
-        tmp.setQuestpositionname(quest_setting.get(commander).getQuestname()+"position");
+        tmp.setQuestpositionname(quest_setting.get(commander).getQuest_name()+"position");
         tmp.setParentquest(name);
         if(quest_setting.get(commander).isPositionSet()){
             tmp.setChildquest(quest_setting.get(commander).getQuestposition().getChildquest());
@@ -1063,25 +1063,25 @@ public class InvOperateEvent implements Listener {
         }
         quest_setting.get(commander).setQuestposition(tmp);
         if(getQuest(name).getQuestposition().getChildquest() == null){
-            getQuest(name).getQuestposition().setChildquest(quest_setting.get(commander).getQuestname());
+            getQuest(name).getQuestposition().setChildquest(quest_setting.get(commander).getQuest_name());
             quest_setting.get(commander).getQuestposition().setQuestlevel(getQuest(name).getQuestposition().getQuestlevel());
             OpenUI.openQuestSettingUI(commander);
             return true;
         }
         if(getQuest(name).getQuestposition().getChildquestother1() == null){
-            getQuest(name).getQuestposition().setChildquestother1(quest_setting.get(commander).getQuestname());
+            getQuest(name).getQuestposition().setChildquestother1(quest_setting.get(commander).getQuest_name());
             quest_setting.get(commander).getQuestposition().setQuestlevel(getQuest(name).getQuestposition().getQuestlevel()+1);
             OpenUI.openQuestSettingUI(commander);
             return true;
         }
         if(getQuest(name).getQuestposition().getChildquestother2() == null){
-            getQuest(name).getQuestposition().setChildquestother2(quest_setting.get(commander).getQuestname());
+            getQuest(name).getQuestposition().setChildquestother2(quest_setting.get(commander).getQuest_name());
             quest_setting.get(commander).getQuestposition().setQuestlevel(getQuest(name).getQuestposition().getQuestlevel()+1);
             OpenUI.openQuestSettingUI(commander);
             return true;
         }
         if(getQuest(name).getQuestposition().getChildquestother3() == null){
-            getQuest(name).getQuestposition().setChildquestother3(quest_setting.get(commander).getQuestname());
+            getQuest(name).getQuestposition().setChildquestother3(quest_setting.get(commander).getQuest_name());
             quest_setting.get(commander).getQuestposition().setQuestlevel(getQuest(name).getQuestposition().getQuestlevel()+1);
             OpenUI.openQuestSettingUI(commander);
             return true;

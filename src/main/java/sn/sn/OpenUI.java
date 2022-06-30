@@ -87,7 +87,7 @@ public class OpenUI {
         List<String> targetlore = new ArrayList<>();
         targetlore.add(ChatColor.GREEN+"点我设置任务目标");
         if(quest_setting.get(questPlayer).isTargetSet()) {
-            for (QuestAction action : quest_setting.get(questPlayer).getQuesttarget()) {
+            for (QuestAction action : quest_setting.get(questPlayer).getQuest_target()) {
                 targetlore.addAll(toStrList(action.serialize()));
             }
             targeticonmeta.addEnchant(Enchantment.ARROW_DAMAGE,1,false);
@@ -182,7 +182,7 @@ public class OpenUI {
     }
 
     public static void openQuestSettingUI(Player questPlayer){
-        openQuestSettingUI(questPlayer, quest_setting.get(questPlayer).getQuestname());
+        openQuestSettingUI(questPlayer, quest_setting.get(questPlayer).getQuest_name());
     }
 
     public static void openActionCreateUI(Player commander) {
@@ -225,8 +225,8 @@ public class OpenUI {
         Inventory tmptarget = Bukkit.createInventory(commander,18, viewname);
         List<QuestAction> target;
         if(isSetTorC.get(commander)) {
-            target = quest_setting.get(commander).getQuesttarget();
-        } else target = quest_setting.get(commander).getQuestacceptcondition();
+            target = quest_setting.get(commander).getQuest_target();
+        } else target = quest_setting.get(commander).getQuest_accept_condition();
         if(target.size()!=0)
             for (int i = 0; i < target.size(); i++) {
                 ItemStack tmpis = new ItemStack(Material.REDSTONE,1);
@@ -258,7 +258,7 @@ public class OpenUI {
 
         for (int i = 0; i < 45; i++) {
             Quest quest = quests.get(i);
-            positionset.setItem(nowindex + i, getItem("BOOK", quest.getQuestname(), quest.getQuestdescription()));
+            positionset.setItem(nowindex + i, getItem("BOOK", quest.getQuest_name(), quest.getQuest_description()));
         }
         if(pgindex != 1)positionset.setItem(45, pg_up);
         if(quests.size() > nowindex + 45)positionset.setItem(53, InvOperateEvent.pg_dn);
@@ -267,8 +267,8 @@ public class OpenUI {
 
     public static void openActionDeleteUI(Player commander) {
         Inventory tmpacui = Bukkit.createInventory(commander,18,ChatColor.RED+"删除一个任务条件");
-        List<QuestAction> target = quest_setting.get(commander).getQuestacceptcondition();
-        if(isSetTorC.get(commander)) target = quest_setting.get(commander).getQuesttarget();
+        List<QuestAction> target = quest_setting.get(commander).getQuest_accept_condition();
+        if(isSetTorC.get(commander)) target = quest_setting.get(commander).getQuest_target();
         if(target.size()!=0)
             for (int i = 0; i < target.size(); i++) {
                 ItemStack tmpis = new ItemStack(Material.BARRIER,1);

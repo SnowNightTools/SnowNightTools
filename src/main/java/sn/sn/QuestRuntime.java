@@ -54,7 +54,7 @@ public class QuestRuntime extends BukkitRunnable {
                                 return;
                             }
 
-                            for (QuestAction action : quest.getQuesttarget()) {
+                            for (QuestAction action : quest.getQuest_target()) {
                                 boolean questsucceed = false;
                                 double defaultdistance = 50;
                                 if (action.getQuestactiondata().getDefaultdistance() != -1)
@@ -129,7 +129,7 @@ public class QuestRuntime extends BukkitRunnable {
 
                             }
                             boolean questend = true;
-                            List<QuestAction> questtarget = quest.getQuesttarget();
+                            List<QuestAction> questtarget = quest.getQuest_target();
                             for (QuestAction action : questtarget) {
                                 if (!playerquest_yml.getBoolean(player.getName() + ".progress." + action.getQuestactionname(), false))
                                     questend = false;

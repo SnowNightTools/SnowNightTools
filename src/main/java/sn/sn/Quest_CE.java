@@ -283,7 +283,7 @@ public class Quest_CE implements CommandExecutor {
     }
 
     public static Boolean isQuestExist(int id){
-        return isQuestExist(getQuest(id).getQuestname());
+        return isQuestExist(getQuest(id).getQuest_name());
     }
 
     public static Boolean isQuestExist(String name){
@@ -291,7 +291,7 @@ public class Quest_CE implements CommandExecutor {
     }
 
     public static Boolean isQuestExist(YamlConfiguration ymlfile,int id){
-        return isQuestExist(quest_yml,getQuest(id).getQuestname());
+        return isQuestExist(quest_yml,getQuest(id).getQuest_name());
     }
 
     public static Boolean isQuestExist(YamlConfiguration ymlfile, String name){
@@ -493,18 +493,18 @@ public class Quest_CE implements CommandExecutor {
             case 1:
                 if(isQuestExist(name)){
                     Quest a = getQuest(name);
-                    player.sendMessage(ChatColor.GREEN+"任务名："+a.getQuestname());
-                    player.sendMessage(ChatColor.GREEN+"任务编号："+a.getQuestnumber());
+                    player.sendMessage(ChatColor.GREEN+"任务名："+a.getQuest_name());
+                    player.sendMessage(ChatColor.GREEN+"任务编号："+a.getQuest_number());
                     player.sendMessage(ChatColor.GREEN+"父任务："+a.getQuestposition().getParentquest());
                     player.sendMessage(ChatColor.GREEN+"子任务："+a.getQuestposition().getChildquest());
                     player.sendMessage(ChatColor.GREEN+"任务描述：");
-                    List<String> tempstr = a.getQuestdescription();
-                    for (int i = 0; i < a.getQuestdescriptionline(); i++) {
+                    List<String> tempstr = a.getQuest_description();
+                    for (int i = 0; i < a.getQuest_description_line(); i++) {
                         player.sendMessage(ChatColor.WHITE + tempstr.get(i));
                     }
                     player.sendMessage(ChatColor.GREEN+"任务目标：");
-                    List<QuestAction> tempqa = a.getQuestacceptcondition();
-                    for (int i = 0; i < a.getQuestacceptconditionamount(); i++) {
+                    List<QuestAction> tempqa = a.getQuest_accept_condition();
+                    for (int i = 0; i < a.getQuest_accept_condition_amount(); i++) {
                         player.sendMessage(ChatColor.WHITE + "操作"+(i+1)+"：");
                         show(ymlfile, tempqa.get(i).getQuestactionname(),player);
                     }

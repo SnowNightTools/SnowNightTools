@@ -17,29 +17,29 @@ import static sn.sn.Sn.*;
 
 @SerializableAs("SnQuest")
 public class Quest implements Cloneable, ConfigurationSerializable, Serializable {
-    private int questnumber;
-    private String questname;
+    private int quest_number;
+    private String quest_name;
     private QuestPosition questposition = null;
     private QuestType questtype = null;
-    private List<QuestAction> questacceptcondition = new ArrayList<>();
-    private int questacceptconditionamount = -1;
-    private List<QuestAction> questtarget = new ArrayList<>();
-    private int questtargetamount = -1;
+    private List<QuestAction> quest_accept_condition = new ArrayList<>();
+    private int quest_accept_condition_amount = -1;
+    private List<QuestAction> quest_target = new ArrayList<>();
+    private int quest_target_amount = -1;
     private QuestReward questreward = new QuestReward();
-    private List<String> questdescription = new ArrayList<>();
-    private int questdescriptionline = -1;
-    private boolean issync = false;
+    private List<String> quest_description = new ArrayList<>();
+    private int quest_description_line = -1;
+    private boolean is_sync = false;
     private boolean on = false;
 
 
     public Quest(String name) {
-        questname = name;
-        questnumber = quest_yml.getInt("Amount");//amount比序号大1，所以不用+1
+        quest_name = name;
+        quest_number = quest_yml.getInt("Amount");//amount比序号大1，所以不用+1
     }
 
     public Quest(YamlConfiguration ymlfile, String name) {
-        questname = name;
-        questnumber = ymlfile.getInt("Amount");//amount比序号大1，所以不用+1
+        quest_name = name;
+        quest_number = ymlfile.getInt("Amount");//amount比序号大1，所以不用+1
     }
 
     public boolean isOn() {
@@ -58,13 +58,13 @@ public class Quest implements Cloneable, ConfigurationSerializable, Serializable
     public Boolean turnOff() {
 
         Collection<? extends Player> tmp2 = Bukkit.getOnlinePlayers();
-        for (OfflinePlayer tmpplayer : Bukkit.getOfflinePlayers()) {
-            if (playerquest_yml.getString(tmpplayer.getName() + ".nowquest", "").equals(questname)) {
+        for (OfflinePlayer tmp_player : Bukkit.getOfflinePlayers()) {
+            if (playerquest_yml.getString(tmp_player.getName() + ".nowquest", "").equals(quest_name)) {
                 return false;
             }
         }
-        for (Player tmpplayer : tmp2) {
-            if (playerquest_yml.getString(tmpplayer.getName() + ".nowquest", "").equals(questname)) {
+        for (Player tmp_player : tmp2) {
+            if (playerquest_yml.getString(tmp_player.getName() + ".nowquest", "").equals(quest_name)) {
                 return false;
             }
         }
@@ -76,29 +76,29 @@ public class Quest implements Cloneable, ConfigurationSerializable, Serializable
 
 
         Collection<? extends Player> tmp2 = Bukkit.getOnlinePlayers();
-        for (OfflinePlayer tmpplayer : Bukkit.getOfflinePlayers()) {
-            if (playerquest_yml.getString(tmpplayer.getName() + ".nowquest", "").equals(questname)) {
-                Quest_CE.addQuest(tmpplayer, playerquest_yml.getString(tmpplayer.getName() + ".nowquest"));
-                playerquest_yml.set(tmpplayer.getName() + ".nowquest", null);
-                playerquest_yml.set(tmpplayer.getName() + ".process", null);
+        for (OfflinePlayer tmp_player : Bukkit.getOfflinePlayers()) {
+            if (playerquest_yml.getString(tmp_player.getName() + ".nowquest", "").equals(quest_name)) {
+                Quest_CE.addQuest(tmp_player, playerquest_yml.getString(tmp_player.getName() + ".nowquest"));
+                playerquest_yml.set(tmp_player.getName() + ".nowquest", null);
+                playerquest_yml.set(tmp_player.getName() + ".process", null);
             }
         }
-        for (Player tmpplayer : tmp2) {
-            if (playerquest_yml.getString(tmpplayer.getName() + ".nowquest", "").equals(questname)) {
-                Quest_CE.addQuest(tmpplayer, playerquest_yml.getString(tmpplayer.getName() + ".nowquest"));
-                playerquest_yml.set(tmpplayer.getName() + ".nowquest", null);
-                playerquest_yml.set(tmpplayer.getName() + ".process", null);
+        for (Player tmp_player : tmp2) {
+            if (playerquest_yml.getString(tmp_player.getName() + ".nowquest", "").equals(quest_name)) {
+                Quest_CE.addQuest(tmp_player, playerquest_yml.getString(tmp_player.getName() + ".nowquest"));
+                playerquest_yml.set(tmp_player.getName() + ".nowquest", null);
+                playerquest_yml.set(tmp_player.getName() + ".process", null);
             }
         }
         this.on = false;
     }
 
     public boolean isSync() {
-        return issync;
+        return is_sync;
     }
 
-    public void setSync(boolean issync) {
-        this.issync = issync;
+    public void setSync(boolean is_sync) {
+        this.is_sync = is_sync;
     }
 
     public void succeed(Player winner) {
@@ -125,15 +125,15 @@ public class Quest implements Cloneable, ConfigurationSerializable, Serializable
     public void addDoneQuest(YamlConfiguration ymlfile, Player winner, Quest quest) {
 
         ymlfile.set(winner.getName() + ".doneamount", ymlfile.getInt(winner.getName() + ".doneamount", 0) + 1);
-        ymlfile.set(winner.getName() + ".donelist." + (ymlfile.getInt(winner.getName() + ".doneamount") - 1), quest.getQuestnumber());
+        ymlfile.set(winner.getName() + ".donelist." + (ymlfile.getInt(winner.getName() + ".doneamount") - 1), quest.getQuest_number());
 
-        ymlfile.set(winner.getName() + ".done." + quest.getQuestname() + ".id", quest.getQuestnumber());
-        ymlfile.set(winner.getName() + ".done." + quest.getQuestname() + ".starttime", ymlfile.getString(winner.getName() + ".starttime"));
+        ymlfile.set(winner.getName() + ".done." + quest.getQuest_name() + ".id", quest.getQuest_number());
+        ymlfile.set(winner.getName() + ".done." + quest.getQuest_name() + ".starttime", ymlfile.getString(winner.getName() + ".starttime"));
         Calendar nowc = Calendar.getInstance(), starttime = readCalendarFromString(ymlfile.getString(winner.getName() + ".starttime"));
         String time = recordCalendarToString(nowc);
         double usedtime = starttime.compareTo(nowc) / 1000.0 / 60.0;
-        ymlfile.set(winner.getName() + ".done." + quest.getQuestname() + ".endtime", time);
-        ymlfile.set(winner.getName() + ".done." + quest.getQuestname() + ".usedtime", usedtime);
+        ymlfile.set(winner.getName() + ".done." + quest.getQuest_name() + ".endtime", time);
+        ymlfile.set(winner.getName() + ".done." + quest.getQuest_name() + ".usedtime", usedtime);
 
     }
 
@@ -169,7 +169,7 @@ public class Quest implements Cloneable, ConfigurationSerializable, Serializable
     }
 
     public Boolean readQuestFromYml() {
-        return readQuestFromYml(quest_yml, questname);
+        return readQuestFromYml(quest_yml, quest_name);
     }
 
     public Boolean readQuestFromYml(String name) {
@@ -195,51 +195,51 @@ public class Quest implements Cloneable, ConfigurationSerializable, Serializable
             return false;
         }
         //读取quest position信息
-        questposition.readQpFromYml(ymlfile.getString(questname + ".property-inherit.questposition"));
+        questposition.readQpFromYml(ymlfile.getString(quest_name + ".property-inherit.questposition"));
 
         //读取quest type信息
         questtype = QuestType.valueOf(Objects.requireNonNull(ymlfile.getString("property-set.questtype")).toUpperCase(Locale.ROOT));
 
         //读取quest accept condition 和quest target
-        if (ymlfile.contains(questname + "property-set.questacceptconditionamount"))
-            if (ymlfile.getInt(questname + "property-set.questacceptconditionamount") != 0) {
-                questacceptconditionamount = ymlfile.getInt(questname + "property-set.questacceptconditionamount");
-                for (int j = 0; j < questacceptconditionamount; j++) {
-                    if (!ymlfile.contains(questname + ".property-inherit.questacceptcondition." + j)) {
+        if (ymlfile.contains(quest_name + "property-set.questacceptconditionamount"))
+            if (ymlfile.getInt(quest_name + "property-set.questacceptconditionamount") != 0) {
+                quest_accept_condition_amount = ymlfile.getInt(quest_name + "property-set.questacceptconditionamount");
+                for (int j = 0; j < quest_accept_condition_amount; j++) {
+                    if (!ymlfile.contains(quest_name + ".property-inherit.questacceptcondition." + j)) {
                         sendInfo("[WARNING]读取Quest时错误，信息文件可能损坏！");
                         break;
                     }
-                    String tname = ymlfile.getString(questname + ".property-inherit.questacceptcondition." + j);
-                    questacceptcondition.get(j).readQaFromYml(ymlfile, tname);
+                    String tname = ymlfile.getString(quest_name + ".property-inherit.questacceptcondition." + j);
+                    quest_accept_condition.get(j).readQaFromYml(ymlfile, tname);
                 }
             }
 
-        if (ymlfile.contains(questname + "property-set.questtargetamount"))
-            if (ymlfile.getInt(questname + "property-set.questtargetamount") != 0) {
-                questtargetamount = ymlfile.getInt(questname + "property-set.questtargetamount");
-                for (int j = 0; j < questtargetamount; j++) {
-                    if (!ymlfile.contains(questname + ".property-inherit.questtarget." + j)) {
+        if (ymlfile.contains(quest_name + "property-set.questtargetamount"))
+            if (ymlfile.getInt(quest_name + "property-set.questtargetamount") != 0) {
+                quest_target_amount = ymlfile.getInt(quest_name + "property-set.questtargetamount");
+                for (int j = 0; j < quest_target_amount; j++) {
+                    if (!ymlfile.contains(quest_name + ".property-inherit.questtarget." + j)) {
                         sendInfo("[WARNING]读取Quest时错误，信息文件可能损坏！");
                         break;
                     }
-                    String tname = ymlfile.getString(questname + ".property-inherit.questtarget." + j);
-                    questtarget.get(j).readQaFromYml(ymlfile, tname);
+                    String tname = ymlfile.getString(quest_name + ".property-inherit.questtarget." + j);
+                    quest_target.get(j).readQaFromYml(ymlfile, tname);
                 }
             }
 
         //quest description
-        questdescriptionline = ymlfile.getInt("property-set.questdescriptionline");
-        for (int j = 0; j < this.getQuestdescriptionline(); j++) {
-            questdescription.set(j, ymlfile.getString(questname + ".property-set.questdescription." + j));
+        quest_description_line = ymlfile.getInt("property-set.questdescriptionline");
+        for (int j = 0; j < this.getQuest_description_line(); j++) {
+            quest_description.set(j, ymlfile.getString(quest_name + ".property-set.questdescription." + j));
         }
         //questreward
-        questreward.readQrFromYml(ymlfile, ymlfile.getString(questname + ".property-inherit.questreward"));
+        questreward.readQrFromYml(ymlfile, ymlfile.getString(quest_name + ".property-inherit.questreward"));
 
         //isSync
-        if (ymlfile.contains(questname + ".property-set.issync"))
-            issync = ymlfile.getBoolean(questname + ".property-set.issync");
+        if (ymlfile.contains(quest_name + ".property-set.issync"))
+            is_sync = ymlfile.getBoolean(quest_name + ".property-set.issync");
 
-        issync = ymlfile.getBoolean(questname + ".property-set.on", false);
+        is_sync = ymlfile.getBoolean(quest_name + ".property-set.on", false);
         return true;
     }
 
@@ -249,99 +249,99 @@ public class Quest implements Cloneable, ConfigurationSerializable, Serializable
 
     public Boolean saveQuestToYml(YamlConfiguration ymlfile) {
 
-        if (!ymlfile.contains(questname)) {
-            ymlfile.set("inside." + questname, ymlfile.get("Amount", 0));
-            ymlfile.set("inside." + ymlfile.get("Amount", 0), questname);
+        if (!ymlfile.contains(quest_name)) {
+            ymlfile.set("inside." + quest_name, ymlfile.get("Amount", 0));
+            ymlfile.set("inside." + ymlfile.get("Amount", 0), quest_name);
             ymlfile.set("Amount", ymlfile.getInt("Amount", 0) + 1);
         }
 
-        ymlfile.set(questname + ".type", 1);
-        ymlfile.set(questname + ".property-inherit.questposition", questposition.getQuestpositionname());
+        ymlfile.set(quest_name + ".type", 1);
+        ymlfile.set(quest_name + ".property-inherit.questposition", questposition.getQuestpositionname());
         questposition.saveQpToYml();
-        ymlfile.set(questname + ".property-inherit.questreward", questreward.getQuestrewardname());
+        ymlfile.set(quest_name + ".property-inherit.questreward", questreward.getQuestrewardname());
         questreward.saveQrToYml();
 
-        ymlfile.set(questname + ".property-set.questnumber", questnumber);
-        ymlfile.set(questname + ".property-set.questname", questname);
-        ymlfile.set(questname + ".property-set.questtype", questtype.getKey());
-        //ymlfile.set(questname+".property-inherit","QUEST");
-        ymlfile.set(questname + ".property-set.questdescriptionline", questdescriptionline);
-        ymlfile.set(questname + ".property-set.questacceptconditionamount", questacceptconditionamount);
-        ymlfile.set(questname + ".property-set.questtargetamount", questtargetamount);
-        ymlfile.set(questname + ".property-set.issync", issync);
-        ymlfile.set(questname + ".property-set.on", on);
+        ymlfile.set(quest_name + ".property-set.questnumber", quest_number);
+        ymlfile.set(quest_name + ".property-set.quest_name", quest_name);
+        ymlfile.set(quest_name + ".property-set.questtype", questtype.getKey());
+        //ymlfile.set(quest_name+".property-inherit","QUEST");
+        ymlfile.set(quest_name + ".property-set.questdescriptionline", quest_description_line);
+        ymlfile.set(quest_name + ".property-set.questacceptconditionamount", quest_accept_condition_amount);
+        ymlfile.set(quest_name + ".property-set.questtargetamount", quest_target_amount);
+        ymlfile.set(quest_name + ".property-set.issync", is_sync);
+        ymlfile.set(quest_name + ".property-set.on", on);
 
-        for (int i = 0; i < questdescriptionline; i++) {
-            ymlfile.set(questname + ".property-set.questdescription." + i, questdescription.get(i));
+        for (int i = 0; i < quest_description_line; i++) {
+            ymlfile.set(quest_name + ".property-set.questdescription." + i, quest_description.get(i));
         }
-        for (int i = 0; i < questacceptconditionamount; i++) {
-            ymlfile.set(questname + ".property-inherit.questacceptcondition." + i, questacceptcondition.get(i).getQuestactionname());
-            questacceptcondition.get(i).saveQaToYml(ymlfile);
+        for (int i = 0; i < quest_accept_condition_amount; i++) {
+            ymlfile.set(quest_name + ".property-inherit.questacceptcondition." + i, quest_accept_condition.get(i).getQuestactionname());
+            quest_accept_condition.get(i).saveQaToYml(ymlfile);
         }
 
-        for (int i = 0; i < questtargetamount; i++) {
-            ymlfile.set(questname + ".property-inherit.questtarget." + i, questtarget.get(i).getQuestactionname());
-            questtarget.get(i).saveQaToYml(ymlfile);
+        for (int i = 0; i < quest_target_amount; i++) {
+            ymlfile.set(quest_name + ".property-inherit.questtarget." + i, quest_target.get(i).getQuestactionname());
+            quest_target.get(i).saveQaToYml(ymlfile);
         }
 
         return true;
     }
 
     public void addQuesttarget(QuestAction qa) {
-        questtarget.add(qa);
+        quest_target.add(qa);
     }
 
     public void addQuestacceptcondition(QuestAction a) {
-        questacceptcondition.add(a);
+        quest_accept_condition.add(a);
     }
 
     public void addQuestdescription(String a) {
-        questdescription.add(a);
+        quest_description.add(a);
     }
 
     public void removeQuesttarget(int index) {
-        questtarget.remove(index);
+        quest_target.remove(index);
     }
 
     public void removeQuestacceptcondition(int index) {
-        questacceptcondition.remove(index);
+        quest_accept_condition.remove(index);
     }
 
     public void removeQuestdescription(int index) {
-        questdescription.remove(index);
+        quest_description.remove(index);
     }
 
-    public int getQuestnumber() {
-        return questnumber;
+    public int getQuest_number() {
+        return quest_number;
     }
 
-    public void setQuestnumber(int questnumber) {
-        this.questnumber = questnumber;
+    public void setQuest_number(int quest_number) {
+        this.quest_number = quest_number;
     }
 
-    public String getQuestname() {
-        return questname;
+    public String getQuest_name() {
+        return quest_name;
     }
 
-    public void setQuestname(String questname) {
-        this.questname = questname;
+    public void setQuest_name(String quest_name) {
+        this.quest_name = quest_name;
     }
 
     @Override
     public String toString() {
         return "Quest{" +
-                "questnumber=" + questnumber +
-                ", questname='" + questname + '\'' +
+                "questnumber=" + quest_number +
+                ", quest_name='" + quest_name + '\'' +
                 ", questposition=" + questposition +
                 ", questtype=" + questtype +
-                ", questacceptcondition=" + questacceptcondition +
-                ", questacceptconditionamount=" + questacceptconditionamount +
-                ", questtarget=" + questtarget +
-                ", questtargetamount=" + questtargetamount +
+                ", questacceptcondition=" + quest_accept_condition +
+                ", questacceptconditionamount=" + quest_accept_condition_amount +
+                ", questtarget=" + quest_target +
+                ", questtargetamount=" + quest_target_amount +
                 ", questreward=" + questreward +
-                ", questdescription=" + questdescription +
-                ", questdescriptionline=" + questdescriptionline +
-                ", issync=" + issync +
+                ", questdescription=" + quest_description +
+                ", questdescriptionline=" + quest_description_line +
+                ", issync=" + is_sync +
                 ", on=" + on +
                 '}';
     }
@@ -351,16 +351,16 @@ public class Quest implements Cloneable, ConfigurationSerializable, Serializable
         if (this == o) return true;
         if (!(o instanceof Quest)) return false;
         Quest quest = (Quest) o;
-        return getQuestnumber() == quest.getQuestnumber() && getQuestacceptconditionamount() == quest.getQuestacceptconditionamount() && getQuesttargetamount() == quest.getQuesttargetamount() && getQuestdescriptionline() == quest.getQuestdescriptionline() && issync == quest.issync && isOn() == quest.isOn() && getQuestname().equals(quest.getQuestname()) && getQuestposition().equals(quest.getQuestposition()) && getQuesttype() == quest.getQuesttype() && getQuestacceptcondition().equals(quest.getQuestacceptcondition()) && getQuesttarget().equals(quest.getQuesttarget()) && getQuestreward().equals(quest.getQuestreward()) && getQuestdescription().equals(quest.getQuestdescription());
+        return getQuest_number() == quest.getQuest_number() && getQuest_accept_condition_amount() == quest.getQuest_accept_condition_amount() && getQuest_target_amount() == quest.getQuest_target_amount() && getQuest_description_line() == quest.getQuest_description_line() && is_sync == quest.is_sync && isOn() == quest.isOn() && getQuest_name().equals(quest.getQuest_name()) && getQuestposition().equals(quest.getQuestposition()) && getQuesttype() == quest.getQuesttype() && getQuest_accept_condition().equals(quest.getQuest_accept_condition()) && getQuest_target().equals(quest.getQuest_target()) && getQuestreward().equals(quest.getQuestreward()) && getQuest_description().equals(quest.getQuest_description());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getQuestnumber(), getQuestname(), getQuestposition(), getQuesttype(), getQuestacceptcondition(), getQuestacceptconditionamount(), getQuesttarget(), getQuesttargetamount(), getQuestreward(), getQuestdescription(), getQuestdescriptionline(), issync, isOn());
+        return Objects.hash(getQuest_number(), getQuest_name(), getQuestposition(), getQuesttype(), getQuest_accept_condition(), getQuest_accept_condition_amount(), getQuest_target(), getQuest_target_amount(), getQuestreward(), getQuest_description(), getQuest_description_line(), is_sync, isOn());
     }
 
     public List<QuestAction> getQustAccptCndtn() {
-        return questacceptcondition;
+        return quest_accept_condition;
     }
 
     public QuestType getQuestType() {
@@ -372,29 +372,29 @@ public class Quest implements Cloneable, ConfigurationSerializable, Serializable
         return super.clone();
     }
 
-    public List<QuestAction> getQuesttarget() {
-        return questtarget;
+    public List<QuestAction> getQuest_target() {
+        return quest_target;
     }
 
-    public void setQuesttarget(List<QuestAction> questtarget) {
-        questtargetamount = questtarget.size();
-        this.questtarget = questtarget;
+    public void setQuest_target(List<QuestAction> quest_target) {
+        quest_target_amount = quest_target.size();
+        this.quest_target = quest_target;
     }
 
-    public int getQuestacceptconditionamount() {
-        return questacceptconditionamount;
+    public int getQuest_accept_condition_amount() {
+        return quest_accept_condition_amount;
     }
 
-    private void setQuestacceptconditionamount(int questacceptconditionamount) {
-        this.questacceptconditionamount = questacceptconditionamount;
+    private void setQuest_accept_condition_amount(int quest_accept_condition_amount) {
+        this.quest_accept_condition_amount = quest_accept_condition_amount;
     }
 
-    public int getQuesttargetamount() {
-        return questtargetamount;
+    public int getQuest_target_amount() {
+        return quest_target_amount;
     }
 
-    private void setQuesttargetamount(int questtargetamount) {
-        this.questtargetamount = questtargetamount;
+    private void setQuest_target_amount(int quest_target_amount) {
+        this.quest_target_amount = quest_target_amount;
     }
 
     public QuestPosition getQuestposition() {
@@ -413,13 +413,13 @@ public class Quest implements Cloneable, ConfigurationSerializable, Serializable
         this.questreward = questreward;
     }
 
-    public List<String> getQuestdescription() {
-        return questdescription;
+    public List<String> getQuest_description() {
+        return quest_description;
     }
 
-    public void setQuestdescription(List<String> questdescription) {
-        questdescriptionline = questdescription.size();
-        this.questdescription = questdescription;
+    public void setQuest_description(List<String> quest_description) {
+        quest_description_line = quest_description.size();
+        this.quest_description = quest_description;
     }
 
     public QuestType getQuesttype() {
@@ -430,29 +430,29 @@ public class Quest implements Cloneable, ConfigurationSerializable, Serializable
         this.questtype = questtype;
     }
 
-    public List<QuestAction> getQuestacceptcondition() {
-        return questacceptcondition;
+    public List<QuestAction> getQuest_accept_condition() {
+        return quest_accept_condition;
     }
 
-    public void setQuestacceptcondition(List<QuestAction> questacceptcondition) {
-        questacceptconditionamount = questacceptcondition.size();
-        this.questacceptcondition = questacceptcondition;
+    public void setQuest_accept_condition(List<QuestAction> quest_accept_condition) {
+        quest_accept_condition_amount = quest_accept_condition.size();
+        this.quest_accept_condition = quest_accept_condition;
     }
 
     public int getQuestAcceptConditionAmount() {
-        return questacceptconditionamount;
+        return quest_accept_condition_amount;
     }
 
     public int getQuestTargetAmount() {
-        return questtargetamount;
+        return quest_target_amount;
     }
 
-    public int getQuestdescriptionline() {
-        return questdescriptionline;
+    public int getQuest_description_line() {
+        return quest_description_line;
     }
 
-    private void setQuestdescriptionline(int questdescriptionline) {
-        this.questdescriptionline = questdescriptionline;
+    private void setQuest_description_line(int quest_description_line) {
+        this.quest_description_line = quest_description_line;
     }
 
     public boolean isTypeSet() {
@@ -460,15 +460,15 @@ public class Quest implements Cloneable, ConfigurationSerializable, Serializable
     }
 
     public boolean isAcceptconditionSet() {
-        return questacceptcondition.size() != 0;
+        return quest_accept_condition.size() != 0;
     }
 
     public boolean isTargetSet() {
-        return questtarget.size() != 0;
+        return quest_target.size() != 0;
     }
 
     public boolean isDescriptionSet() {
-        return questdescription != null;
+        return quest_description != null;
     }
 
     public boolean isPositionSet() {
@@ -479,62 +479,62 @@ public class Quest implements Cloneable, ConfigurationSerializable, Serializable
     @Override
     public Map<String, Object> serialize() {
         Map<String, Object> tmp = new HashMap<>();
-        tmp.put("questnumber", questnumber);
-        tmp.put("questname", questname);
+        tmp.put("questnumber", quest_number);
+        tmp.put("quest_name", quest_name);
         tmp.put("questposition", questposition);
         tmp.put("questtype", questtype);
-        tmp.put("questacceptcondition", questacceptcondition);
-        tmp.put("questacceptconditionamount", questacceptconditionamount);
-        tmp.put("questtarget", questtarget);
-        tmp.put("questtargetamount", questtargetamount);
+        tmp.put("questacceptcondition", quest_accept_condition);
+        tmp.put("questacceptconditionamount", quest_accept_condition_amount);
+        tmp.put("questtarget", quest_target);
+        tmp.put("questtargetamount", quest_target_amount);
         tmp.put("questreward", questreward);
-        tmp.put("questdescription", questdescription);
-        tmp.put("questdescriptionline", questdescriptionline);
-        tmp.put("issync", issync);
+        tmp.put("questdescription", quest_description);
+        tmp.put("questdescriptionline", quest_description_line);
+        tmp.put("issync", is_sync);
         tmp.put("on", on);
 
         return tmp;
     }
 
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-        out.writeObject(questnumber);
-        out.writeObject(questname);
+        out.writeObject(quest_number);
+        out.writeObject(quest_name);
         out.writeObject(questposition);
         out.writeObject(questtype);
-        out.writeObject(questacceptcondition);
-        out.writeObject(questacceptconditionamount);
-        out.writeObject(questtarget);
-        out.writeObject(questtargetamount);
+        out.writeObject(quest_accept_condition);
+        out.writeObject(quest_accept_condition_amount);
+        out.writeObject(quest_target);
+        out.writeObject(quest_target_amount);
         out.writeObject(questreward);
-        out.writeObject(questdescription);
-        out.writeObject(questdescriptionline);
-        out.writeObject(issync);
+        out.writeObject(quest_description);
+        out.writeObject(quest_description_line);
+        out.writeObject(is_sync);
         out.writeObject(on);
     }
 
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
-        questnumber = (int) in.readObject();
-        questname = (String) in.readObject();
+        quest_number = (int) in.readObject();
+        quest_name = (String) in.readObject();
         questposition = (QuestPosition) in.readObject();
         questtype = (QuestType) in.readObject();
-        questacceptcondition = (List<QuestAction>) in.readObject();
-        questacceptconditionamount = (int) in.readObject();
-        questtarget = (List<QuestAction>) in.readObject();
-        questtargetamount = (int) in.readObject();
+        quest_accept_condition = (List<QuestAction>) in.readObject();
+        quest_accept_condition_amount = (int) in.readObject();
+        quest_target = (List<QuestAction>) in.readObject();
+        quest_target_amount = (int) in.readObject();
         questreward = (QuestReward) in.readObject();
-        questdescription = (List<String>) in.readObject();
-        questdescriptionline = (int) in.readObject();
-        issync = (boolean) in.readObject();
+        quest_description = (List<String>) in.readObject();
+        quest_description_line = (int) in.readObject();
+        is_sync = (boolean) in.readObject();
         on = (boolean) in.readObject();
     }
 
     private void readObjectNoData() throws ObjectStreamException {
         String name = "NewQuest";
-        questname = name;
-        questnumber = quest_yml.getInt("Amount");//amount比序号大1，所以不用+1
-        quest_yml.set("Amount", questnumber + 1);//计数
-        quest_yml.set("inside." + name, questnumber);
-        quest_yml.set("inside." + questnumber, name);
+        quest_name = name;
+        quest_number = quest_yml.getInt("Amount");//amount比序号大1，所以不用+1
+        quest_yml.set("Amount", quest_number + 1);//计数
+        quest_yml.set("inside." + name, quest_number);
+        quest_yml.set("inside." + quest_number, name);
     }
 
     public boolean isRewardset() {
