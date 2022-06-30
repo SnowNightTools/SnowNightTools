@@ -44,14 +44,14 @@ public class Sn extends JavaPlugin {
 
     public static Map<Player, Location> start_point = new HashMap<>();
     public static Map<Player, Location> end_point = new HashMap<>();
-    public static Map<OfflinePlayer, List<Collector_CE.Collector>> collectors = new HashMap<>();
-    public static Map<Player, Quest_CE.QuestAction> quest_action_setting = new HashMap<>();
+    public static Map<OfflinePlayer, List<Collector>> collectors = new HashMap<>();
+    public static Map<Player, QuestAction> quest_action_setting = new HashMap<>();
     public static Map<Player, Inventory> show_inv = new HashMap<>();
     public static Map<Player, List<ItemStack>> item_temp = new HashMap<>();
-    public static Map<Player, Quest_CE.Quest> quest_setting = new HashMap<>();
+    public static Map<Player, Quest> quest_setting = new HashMap<>();
     public static Map<Player, Consumer<Object>> setting = new HashMap<>();
     public static Map<Player, Consumer<ArrayList<Object>>> setting_list = new HashMap<>();
-    public static Map<Player, Quest_CE.SettingType> setting_state = new HashMap<>();
+    public static Map<Player, QuestSettingType> setting_state = new HashMap<>();
     public static Map<Player, Consumer<Player>> ui_opener = new HashMap<>();
     public static Map<Player, EntityType> entity_type_setting = new HashMap<>();
     public static Map<Player, Boolean> isSetTorC = new HashMap<>();//true when commander is setting Target
@@ -73,8 +73,8 @@ public class Sn extends JavaPlugin {
     public static Economy sn_economy;
 
     public static List<ItemStack> rubbishes;
-    public static List<Quest_CE.Quest> quests = new ArrayList<>();
-    public static Map<String, City_CE.City> cities = new HashMap<>();
+    public static List<Quest> quests = new ArrayList<>();
+    public static Map<String, City> cities = new HashMap<>();
 
     public static List<String> bins;
     public static List<String> collector_names = new ArrayList<>();
@@ -257,14 +257,14 @@ public class Sn extends JavaPlugin {
             collector_names.add(name);
             uuid = collector_yml.getString(name+".owner","d59beeb3-6c24-3f22-8888-f8c83bc38cfa");
             cn = collector_yml.getInt(name+".range_amount",1);
-            Collector_CE.Collector temp = new Collector_CE.Collector();
+            Collector temp = new Collector();
             temp.setName(name);
             temp.setOwner(UUID.fromString(uuid));
             temp.setBox(SnFileIO.readLocationFromYml(collector_yml,name+".box"));
             for (int i1 = 1; i1 <= cn; i1++) {
                 temp.addRange(SnFileIO.readRangeFromYml(collector_yml,name+".range."+i1));
             }
-            List<Collector_CE.Collector> t = collectors.getOrDefault(Bukkit.getOfflinePlayer(UUID.fromString(uuid)), new ArrayList<>());
+            List<Collector> t = collectors.getOrDefault(Bukkit.getOfflinePlayer(UUID.fromString(uuid)), new ArrayList<>());
             t.add(temp);
             collectors.put(Bukkit.getOfflinePlayer(UUID.fromString(uuid)),t);
         }
@@ -277,11 +277,11 @@ public class Sn extends JavaPlugin {
         data_folder = getDataFolder();
         plugin_path = getDataFolder().getPath();
 
-        registerClass(Quest_CE.Quest.class);
-        registerClass(Quest_CE.QuestPosition.class);
-        registerClass(Quest_CE.QuestAction.class);
-        registerClass(Quest_CE.QuestReward.class);
-        registerClass(Quest_CE.QuestActionData.class);
+        registerClass(Quest.class);
+        registerClass(QuestPosition.class);
+        registerClass(QuestAction.class);
+        registerClass(QuestReward.class);
+        registerClass(QuestActionData.class);
 
 
         config_file = new File(data_folder.getAbsolutePath()+ "\\config.yml");
@@ -401,7 +401,7 @@ public class Sn extends JavaPlugin {
             String questname;
             questname = quest_yml.getString("inside."+ i );
             if (quest_yml.getInt(questname +".type")== 1){
-                quests.add(new Quest_CE.Quest(questname));
+                quests.add(new Quest(questname));
                 if(!quests.get(i).readQuestFromYml()){
                     sendInfo("警告！ 在加载"+questname+"时出现错误！");
                 }

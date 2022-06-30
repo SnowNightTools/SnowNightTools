@@ -196,7 +196,7 @@ public class InvOperateEvent implements Listener {
 
     private void workWarpListIO(InventoryClickEvent inv_click) {
         if (OpenUI.uiINIT(inv_click)) return;
-        City_CE.City city = City_CE.City.getCity(commander);
+        City city = City.getCity(commander);
         if (city == null) return;
         String page_str = getPage(inv_click);
         if(page_str == null) return;
@@ -224,7 +224,7 @@ public class InvOperateEvent implements Listener {
 
     private void workResidentsListIO(InventoryClickEvent inv_click) {
         if (OpenUI.uiINIT(inv_click)) return;
-        City_CE.City city = City_CE.City.getCity(commander);
+        City city = City.getCity(commander);
         if (city == null) return;
         String page_str = getPage(inv_click);
         if(page_str == null) return;
@@ -255,7 +255,7 @@ public class InvOperateEvent implements Listener {
 
     private void workMyCityIO(InventoryClickEvent inv_click) {
         if (OpenUI.uiINIT(inv_click)) return;
-        City_CE.City city = City_CE.City.getCity(commander);
+        City city = City.getCity(commander);
         if (city == null) return;
         switch (inv_click.getSlot()) {
             case 36:
@@ -294,7 +294,7 @@ public class InvOperateEvent implements Listener {
             commander.sendMessage("发生了错误：无法获得玩家信息！");
             return;
         }
-        City_CE.City city = City_CE.City.checkMayorAndGetCity(commander);
+        City city = City.checkMayorAndGetCity(commander);
         if (city == null) return;
         List<String> conf = new ArrayList<>();
         conf.add(ChatColor.GREEN + "你确认要添加" + p.getName() + "到城市中吗？");
@@ -320,9 +320,9 @@ public class InvOperateEvent implements Listener {
                 (player) -> {
                     if (finalSp != null)
                     OpenUI.openCityApplicationAcceptUI(
-                            Objects.requireNonNull(City_CE.City.getCity(player)), player, Integer.parseInt(finalSp));
+                            Objects.requireNonNull(City.getCity(player)), player, Integer.parseInt(finalSp));
                     else OpenUI.openCityApplicationAcceptUI(
-                            Objects.requireNonNull(City_CE.City.getCity(player)), player);
+                            Objects.requireNonNull(City.getCity(player)), player);
                 },
                 (player) -> player.sendMessage("操作被打断或终止。"));
     }
@@ -393,7 +393,7 @@ public class InvOperateEvent implements Listener {
 
     private boolean workQuestConditionRemoveIO(InventoryClickEvent inv_click) {
         if (OpenUI.uiINIT(inv_click)) return true;
-        List<Quest_CE.QuestAction> target = quest_setting.get(commander).getQuestacceptcondition();
+        List<QuestAction> target = quest_setting.get(commander).getQuestacceptcondition();
         if(isSetTorC.get(commander)) target = quest_setting.get(commander).getQuesttarget();
         if(inv_click.getSlot()==17){
             OpenUI.openActionSettingUI(commander);
@@ -669,9 +669,9 @@ public class InvOperateEvent implements Listener {
             return;
         }
 
-        Quest_CE.QuestReward tmp_qr = quest_setting.get(commander).getQuestreward();
+        QuestReward tmp_qr = quest_setting.get(commander).getQuestreward();
         if(tmp_qr ==null)
-            tmp_qr = new Quest_CE.QuestReward();
+            tmp_qr = new QuestReward();
 
         if(cli.isLeftClick()){
             if(inv_click.getClickedInventory() == null|| inv_click.getCurrentItem() == null) return;
@@ -710,9 +710,9 @@ public class InvOperateEvent implements Listener {
         if(Objects.requireNonNull(inv_click.getClickedInventory()).getSize()==9) {
             //玩家点击的是上面的设置内容
 
-            Quest_CE.QuestReward tmp_qr = quest_setting.get(commander).getQuestreward();
+            QuestReward tmp_qr = quest_setting.get(commander).getQuestreward();
             if(tmp_qr ==null)
-                tmp_qr = new Quest_CE.QuestReward();
+                tmp_qr = new QuestReward();
             switch (inv_click.getSlot()){
                 case 0:
                     tmp_qr.setAdmin(true);
@@ -751,22 +751,22 @@ public class InvOperateEvent implements Listener {
             //玩家点击的是上面的设置内容
             switch (inv_click.getSlot()){
                 case 1:
-                    quest_setting.get(commander).setQuesttype(Quest_CE.QuestType.MAIN);
+                    quest_setting.get(commander).setQuesttype(QuestType.MAIN);
                     break;
                 case 2:
-                    quest_setting.get(commander).setQuesttype(Quest_CE.QuestType.SIDE);
+                    quest_setting.get(commander).setQuesttype(QuestType.SIDE);
                     break;
                 case 3:
-                    quest_setting.get(commander).setQuesttype(Quest_CE.QuestType.TRIGGER);
+                    quest_setting.get(commander).setQuesttype(QuestType.TRIGGER);
                     break;
                 case 5:
-                    quest_setting.get(commander).setQuesttype(Quest_CE.QuestType.DAILY);
+                    quest_setting.get(commander).setQuesttype(QuestType.DAILY);
                     break;
                 case 6:
-                    quest_setting.get(commander).setQuesttype(Quest_CE.QuestType.REWARD);
+                    quest_setting.get(commander).setQuesttype(QuestType.REWARD);
                     break;
                 case 7:
-                    quest_setting.get(commander).setQuesttype(Quest_CE.QuestType.DIY);
+                    quest_setting.get(commander).setQuesttype(QuestType.DIY);
                     break;
                 default:
                     return true;
@@ -789,7 +789,7 @@ public class InvOperateEvent implements Listener {
         }
 
         if(!quest_action_setting.containsKey(commander))
-            quest_action_setting.put(commander,new Quest_CE.QuestAction());
+            quest_action_setting.put(commander,new QuestAction());
 
         switch (inv_click.getSlot()){
 
@@ -802,7 +802,7 @@ public class InvOperateEvent implements Listener {
             case 6:
             case 7:
             case 8:
-                quest_action_setting.get(commander).setQuestactiontype(Quest_CE.QuestActionType.getFromInt(inv_click.getSlot()+1));
+                quest_action_setting.get(commander).setQuestactiontype(QuestActionType.getFromInt(inv_click.getSlot()+1));
                 OpenUI.openActionCreateUI(commander);
                 return;
             case 9:
@@ -877,17 +877,17 @@ public class InvOperateEvent implements Listener {
                 typeset.setItem(5, getItem_QuestTypeSetting("DAILY","日常任务",null));
                 typeset.setItem(6, getItem_QuestTypeSetting("REWARD","悬赏任务",null));
                 typeset.setItem(7, getItem_QuestTypeSetting("DIY","自编任务",null));
-                setting_state.put(commander, Quest_CE.SettingType.QUESTTYPE);
+                setting_state.put(commander, QuestSettingType.QUESTTYPE);
                 commander.openInventory(typeset);
                 return true;
             }
 
             if(inv_click.getSlot() == 5){//quest position
                 Inventory position_set = Bukkit.createInventory(commander,54,ChatColor.GREEN+"父任务设置：请选择父任务" );
-                setting_state.put(commander, Quest_CE.SettingType.QUESTPOSITION);
+                setting_state.put(commander, QuestSettingType.QUESTPOSITION);
                 if(quests.size()<=53){
                     for (int i = 0; i < quests.size(); i++) {
-                        Quest_CE.Quest quest = quests.get(i);
+                        Quest quest = quests.get(i);
                         position_set.setItem(i+1, OpenUI.getItem("BOOK", quest.getQuestname(), quest.getQuestdescription()));
                     }
                     position_set.setItem(0, non_p());
@@ -898,18 +898,18 @@ public class InvOperateEvent implements Listener {
                 return true;
             }
             if(inv_click.getSlot() == 7){//quest_reward
-                setting_state.put(commander, Quest_CE.SettingType.QUESTREWARD);
+                setting_state.put(commander, QuestSettingType.QUESTREWARD);
                 OpenUI.openRewardSettingUI(commander);
                 return true;
             }
             if(inv_click.getSlot() == 6){//位置目标
-                setting_state.put(commander, Quest_CE.SettingType.QUESTACTION);
+                setting_state.put(commander, QuestSettingType.QUESTACTION);
                 isSetTorC.put(commander,true);
                 OpenUI.openActionSettingUI(commander);
                 return true;
             }
             if(inv_click.getSlot() == 2){//位置目标
-                setting_state.put(commander, Quest_CE.SettingType.QUESTACTION);
+                setting_state.put(commander, QuestSettingType.QUESTACTION);
                 isSetTorC.put(commander,false);
                 OpenUI.openActionSettingUI(commander);
                 return true;
@@ -1029,7 +1029,7 @@ public class InvOperateEvent implements Listener {
             return true;
         }
         if(inv_click.getSlot()==9){
-            quest_action_setting.put(commander, new Quest_CE.QuestAction());
+            quest_action_setting.put(commander, new QuestAction());
             OpenUI.openActionCreateUI(commander);
             return true;
         }
@@ -1042,7 +1042,7 @@ public class InvOperateEvent implements Listener {
 
     private boolean workPositionSet(@NotNull String name) {
         if(name.equals("无父任务")){
-            Quest_CE.QuestPosition tmp = new Quest_CE.QuestPosition();
+            QuestPosition tmp = new QuestPosition();
             tmp.setParentquest(null);
             tmp.setQuestlevel(1);
             quest_setting.get(commander).setQuestposition(tmp);
@@ -1051,7 +1051,7 @@ public class InvOperateEvent implements Listener {
             return true;
         }
 
-        Quest_CE.QuestPosition tmp = new Quest_CE.QuestPosition();
+        QuestPosition tmp = new QuestPosition();
         tmp.setQuestpositionname(quest_setting.get(commander).getQuestname()+"position");
         tmp.setParentquest(name);
         if(quest_setting.get(commander).isPositionSet()){
@@ -1101,7 +1101,7 @@ public class InvOperateEvent implements Listener {
 
     @SuppressWarnings("SameParameterValue")
     private @NotNull ItemStack getItem_QuestTypeSetting(String typ_name, String dp_name, List<String> lore){
-        ItemStack a = new ItemStack(Quest_CE.QuestType.valueOf(typ_name).getSymbol(),1);
+        ItemStack a = new ItemStack(QuestType.valueOf(typ_name).getSymbol(),1);
         ItemMeta b = a.getItemMeta();
         if(b != null) b.setLore(lore);
         assert b != null;

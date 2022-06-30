@@ -32,7 +32,7 @@ public class CollectorRuntime implements Runnable {
                 sendDebug("Collector 2");
                 if (collectors.containsKey(onlinePlayer)) {
                     sendDebug("Collector 3");
-                    for (Collector_CE.Collector collector : collectors.get(onlinePlayer)) {
+                    for (Collector collector : collectors.get(onlinePlayer)) {
                         sendDebug("Collector 4");
                         for (Range range : collector.getRanges()) {
                             if (range.getWorld() != null) {

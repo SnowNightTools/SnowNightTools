@@ -47,7 +47,7 @@ public class OpenUI {
         questcreate.setItem(4,nameicon);
 
 
-        ItemStack positionicon = new ItemStack(Quest_CE.SettingType.QUESTPOSITION.getSymbol());
+        ItemStack positionicon = new ItemStack(QuestSettingType.QUESTPOSITION.getSymbol());
         ItemMeta positioniconmeta = positionicon.getItemMeta();
         assert positioniconmeta != null;
         positioniconmeta.setDisplayName("任务位置");
@@ -80,14 +80,14 @@ public class OpenUI {
         questcreate.setItem(3, typeicon);
 
 
-        ItemStack targeticon = new ItemStack(Quest_CE.SettingType.QUESTACTION.getSymbol());
+        ItemStack targeticon = new ItemStack(QuestSettingType.QUESTACTION.getSymbol());
         ItemMeta targeticonmeta = targeticon.getItemMeta();
         assert targeticonmeta != null;
         targeticonmeta.setDisplayName("任务目标");
         List<String> targetlore = new ArrayList<>();
         targetlore.add(ChatColor.GREEN+"点我设置任务目标");
         if(quest_setting.get(questPlayer).isTargetSet()) {
-            for (Quest_CE.QuestAction action : quest_setting.get(questPlayer).getQuesttarget()) {
+            for (QuestAction action : quest_setting.get(questPlayer).getQuesttarget()) {
                 targetlore.addAll(toStrList(action.serialize()));
             }
             targeticonmeta.addEnchant(Enchantment.ARROW_DAMAGE,1,false);
@@ -97,7 +97,7 @@ public class OpenUI {
         questcreate.setItem(6, targeticon);
 
 
-        ItemStack acccondtnicon = new ItemStack(Quest_CE.SettingType.QUESTACTION.getSymbol());
+        ItemStack acccondtnicon = new ItemStack(QuestSettingType.QUESTACTION.getSymbol());
         ItemMeta acccondtniconmeta = acccondtnicon.getItemMeta();
         assert acccondtniconmeta != null;
         acccondtniconmeta.setDisplayName("任务接受条件");
@@ -106,7 +106,7 @@ public class OpenUI {
         acccondtnlore.add("如果没有特别的任务接受条件，");
         acccondtnlore.add("也请将其设置为“默认“！");
         if(quest_setting.get(questPlayer).isAcceptconditionSet()) {
-            for (Quest_CE.QuestAction action : quest_setting.get(questPlayer).getQustAccptCndtn()) {
+            for (QuestAction action : quest_setting.get(questPlayer).getQustAccptCndtn()) {
                 acccondtnlore.addAll(toStrList(action.serialize()));
             }
             acccondtniconmeta.addEnchant(Enchantment.ARROW_DAMAGE,1,false);
@@ -116,7 +116,7 @@ public class OpenUI {
         questcreate.setItem(2, acccondtnicon);
 
 
-        ItemStack rewardicon = new ItemStack(Quest_CE.SettingType.QUESTREWARD.getSymbol());
+        ItemStack rewardicon = new ItemStack(QuestSettingType.QUESTREWARD.getSymbol());
         ItemMeta rewardiconmeta = rewardicon.getItemMeta();
         assert rewardiconmeta != null;
         rewardiconmeta.setDisplayName("任务奖励");
@@ -189,7 +189,7 @@ public class OpenUI {
 
         Inventory tmpacui = Bukkit.createInventory(commander,18,ChatColor.GREEN+"创建一个任务条件");
         int i = 0;
-        for (Quest_CE.QuestActionType value : Quest_CE.QuestActionType.values()) {
+        for (QuestActionType value : QuestActionType.values()) {
             tmpacui.setItem(i++, getItem("PAPER",value.getKey().getKey(),null, quest_action_setting.get(commander).getQuestactiontype().getKey() == (value).getKey()));
         }
         List<String> a = new ArrayList<>();
@@ -223,7 +223,7 @@ public class OpenUI {
         if(isSetTorC.get(commander)) viewname = ChatColor.GREEN+"任务达成的条件列表";
         else viewname = ChatColor.GREEN+"任务触发或接受的条件列表";
         Inventory tmptarget = Bukkit.createInventory(commander,18, viewname);
-        List<Quest_CE.QuestAction> target;
+        List<QuestAction> target;
         if(isSetTorC.get(commander)) {
             target = quest_setting.get(commander).getQuesttarget();
         } else target = quest_setting.get(commander).getQuestacceptcondition();
@@ -239,7 +239,7 @@ public class OpenUI {
         commander.openInventory(tmptarget);
     }
 
-    private static void setTempItemMeta(Inventory tmptarget, List<Quest_CE.QuestAction> target, int i, ItemStack tmpis) {
+    private static void setTempItemMeta(Inventory tmptarget, List<QuestAction> target, int i, ItemStack tmpis) {
         ItemMeta tmpitm = tmpis.getItemMeta();
         assert tmpitm != null;
         tmpitm.setDisplayName(target.get(i).getQuestactionname());
@@ -257,7 +257,7 @@ public class OpenUI {
         int nowindex =45 * (pgindex - 1);
 
         for (int i = 0; i < 45; i++) {
-            Quest_CE.Quest quest = quests.get(i);
+            Quest quest = quests.get(i);
             positionset.setItem(nowindex + i, getItem("BOOK", quest.getQuestname(), quest.getQuestdescription()));
         }
         if(pgindex != 1)positionset.setItem(45, pg_up);
@@ -267,7 +267,7 @@ public class OpenUI {
 
     public static void openActionDeleteUI(Player commander) {
         Inventory tmpacui = Bukkit.createInventory(commander,18,ChatColor.RED+"删除一个任务条件");
-        List<Quest_CE.QuestAction> target = quest_setting.get(commander).getQuestacceptcondition();
+        List<QuestAction> target = quest_setting.get(commander).getQuestacceptcondition();
         if(isSetTorC.get(commander)) target = quest_setting.get(commander).getQuesttarget();
         if(target.size()!=0)
             for (int i = 0; i < target.size(); i++) {
@@ -480,7 +480,7 @@ public class OpenUI {
     }
 
     public static void openCityResidentsListUI(Player player,int now_page){
-        City_CE.City city = City_CE.City.getCity(player);
+        City city = City.getCity(player);
         if(city == null){
             player.sendMessage("找不到你的小镇哦~");
             return;
@@ -505,7 +505,7 @@ public class OpenUI {
     }
 
     public static void openCityWarpListUI(Player player,int now_page){
-        City_CE.City city = City_CE.City.getCity(player);
+        City city = City.getCity(player);
         if(city == null){
             player.sendMessage("找不到你的小镇哦~");
             return;
@@ -533,7 +533,7 @@ public class OpenUI {
     }
 
     public static boolean openCityManageUI(Player player,boolean edit){
-        City_CE.City city = City_CE.City.checkMayorAndGetCity(player);
+        City city = City.checkMayorAndGetCity(player);
         if(city == null){
             return true;
         }
@@ -581,7 +581,7 @@ public class OpenUI {
 
 
     public static boolean openMyCityUI(Player player){
-        City_CE.City city = City_CE.City.getCity(player);
+        City city = City.getCity(player);
         if(city == null){
             return true;
         }
@@ -610,7 +610,7 @@ public class OpenUI {
         return true;
     }
 
-    public static boolean openCityApplicationAcceptUI(City_CE.City city, Player player){
+    public static boolean openCityApplicationAcceptUI(City city, Player player){
         List<UUID> applications = city.getApplications();
         if(applications.size()<=54){
             Inventory temp = Bukkit.createInventory(player,54,ChatColor.GREEN+city.getName()+"城市加入申请管理面板");
@@ -624,7 +624,7 @@ public class OpenUI {
         return true;
     }
 
-    public static void openCityApplicationAcceptUI(City_CE.City city, Player player, int page){
+    public static void openCityApplicationAcceptUI(City city, Player player, int page){
         List<UUID> applications = city.getApplications();
         int page_total = applications.size()/45 + 1;
         Inventory temp = Bukkit.createInventory(player,54,ChatColor.GREEN+city.getName()+"城市加入申请管理面板 Page "+page+" of "+page_total);
@@ -638,7 +638,7 @@ public class OpenUI {
     }
 
     public static void openCityPermGroupChooseUI(Player commander) {
-        City_CE.City city = City_CE.City.checkMayorAndGetCity(commander);
+        City city = City.checkMayorAndGetCity(commander);
         if(city == null) return;
         Inventory temp = Bukkit.createInventory(commander,54,"权限组选择界面: "+city.getName());
         for (String s : city.getPermGroup().keySet()) {

@@ -14,7 +14,7 @@ public class AutoSave extends Thread{
     synchronized public void run() {
         sendInfo("开始自动保存配置。");
         for (OfflinePlayer player : collectors.keySet()) {
-            for (Collector_CE.Collector collector : collectors.get(player)) {
+            for (Collector collector : collectors.get(player)) {
                 collector.saveCollectorToYml(collector_yml,null);
                 collector_yml.set("list."+n,collector.getName());
                 n++;
