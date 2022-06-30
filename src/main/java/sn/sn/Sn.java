@@ -15,6 +15,20 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import sn.sn.Basic.AutoSave;
+import sn.sn.Basic.LoginEvent;
+import sn.sn.Basic.SayToEveryoneThread;
+import sn.sn.Basic.SnFileIO;
+import sn.sn.City.City;
+import sn.sn.City.City_CE;
+import sn.sn.Collector.Collector;
+import sn.sn.Collector.CollectorRuntime;
+import sn.sn.Collector.CollectorThrowThread;
+import sn.sn.Collector.Collector_CE;
+import sn.sn.Express.Express_CE;
+import sn.sn.Quest.*;
+import sn.sn.Range.RangeSelector;
+import sn.sn.UI.InvOperateEvent;
 
 import java.io.File;
 import java.io.IOException;
@@ -209,7 +223,6 @@ public class Sn extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
 
         for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
             onlinePlayer.closeInventory();
@@ -220,9 +233,9 @@ public class Sn extends JavaPlugin {
         try {
             a.join();
         } catch (InterruptedException ignored) {
+        } finally {
+            sendInfo("雪夜插件已卸载~");
         }
-
-        sendInfo("雪夜插件已卸载~");
     }
 
     public static void runCollector(boolean once) {
@@ -421,10 +434,19 @@ public class Sn extends JavaPlugin {
     public static class EnchantPair {
         Enchantment a;
         int b;
-        EnchantPair(String data){
+
+        public EnchantPair(String data){
             int index = data.indexOf(' ');
             a = Enchantment.getByKey(NamespacedKey.minecraft(data.substring(0,index)));
             b = Integer.parseInt(data.substring(index+1));
+        }
+
+        public Enchantment getA() {
+            return a;
+        }
+
+        public int getB() {
+            return b;
         }
     }
 
