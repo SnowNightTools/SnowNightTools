@@ -6,6 +6,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import sn.sn.Basic.Other;
 import sn.sn.UI.OpenUI;
 import sn.sn.Range.Range;
 
@@ -161,12 +162,13 @@ public class City_CE implements CommandExecutor {
                 }
             } else return help();
 
-        // /city perm set [perm group name] 反转城市对特定权限组的权限，不填写则设置城市对居民的权限（打开面板）。
+        // /city perm set [perm group name] [perm name]反转城市对特定权限组的权限，不填写则设置城市对居民的权限（打开面板）。
         if(args[0].equals("perm")&&args[1].equals("set")) {
             return workPermGroupSetCE(sender, args, commander);
         }
 
         // /city range add 向小镇中添加区域 体积上限与人数（用单独的枚举类CITY_TYPE来实现）有关。
+        // /city range add chunk 把身下的区块区域添加到城镇领土中。
         // /city range list 列出所有区域。
         // /city range remove <index> 向小镇中删除区域。
         if(args[0].equals("range")){
@@ -186,9 +188,8 @@ public class City_CE implements CommandExecutor {
 
         if(!args[0].equals("admin")) return help();
         // Only For OP:
-        if(!commander.hasPermission("sn.city.admin") || commander.isOp()) return help();
+        if(!commander.hasPermission("sn.city.admin") || !commander.isOp()) return help();
         // /city admin remove <name> 删除一个城市，需要op操作。
-
         // /city admin add <perm> 添加一个可以被城主设置的权限。
         // /city admin 打开小镇系统管理面板
         if(args.length == 1){
@@ -229,7 +230,7 @@ public class City_CE implements CommandExecutor {
     private boolean workCityChunkForceLoadCE(Player commander) {
         City city = City.checkMayorAndGetCity(commander);
         if(city == null) return true;
-        if (city.addChunks(commander.getLocation().getChunk())) {
+        if (city.addChunk(commander.getLocation().getChunk())) {
             commander.sendMessage("添加成功！");
         } else {
             commander.sendMessage("添加失败！");
@@ -253,11 +254,13 @@ public class City_CE implements CommandExecutor {
 
     private boolean workCityRangeOperationCE( @NotNull String[] args, Player commander) {
         if(args.length==1) {
-            help();
-            return true;
+            return help();
         }
         if(args[1].equals("add")){
-            Range tr = getRange(commander);
+            Range tr;
+            if(args.length == 3){
+                tr = new Range(commander.getLocation().getChunk());
+            } else tr = getRange(commander);
             City city = City.checkMayorAndGetCity(commander);
             if(tr == null||city==null) return true;
             if (city.addTerritorial(tr)) {
@@ -287,9 +290,9 @@ public class City_CE implements CommandExecutor {
             return true;
         }
         if(args.length == 2) {
-            help();
-            return true;
+            return help();
         }
+
         if(args[1].equals("remove")){
             City city = City.checkMayorAndGetCity(commander);
             if(city==null) return true;
@@ -316,11 +319,11 @@ public class City_CE implements CommandExecutor {
             OpenUI.openCityPermGroupChooseUI(commander);
             return true;
         }
+        if(args.length != 5)return help();
         City city = City.checkMayorAndGetCity(commander);
         if(city == null) return true;
-        Boolean p = city.getPerm().getOrDefault(args[2], false);
-        city.setPerm(args[2],!p);
-        sender.sendMessage("权限"+ args[2]+"已经被设置为"+!p);
+        city.addPermToPermGroup(args[2],args[3],Boolean.getBoolean(args[4]));
+        sender.sendMessage("权限组"+args[2]+"的权限"+ args[3]+"已经被设置为"+args[4]);
         return true;
     }
 
@@ -333,7 +336,7 @@ public class City_CE implements CommandExecutor {
         }
         City city = City.checkMayorAndGetCity(commander);
         if(city == null) return true;
-        city.addPermGroup(args[2],ad.getUniqueId());
+        city.addPlayerToPermGroup(args[2],ad.getUniqueId());
         commander.sendMessage("已经将"+ad.getName()+"添加到权限组"+ args[2]);
         return true;
     }
@@ -361,7 +364,7 @@ public class City_CE implements CommandExecutor {
                 try {
                     Objects.requireNonNull(getCity(commander)).removeResident(commander);
                 } catch (Exception e) {
-                    sendError(e.getLocalizedMessage());
+                    Other.sendError(e.getLocalizedMessage());
                 }
                 city_joined.put(commander,false);
                 commander.sendMessage("你离开了你的城市……");
@@ -440,6 +443,7 @@ public class City_CE implements CommandExecutor {
     }
 
     private boolean help() {
+        Other.sendDebug("City Help Page Called");
         return true;
     }
 

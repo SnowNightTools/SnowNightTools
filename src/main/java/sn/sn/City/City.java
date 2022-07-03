@@ -350,4 +350,5 @@ public class City {
         type = CITY_TYPE.ADMIN;
         admin = true;
     }
+
 }
