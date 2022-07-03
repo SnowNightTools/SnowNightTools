@@ -3,7 +3,6 @@ package sn.sn;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.*;
-import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
@@ -12,7 +11,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import sn.sn.Basic.*;
@@ -33,6 +31,8 @@ import java.util.*;
 import java.util.function.Consumer;
 
 import static org.bukkit.configuration.serialization.ConfigurationSerialization.registerClass;
+import static sn.sn.Basic.Lag.getTPS;
+import static sn.sn.Basic.Other.sendError;
 
 @SuppressWarnings({"SpellCheckingInspection", "unused"})
 public class Sn extends JavaPlugin {
@@ -45,9 +45,11 @@ public class Sn extends JavaPlugin {
     public static File config_file;
     public static File collector_file;
     public static File bin_file;
+    public static File city_file;
     public static File data_folder;
     public static YamlConfiguration share_yml;
     public static YamlConfiguration bin_yml;
+    public static YamlConfiguration city_yml;
     public static YamlConfiguration config_yml;
     public static YamlConfiguration quest_yml;
     public static YamlConfiguration playerquest_yml;
@@ -55,6 +57,7 @@ public class Sn extends JavaPlugin {
 
     public static Map<Player, Location> start_point = new HashMap<>();
     public static Map<Player, Location> end_point = new HashMap<>();
+    public static Map<Player, City> city_in = new HashMap<>();
     public static Map<OfflinePlayer, List<Collector>> collectors = new HashMap<>();
     public static Map<Player, QuestAction> quest_action_setting = new HashMap<>();
     public static Map<Player, Inventory> show_inv = new HashMap<>();
@@ -91,132 +94,31 @@ public class Sn extends JavaPlugin {
     public static List<String> collector_names = new ArrayList<>();
     public static List<String> city_names = new ArrayList<>();
 
-
-    /** 给Console发送信息
-     * send message to console
-     * @param mes 要发送的信息(the message to send)
-     */
-    public static void sendInfo(String mes){
-        CommandSender sender = Bukkit.getConsoleSender();
-        sender.sendMessage("[sn][INFO]"+ mes);
-    }
-
-    /** 给Console发送debug信息
-     * send debug message to console when debug is true.
-     * @param mes 要发送的信息(the message to send)
-     */
-    public static void sendDebug(String mes){
-        if(debug){
-            CommandSender sender = Bukkit.getConsoleSender();
-            sender.sendMessage(ChatColor.BLUE+"[sn][DEBUG]"+ mes);
-        }
-    }
-
-    /** 给Console发送Warn信息
-     * send Warn message to console.
-     * @param mes 要发送的信息(the message to send)
-     */
-    public static void sendWarn(String mes){
-        CommandSender sender = Bukkit.getConsoleSender();
-        sender.sendMessage(ChatColor.YELLOW+"[sn][WARN]"+ mes);
-    }
-
-    /** 给Console发送Error信息
-     * send Error message to console.
-     * @param mes 要发送的信息(the message to send)
-     */
-    public static void sendError(String mes){
-        CommandSender sender = Bukkit.getConsoleSender();
-        sender.sendMessage(ChatColor.RED+"[sn][Error]"+ mes);
-    }
-
-
-    public static List<String> toStrList(Map<String,Object> map){
-        List<String> list = new ArrayList<>();
-        for (String s : map.keySet()) {
-            if(map.get(s)==null)continue;
-            list.add(s+"->"+map.get(s).toString());
-        }
-        return list;
-    }
     public String share_Path,quest_Path,playerquest_Path;
 
+    public static double tps = 100;
 
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public static boolean initVault(){
-        RegisteredServiceProvider<Economy> economyProvider = Bukkit.getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
-        RegisteredServiceProvider<Permission> perProvider = Bukkit.getServicesManager().getRegistration(net.milkbowl.vault.permission.Permission.class);
-
-        if(economyProvider != null && perProvider != null){
-            sn_economy = economyProvider.getProvider();
-            sn_perm = perProvider.getProvider();
-            eco_system_set = true;
-            return true;
-        } else return false;
+    public static void runCollector(boolean once) {
+        Runnable clean = () -> {
+            Other.sendInfo("开始收集物品！");
+            rubbishes = new ArrayList<>();
+            for (World world : Bukkit.getWorlds()) {
+                for (Entity entity : world.getEntities()) {
+                    CollectorRuntime cr = new CollectorRuntime(entity);
+                    Bukkit.getScheduler().runTask(sn,cr);
+                }
+            }
+            new CollectorThrowThread().start();
+            Other.sendInfo("物品收集结束！");
+        };
+        if(once){
+            Bukkit.getScheduler().runTask(sn,()-> new SayToEveryoneThread("扫地即将开始！").start());
+            Bukkit.getScheduler().runTaskLater(sn, clean,200);
+        } else {
+            Bukkit.getScheduler().scheduleSyncRepeatingTask(sn,()-> new SayToEveryoneThread("扫地即将开始！").start(),0,36000);
+            Bukkit.getScheduler().scheduleSyncRepeatingTask(sn, clean,200,36000);
+        }
     }
-
-
-
-        /*
-        1.玩家任务执行信息（存储在playerquest.yml）每个玩家都有自己的任务信息，它们形如：
-        Player:
-            nowquest: name(一个quest类的名字)
-            questenableamount: amount（能够执行的命令数）
-            questenable:（能够执行的命令）
-                quest1: name1
-                quest2: name2
-                ……
-            questdone:(完成过的任务 完成时间 用时)
-                quest1: name1 time1 usedtime1
-                quest2: name2 time2 usedtime2
-                ……
-
-        2.类和量信息（存储在quest.yml中）每个被create创建的量都有自己的信息。
-        Amount: n  下面有n个任务的信息
-        inside: 任务的名字列表
-            0:Name1
-            Name1:0
-            1:Name2
-            Name2:1
-            ……
-        Name1：
-            type：1
-            property-inherit：(继承的属性)
-                questtype: name1
-                questposition: firstquest
-                ……
-            property-set:(直接设置的属性)
-                propertyname1: value1
-                propertyname2: value2
-                ……
-        Name2：
-            type：1
-            property-inherit：(继承的属性)
-                questtype: name1
-                QuestPosition: name2
-                ……
-            property-set:(直接设置的属性)
-                propertyname1: value1
-                propertyname2: value2
-                ……
-        firstquest：
-            type：2
-            property-inherit：(继承的属性)
-                parentquest: name1
-                propertyname2: name2
-
-                questacceptcondition:
-                    1: Questacceptconditionname1
-                    2: Questacceptconditionname2
-                ……
-            property-set:(直接设置的属性)
-                propertyname1: value1
-                propertyname2: value2
-                questacceptconditionamount:
-                ……
-
-
-                */
 
     @Override
     public void onDisable() {
@@ -231,29 +133,7 @@ public class Sn extends JavaPlugin {
             a.join();
         } catch (InterruptedException ignored) {
         } finally {
-            sendInfo("雪夜插件已卸载~");
-        }
-    }
-
-    public static void runCollector(boolean once) {
-        Runnable clean = () -> {
-            sendInfo("开始收集物品！");
-            rubbishes = new ArrayList<>();
-            for (World world : Bukkit.getWorlds()) {
-                for (Entity entity : world.getEntities()) {
-                    CollectorRuntime cr = new CollectorRuntime(entity);
-                    Bukkit.getScheduler().runTask(sn,cr);
-                }
-            }
-            new CollectorThrowThread().start();
-            sendInfo("物品收集结束！");
-        };
-        if(once){
-            Bukkit.getScheduler().runTask(sn,()-> new SayToEveryoneThread("扫地即将开始！").start());
-            Bukkit.getScheduler().runTaskLater(sn, clean,200);
-        } else {
-            Bukkit.getScheduler().scheduleSyncRepeatingTask(sn,()-> new SayToEveryoneThread("扫地即将开始！").start(),0,36000);
-            Bukkit.getScheduler().scheduleSyncRepeatingTask(sn, clean,200,36000);
+            Other.sendInfo("雪夜插件已卸载~");
         }
     }
 
@@ -295,11 +175,11 @@ public class Sn extends JavaPlugin {
 
 
         config_file = new File(data_folder.getAbsolutePath()+ "\\config.yml");
-        sendInfo(data_folder.getAbsolutePath()+ "\\config.yml");
+        Other.sendInfo(data_folder.getAbsolutePath()+ "\\config.yml");
 
         int brkcnt1 = 1 ;
         while (true) {
-            sendDebug("尝试寻找config 第"+brkcnt1+"次，会尝试5次。");
+            Other.sendDebug("尝试寻找config 第"+brkcnt1+"次，会尝试5次。");
 
             config_file = new File(data_folder.getAbsolutePath()+ "\\config.yml");
             brkcnt1 ++;
@@ -325,38 +205,42 @@ public class Sn extends JavaPlugin {
                 Sn.share_file = new File(share_Path + "share.yml");
                 Sn.share_yml = YamlConfiguration.loadConfiguration(Sn.share_file);
             } catch (NullPointerException e){
-                sendInfo("share.yml读取失败！ 请重新设置或者手动创建文件!");
+                Other.sendInfo("share.yml读取失败！ 请重新设置或者手动创建文件!");
             }
         } else {
-            sendInfo("share.yml文件加载失败，请使用/express setpath [sharePath]为它添加地址，并使用/reload重载插件！");
+            Other.sendInfo("share.yml文件加载失败，请使用/express setpath [sharePath]为它添加地址，并使用/reload重载插件！");
         }
 
 
         quest_Path = config_yml.getString("quest-path");
         playerquest_Path = config_yml.getString("playerquest-path");
 
-        sendInfo("quest_path=" + quest_Path);
-        sendInfo("playerquest_Path=" + playerquest_Path);
+        Other.sendInfo("quest_path=" + quest_Path);
+        Other.sendInfo("playerquest_Path=" + playerquest_Path);
 
 
         try {
+            city_file = new File(data_folder,"city.yml");
             collector_file = new File(data_folder,"collector.yml");
             //noinspection ResultOfMethodCallIgnored
             collector_file.createNewFile();
+            //noinspection ResultOfMethodCallIgnored
+            city_file.createNewFile();
             bin_file = new File(data_folder,"bins.yml");
             //noinspection ResultOfMethodCallIgnored
             bin_file.createNewFile();
+
             quest_file = checkFile(quest_Path + "quest.yml");
             playerquest_file = checkFile(playerquest_Path + "playerquest.yml");
         } catch (IOException e) {
             sendError(e.getLocalizedMessage());
         }
 
+        city_yml = YamlConfiguration.loadConfiguration(city_file);
         bin_yml = YamlConfiguration.loadConfiguration(bin_file);
         collector_yml = YamlConfiguration.loadConfiguration(collector_file);
         quest_yml = YamlConfiguration.loadConfiguration(quest_file);
         playerquest_yml = YamlConfiguration.loadConfiguration(playerquest_file);
-
         //plugin_yml = YamlConfiguration.loadConfiguration(plugin_file);
 
         // load quests
@@ -366,12 +250,15 @@ public class Sn extends JavaPlugin {
         loadCollectors();
         loadBin();
 
+        //load cities
+        loadCity();
+
         if(eco_use_vault)
-            if(!initVault()) sendInfo("vault插件挂钩失败，请检查vault插件。");
-            else sendInfo("vault插件已被SnTools加载。");
+            if(!Other.initVault()) Other.sendInfo("vault插件挂钩失败，请检查vault插件和经济、权限插件！");
+            else Other.sendInfo("vault插件已被SnTools加载。");
         else eco_system_set = true;
 
-
+        //Run the main threads
 
         BukkitRunnable nt = new QuestRuntime();
         nt.runTaskTimerAsynchronously(this,0L,200L);
@@ -381,6 +268,8 @@ public class Sn extends JavaPlugin {
             AutoSave as = new AutoSave();
             as.start();
         },0,72000);
+
+        Bukkit.getScheduler().runTaskTimerAsynchronously(this,()-> tps = getTPS(),0,20);
 
         Bukkit.getPluginManager().registerEvents(new LoginEvent(), this);
         Bukkit.getPluginManager().registerEvents(new RangeSelector(), this);
@@ -392,7 +281,25 @@ public class Sn extends JavaPlugin {
         //Objects.requireNonNull(getCommand("npc")).setExecutor(new sn.sn.npc());
         Objects.requireNonNull(getCommand("quest")).setExecutor(new Quest_CE());
 
-        sendInfo("雪夜插件已加载~");
+        Other.sendInfo("雪夜插件已加载~");
+    }
+
+    private void loadCity() {
+        cities = new HashMap<>();
+        city_names = new ArrayList<>();
+        int n = city_yml.getInt("amount",0);
+        for (int i = 0; i < n; i++) {
+            String s = city_yml.getString(i +".name");
+            city_names.add(s);
+            City city = null;
+            try {
+                city = SnFileIO.readCityFromYml(city_yml,String.valueOf(i));
+            } catch (IllegalArgumentException e) {
+                sendError(e.getLocalizedMessage());
+                sendError("City文件读取出现错误，可能是文件被破坏！");
+            }
+            cities.put(s,city);
+        }
     }
 
     private void loadBin() {
@@ -413,7 +320,7 @@ public class Sn extends JavaPlugin {
             if (quest_yml.getInt(questname +".type")== 1){
                 quests.add(new Quest(questname));
                 if(!quests.get(i).readQuestFromYml()){
-                    sendInfo("警告！ 在加载"+questname+"时出现错误！");
+                    Other.sendInfo("警告！ 在加载"+questname+"时出现错误！");
                 }
             }
         }

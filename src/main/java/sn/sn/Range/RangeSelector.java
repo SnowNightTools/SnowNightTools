@@ -9,6 +9,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import sn.sn.Basic.Other;
 
 import java.util.Objects;
 
@@ -34,7 +35,7 @@ public class RangeSelector implements Listener {
                 event.getPlayer().sendMessage(ChatColor.GREEN+"[Sn]你的第二个点设置为"+t.getWorld().getName()+",("+t.getX()+","+t.getY()+","+t.getZ()+")");
             }
         } catch (Exception e) {
-            sendError(e.getLocalizedMessage());
+            Other.sendError(e.getLocalizedMessage());
         }
     }
 

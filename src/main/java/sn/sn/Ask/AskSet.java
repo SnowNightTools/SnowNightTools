@@ -40,10 +40,11 @@ public class AskSet implements Listener {
 
             while (tmpl.size() != i+1){
                 //noinspection BusyWait
-                Thread.sleep(1000);
+                Thread.sleep(10000);
+                waiting += 10;
                 commander.sendMessage("你设置了"+tmpl.size()+"/"+amount+"个参数,你还有"+(time_limit -waiting)+"秒来完成设置");
                 commander.sendMessage(questions.get(i));
-                if(waiting++ >= time_limit){
+                if(waiting >= time_limit){
                     commander.sendMessage("设置取消");
                     if(n_done!=null)
                         n_done.accept(commander);

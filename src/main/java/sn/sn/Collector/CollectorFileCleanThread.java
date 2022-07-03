@@ -1,5 +1,7 @@
 package sn.sn.Collector;
 
+import sn.sn.Basic.Other;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,12 +23,12 @@ public class CollectorFileCleanThread extends Thread {
                 }
             }
             for (File file : remove) {
-                while(!file.delete()){
-                    sendDebug("尝试删除文件"+file.getName());
-                }
+                do{
+                    Other.sendDebug("尝试删除文件"+file.getName());
+                } while(!file.delete());
             }
         } catch (Exception e) {
-            sendError(e.getLocalizedMessage());
+            Other.sendError(e.getLocalizedMessage());
         }
     }
 }

@@ -13,7 +13,7 @@ public class AutoSave extends Thread{
 
     @Override
     synchronized public void run() {
-        sendInfo("开始自动保存配置。");
+        Other.sendInfo("开始自动保存配置。");
         for (OfflinePlayer player : collectors.keySet()) {
             for (Collector collector : collectors.get(player)) {
                 collector.saveCollectorToYml(collector_yml,null);
@@ -34,14 +34,21 @@ public class AutoSave extends Thread{
             bin_yml.set(String.valueOf(i),bins.get(i));
         }
 
+        int cnt = 0;
+        for (String city_name : city_names) {
+            cities.get(city_name).saveCityToYml(city_yml,String.valueOf( cnt++ ));
+        }
+        city_yml.set("amount",cnt);
+
 
         try {
+            city_yml.save(city_file);
             collector_yml.save(collector_file);
             bin_yml.save(bin_file);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        sendInfo("配置保存成功。");
+        Other.sendInfo("配置保存成功。");
     }
 }

@@ -15,7 +15,7 @@ import java.io.Serializable;
 import java.util.*;
 
 import static sn.sn.Sn.quest_yml;
-import static sn.sn.Sn.sendInfo;
+import static sn.sn.Basic.Other.sendInfo;
 
 @SuppressWarnings("unused")
 @SerializableAs("SnQuestActionData")

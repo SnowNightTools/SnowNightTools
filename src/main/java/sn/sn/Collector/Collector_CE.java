@@ -13,6 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import sn.sn.Basic.AutoSave;
+import sn.sn.Basic.Other;
 import sn.sn.Range.Range;
 import sn.sn.Basic.SnFileIO;
 
@@ -89,7 +90,7 @@ public class Collector_CE implements CommandExecutor {
         try {
             commander = (Player) sender;
         } catch (Exception e) {
-            sendError(e.getLocalizedMessage());
+            Other.sendError(e.getLocalizedMessage());
         }
 
         if(args[0].equals("create")){
@@ -323,7 +324,7 @@ public class Collector_CE implements CommandExecutor {
         try {
             config_yml.save(config_file);
         } catch (IOException e) {
-            sendError(e.getLocalizedMessage());
+            Other.sendError(e.getLocalizedMessage());
         }
         return true;
     }
@@ -400,7 +401,7 @@ public class Collector_CE implements CommandExecutor {
         } catch (Exception e) {
             return;
         }
-        sendDebug(time);
+        Other.sendDebug(time);
         File file = new File(rubbishes_folder,time);
         YamlConfiguration ymlfile = YamlConfiguration.loadConfiguration(file);
         int amount = ymlfile.getInt("amount");

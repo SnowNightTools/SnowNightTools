@@ -14,7 +14,7 @@ import java.util.Objects;
 import java.util.Random;
 
 import static sn.sn.Sn.quest_yml;
-import static sn.sn.Sn.sendInfo;
+import static sn.sn.Basic.Other.sendInfo;
 
 @SerializableAs("SnQuestPosition")
 public class QuestPosition implements Cloneable, ConfigurationSerializable, Serializable {

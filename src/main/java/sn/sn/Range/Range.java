@@ -125,7 +125,7 @@ public class Range {
         double ori_a = countUnionArea(same_range);
         same_range.add(this);
         double now_a = countUnionArea(same_range);
-        return now_a == ori_a;
+        return abs(now_a - ori_a) < 0.0005; //其实都是整数，保证浮点误差不存在。
     }
 
     public boolean isInRange(Location loc){

@@ -14,6 +14,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import sn.sn.Basic.Other;
 import sn.sn.UI.InvOperateEvent;
 import sn.sn.Sn;
 import sn.sn.Basic.SnFileIO;
@@ -98,7 +99,7 @@ public class Express_CE implements CommandExecutor {
         try {
             Sn.share_yml.save(Sn.share_file);
         } catch (IOException e) {
-            sendInfo("[WARN]文件保存可能出错");}
+            Other.sendInfo("[WARN]文件保存可能出错");}
         try {
             Sn.share_yml.load(Sn.share_file);
         } catch (IOException | InvalidConfigurationException ignored) {}
@@ -112,7 +113,7 @@ public class Express_CE implements CommandExecutor {
         if(sender instanceof Player){
             sender_player = (Player)sender;
         } else {
-            sendInfo("玩家信息异常，请联系管理员。");
+            Other.sendInfo("玩家信息异常，请联系管理员。");
             return true;
         }
 
@@ -127,8 +128,8 @@ public class Express_CE implements CommandExecutor {
             }
 
             if(args[0].equalsIgnoreCase("mes")&& sender_player.hasPermission("sn.express.mes")){
-                sendInfo("share_yml地址："+ share_path);
-                sendInfo("plugin地址："+Sn.plugin_path);
+                Other.sendInfo("share_yml地址："+ share_path);
+                Other.sendInfo("plugin地址："+Sn.plugin_path);
                 return true;
             }
 
@@ -181,7 +182,7 @@ public class Express_CE implements CommandExecutor {
         if(sender instanceof Player){
             sender_player = (Player)sender;
         } else {
-            sendInfo("玩家信息异常，请联系管理员。");
+            Other.sendInfo("玩家信息异常，请联系管理员。");
             return true;
         }
         if(!sender_player.hasPermission("sn.express.show")){
@@ -214,7 +215,7 @@ public class Express_CE implements CommandExecutor {
         if(sender instanceof Player){
             sender_player = (Player)sender;
         } else {
-            sendInfo("玩家信息异常，请联系管理员。");
+            Other.sendInfo("玩家信息异常，请联系管理员。");
             return true;
         }
         if(!sender_player.hasPermission("sn.express.send")){
@@ -381,29 +382,29 @@ public class Express_CE implements CommandExecutor {
             args[1]= args[1]+' '+ args[i++];
 
 
-        sendInfo("3s后即将设置sharePath，请结束任何速递指令!");
+        Other.sendInfo("3s后即将设置sharePath，请结束任何速递指令!");
         try {
             Thread.sleep(3000);
         } catch (InterruptedException ignored) {
         }
-        sendInfo("你的sharePath即将设置为"+path);
+        Other.sendInfo("你的sharePath即将设置为"+path);
         config_yml.set("share_path",path);
-        sendInfo("正在寻找目录……");
+        Other.sendInfo("正在寻找目录……");
 
         try {
             if(!Sn.share_file.getParentFile().exists()){
-                sendInfo("目录不存在，正在自动创建……");
-                if(Sn.share_file.getParentFile().mkdirs()) sendInfo("创建成功！");
-                else sendInfo("创建失败，请检查文件权限。");
-            } else sendInfo("目录已找到！");
+                Other.sendInfo("目录不存在，正在自动创建……");
+                if(Sn.share_file.getParentFile().mkdirs()) Other.sendInfo("创建成功！");
+                else Other.sendInfo("创建失败，请检查文件权限。");
+            } else Other.sendInfo("目录已找到！");
         } catch (NullPointerException e){
-            sendInfo("你的目录出现错误，请不要在目录中包含空格，或选择手动配置config文件");
+            Other.sendInfo("你的目录出现错误，请不要在目录中包含空格，或选择手动配置config文件");
         }
 
-        sendInfo("准备创建文件……");
+        Other.sendInfo("准备创建文件……");
         try {
             if(Sn.share_file.createNewFile()){
-                sendInfo("share_file 重载成功");
+                Other.sendInfo("share_file 重载成功");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -415,7 +416,7 @@ public class Express_CE implements CommandExecutor {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        sendInfo("完成，请/reload,或重启服务器。");
+        Other.sendInfo("完成，请/reload,或重启服务器。");
         return false;
     }
 

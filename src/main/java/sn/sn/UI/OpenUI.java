@@ -10,6 +10,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import sn.sn.Basic.LocSet;
+import sn.sn.Basic.Other;
 import sn.sn.City.CITY_TYPE;
 import sn.sn.City.City;
 import sn.sn.Quest.Quest;
@@ -96,7 +97,7 @@ public class OpenUI {
         targetlore.add(ChatColor.GREEN+"点我设置任务目标");
         if(quest_setting.get(questPlayer).isTargetSet()) {
             for (QuestAction action : quest_setting.get(questPlayer).getQuest_target()) {
-                targetlore.addAll(toStrList(action.serialize()));
+                targetlore.addAll(Other.toStrList(action.serialize()));
             }
             targeticonmeta.addEnchant(Enchantment.ARROW_DAMAGE,1,false);
         }
@@ -115,7 +116,7 @@ public class OpenUI {
         acccondtnlore.add("也请将其设置为“默认“！");
         if(quest_setting.get(questPlayer).isAcceptconditionSet()) {
             for (QuestAction action : quest_setting.get(questPlayer).getQustAccptCndtn()) {
-                acccondtnlore.addAll(toStrList(action.serialize()));
+                acccondtnlore.addAll(Other.toStrList(action.serialize()));
             }
             acccondtniconmeta.addEnchant(Enchantment.ARROW_DAMAGE,1,false);
         }
@@ -131,7 +132,7 @@ public class OpenUI {
         List<String> rewardlore = new ArrayList<>();
         rewardlore.add(ChatColor.GREEN+"点我设置任务奖励");
         if(quest_setting.get(questPlayer).isRewardset()) {
-            rewardlore.addAll(toStrList(quest_setting.get(questPlayer).getQuestreward().serialize()));
+            rewardlore.addAll(Other.toStrList(quest_setting.get(questPlayer).getQuestreward().serialize()));
             rewardiconmeta.addEnchant(Enchantment.CHANNELING,1,false);
         }
         rewardiconmeta.setLore(rewardlore);
@@ -416,7 +417,7 @@ public class OpenUI {
     }
 
     public static void openNPCSettingUI(@SuppressWarnings("unused") Player commander) {
-        sendInfo("系统建设中");
+        Other.sendInfo("系统建设中");
     }
 
     public static void openIntSettingUI(Player commander) {
@@ -584,6 +585,12 @@ public class OpenUI {
 
         temp.setItem(5,city.getType().getSymbolItemStack());
 
+        lore = new ArrayList<>();
+        lore.add("欢迎语：");
+        lore.add(city.getWelcomeMessage());
+        if(edit) lore.add("点我重新设置");
+        temp.setItem(14,getItem("SPRUCE_SIGN","欢迎语",lore));
+
         if(city.getWarp("spawn")!=null){
             lore = new ArrayList<>();
             if (edit) {
@@ -736,11 +743,11 @@ public class OpenUI {
             return;
         }
         int totpage = Material.values().length/45 +1;
-        Inventory temp = Bukkit.createInventory(commander,54,"CityIconSet:+"+ city.getName() +" Page "+page+" of "+totpage);
+        Inventory temp = Bukkit.createInventory(commander,54,"CityIconSet: "+ city.getName() +" Page "+page+" of "+totpage);
         int index = (page - 1) * 45;
         for (int i = 0; (i < 45)&&(index+i < Material.values().length); i++) {
             Material material = Material.values()[i+index];
-            temp.setItem(i, getItem(material.name(), material.name(), null));
+            temp.setItem(i, new ItemStack(material));
         }
         if(page!=1) temp.setItem(45,pg_up);
         if(page!=totpage) temp.setItem(53,pg_dn);
@@ -751,6 +758,6 @@ public class OpenUI {
         lore.add("请注意，只记录第一页的内容");
         lore.add("而且每行的长度是有限制的");
         temp.setItem(46,getItem("BOOK","导入城市描述",lore));
-
+        commander.openInventory(temp);
     }
 }

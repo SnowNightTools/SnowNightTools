@@ -7,6 +7,7 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import sn.sn.Basic.Other;
 
 import java.io.IOException;
 import java.io.ObjectStreamException;
@@ -186,12 +187,12 @@ public class Quest implements Cloneable, ConfigurationSerializable, Serializable
 
     public Boolean readQuestFromYml(YamlConfiguration ymlfile, String name) {
         if (!ymlfile.contains(name)) {
-            sendInfo("[WARNING]读取Quest数据错误，数据不存在");
+            Other.sendInfo("[WARNING]读取Quest数据错误，数据不存在");
             return false;
         }
 
         if (ymlfile.getInt(name + ".tpye") != 1) {
-            sendInfo("[WARNING]读取Quest数据错误，该名的类型不正确");
+            Other.sendInfo("[WARNING]读取Quest数据错误，该名的类型不正确");
             return false;
         }
         //读取quest position信息
@@ -206,7 +207,7 @@ public class Quest implements Cloneable, ConfigurationSerializable, Serializable
                 quest_accept_condition_amount = ymlfile.getInt(quest_name + "property-set.questacceptconditionamount");
                 for (int j = 0; j < quest_accept_condition_amount; j++) {
                     if (!ymlfile.contains(quest_name + ".property-inherit.questacceptcondition." + j)) {
-                        sendInfo("[WARNING]读取Quest时错误，信息文件可能损坏！");
+                        Other.sendInfo("[WARNING]读取Quest时错误，信息文件可能损坏！");
                         break;
                     }
                     String tname = ymlfile.getString(quest_name + ".property-inherit.questacceptcondition." + j);
@@ -219,7 +220,7 @@ public class Quest implements Cloneable, ConfigurationSerializable, Serializable
                 quest_target_amount = ymlfile.getInt(quest_name + "property-set.questtargetamount");
                 for (int j = 0; j < quest_target_amount; j++) {
                     if (!ymlfile.contains(quest_name + ".property-inherit.questtarget." + j)) {
-                        sendInfo("[WARNING]读取Quest时错误，信息文件可能损坏！");
+                        Other.sendInfo("[WARNING]读取Quest时错误，信息文件可能损坏！");
                         break;
                     }
                     String tname = ymlfile.getString(quest_name + ".property-inherit.questtarget." + j);

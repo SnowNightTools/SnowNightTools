@@ -4,14 +4,18 @@ import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import sn.sn.Basic.SnFileIO;
 import sn.sn.Range.Range;
 
 import java.util.*;
 
+import static java.lang.Math.abs;
 import static java.lang.Math.pow;
 import static sn.sn.Sn.cities;
 import static sn.sn.Sn.city_joined;
@@ -19,18 +23,22 @@ import static sn.sn.Sn.city_joined;
 public class City {
 
     private ItemStack icon;
-    private String name;
+    private String name, welcome_message = "欢迎~";
     private List<String> description = new ArrayList<>();
     private List<UUID> residents = new ArrayList<>(), application = new ArrayList<>();
-    private Map<String, List<UUID>> perm_group;
+    private Map<String, List<UUID>> perm_group = new HashMap<>();
     private UUID mayor;
-    private List<Range> territorial;
-    private Map<String, Boolean> perm;
-    private List<Chunk> chunks;
+    private List<Range> territorial = new ArrayList<>();
+    private Map<String ,Map<String, Boolean>> perm_list = new HashMap<>();
+    private List<Chunk> chunks = new ArrayList<>();
     private boolean activated = false;
     private Map<String, Location> warps = new HashMap<>();
     private CITY_TYPE type = CITY_TYPE.NOT_ACTIVE;
     private boolean admin;
+
+    private Inventory shop;
+    private Long bal = 0L;
+
 
     @Nullable
     public static City getCity(OfflinePlayer player) {
@@ -66,8 +74,24 @@ public class City {
         return city;
     }
 
+    public String getWelcomeMessage() {
+        return welcome_message;
+    }
+
+    public void setWelcomeMessage(String welcome_message) {
+        this.welcome_message = welcome_message;
+    }
+
     public CITY_TYPE getType() {
         return type;
+    }
+
+    public void setDescription(List<String> description) {
+        this.description = description;
+    }
+
+    public void setIcon(ItemStack icon) {
+        this.icon = icon;
     }
 
     public ItemStack getIcon() {
@@ -138,17 +162,11 @@ public class City {
         return residents;
     }
 
-    public void setResidents(List<UUID> residents) {
-        for (UUID resident : residents) {
-            this.addResident(resident);
-        }
-    }
-
     public List<Chunk> getChunks() {
         return chunks;
     }
 
-    public boolean addChunks(Chunk chunk) {
+    public boolean addChunk(Chunk chunk) {
         if (chunk.isForceLoaded()) return false;
         for (Chunk c : chunks) {
             if (c.equals(chunk)) return false;
@@ -163,12 +181,71 @@ public class City {
         return false;
     }
 
-    public Map<String, Boolean> getPerm() {
-        return perm;
-    }
+    public void saveCityToYml(YamlConfiguration ymlfile, String path){
+        ymlfile.set(path+".name",name);
+        ymlfile.set(path+".welcome_message",welcome_message);
+        SnFileIO.saveItemStackToYml(ymlfile,path+".icon",icon);
+        ymlfile.set(path+".admin",admin);
+        ymlfile.set(path+".mayor",mayor.toString());
 
-    public void setPerm(String perm_name, boolean perm) {
-        this.perm.put(perm_name, perm);
+        int cnt = 0;
+        for (String s : description) {
+            ymlfile.set(path+".description."+cnt++,s);
+        }
+        ymlfile.set(path+".dp_line",cnt);
+
+        cnt = 0;
+        for (UUID s : residents) {
+            ymlfile.set(path+".resident."+cnt++,s.toString());
+        }
+        ymlfile.set(path+".res_amt",cnt);
+
+        cnt = 0;
+        for (Range s : territorial) {
+            s.saveRangeToYml(ymlfile, path+".range."+ cnt++);
+        }
+        ymlfile.set(path+".range_amt",cnt);
+
+        cnt = 0;
+        for (String s : perm_group.keySet()) {
+            ymlfile.set(path+".perm."+cnt+".name",s);
+            List<UUID> pg_player = perm_group.get(s);
+            Map<String, Boolean> pg_perm = perm_list.get(s);
+            int cnt1 = 0;
+            for (UUID uuid : pg_player) {
+                ymlfile.set(path+".perm."+cnt+".player."+cnt1++,uuid.toString());
+            }
+            ymlfile.set(path+".perm."+cnt+".pg_player_amt",cnt1);
+            cnt1 = 0;
+            for (String p_name : pg_perm.keySet()) {
+                ymlfile.set(path+".perm."+cnt+".perm."+cnt1+".p_name",p_name);
+                ymlfile.set(path+".perm."+cnt+".perm."+ cnt1++ +".p_on",pg_perm.get(p_name));
+            }
+            ymlfile.set(path+".perm."+ cnt++ +".pg_player_amt",cnt1);
+        }
+        ymlfile.set(path+".perm_grp_amt",cnt);
+
+        cnt = 0;
+        for (String s : warps.keySet()) {
+            ymlfile.set(path+".warp."+cnt+".name",s);
+            SnFileIO.saveLocationToYml(ymlfile,path+".warp."+ cnt++ +".loc",warps.get(s));
+        }
+        ymlfile.set(path+".warp_amt",cnt);
+
+        cnt = 0;
+        for (Chunk s : chunks) {
+            ymlfile.set(path+".chunk."+cnt+".world",s.getWorld().getUID().toString());
+            ymlfile.set(path+".chunk."+cnt+".x",s.getX());
+            ymlfile.set(path+".chunk."+ cnt++ +".z",s.getZ());
+        }
+        ymlfile.set(path+".chunk_amt",cnt);
+
+        cnt = 0;
+        for (UUID s : application) {
+            ymlfile.set(path+".application."+ cnt++,s.toString());
+        }
+        ymlfile.set(path+".app_amt",cnt);
+
     }
 
     public UUID getMayor() {
@@ -183,10 +260,16 @@ public class City {
         return perm_group;
     }
 
-    public void addPermGroup(String perm_name, UUID player) {
-        List<UUID> list = this.perm_group.getOrDefault(perm_name, new ArrayList<>());
+    public void addPlayerToPermGroup(String pg_name, UUID player) {
+        List<UUID> list = this.perm_group.getOrDefault(pg_name, new ArrayList<>());
         list.add(player);
-        perm_group.put(perm_name, list);
+        perm_group.put(pg_name, list);
+    }
+
+    public void addPermToPermGroup(String pg_name, String perm, boolean on) {
+        Map<String, Boolean> temp = perm_list.getOrDefault(pg_name,new HashMap<>());
+        temp.put(perm,on);
+        perm_list.put(pg_name,temp);
     }
 
     public void addResident(UUID resident) {
@@ -231,9 +314,9 @@ public class City {
         double ori_a = Range.countUnionAreaFromDifferentWorld(temp);
         temp.add(territorial);
         double new_a = Range.countUnionAreaFromDifferentWorld(temp);
-        if (ori_a == new_a) return false;
+        if (abs(ori_a - new_a) < 0.05) return false;
         if (new_a <= pow(type.getRangePerm(), 3)) {
-            this.territorial = temp;
+            this.territorial = new ArrayList<>(temp);
             return true;
         }
         return false;
@@ -247,20 +330,8 @@ public class City {
         this.name = name;
     }
 
-    public Map<String, List<UUID>> getPerm_groups() {
-        return perm_group;
-    }
-
     public List<UUID> getPerm_group(String perm_name) {
         return perm_group.get(perm_name);
-    }
-
-    public boolean addPerm_group(String name, List<UUID> perm_group) {
-        if (perm.size() < type.getPermGroupAmount()) {
-            this.perm_group.put(name, perm_group);
-            return true;
-        }
-        return false;
     }
 
     public List<Range> getTerritorial() {

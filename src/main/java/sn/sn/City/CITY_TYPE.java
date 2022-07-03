@@ -58,7 +58,7 @@ public enum CITY_TYPE {
         if (itemMeta == null) return new ItemStack(Material.IRON_AXE);
         itemMeta.setDisplayName(this.getName());
         List<String> lore = new ArrayList<>();
-        lore.add("最大领地体积: "+pow(3,this.range_perm));
+        lore.add("最大领地体积: "+pow(this.range_perm,3));
         lore.add("最大强加载区块数: "+this.getChunkPerm());
         lore.add("最大warp数: "+this.warp_amount_perm);
         lore.add("最大权限组数: "+this.perm_group_amount);

@@ -2,6 +2,7 @@ package sn.sn.Collector;
 
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
+import sn.sn.Basic.Other;
 import sn.sn.Basic.SnFileIO;
 
 import java.io.File;
@@ -20,24 +21,24 @@ public class CollectorThrowThread extends Thread{
         try {
             sleep(1000);
         } catch (InterruptedException e) {
-            sendError(e.getLocalizedMessage());
+            Other.sendError(e.getLocalizedMessage());
         }
         try {
             rubbishes_folder.mkdirs();
             sleep(500);
         } catch (Exception e) {
-            sendError(e.getLocalizedMessage());
+            Other.sendError(e.getLocalizedMessage());
         }
         Date now = new Date();
         String now_str = now.toString();
         now_str = now_str.replace(' ', '_') + ".yml";
         now_str = now_str.replace(':', '-');
-        sendDebug(now_str);
+        Other.sendDebug(now_str);
         File rubbish_file = new File(rubbishes_folder.getAbsolutePath(),now_str);
         try {
             rubbish_file.createNewFile();
         } catch (IOException e) {
-            sendError(e.getLocalizedMessage());
+            Other.sendError(e.getLocalizedMessage());
         }
         YamlConfiguration rubbish_yml = new YamlConfiguration();
         int amount = 0;
@@ -53,8 +54,8 @@ public class CollectorThrowThread extends Thread{
             rubbish_yml.save(rubbish_file);
             bin_yml.save(bin_file);
         } catch (IOException e) {
-            sendError("在保存掉落物品文件时发送错误！可能丢失掉落物品！");
-            sendError(e.getLocalizedMessage());
+            Other.sendError("在保存掉落物品文件时发送错误！可能丢失掉落物品！");
+            Other.sendError(e.getLocalizedMessage());
         }
     }
 }

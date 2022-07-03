@@ -3,6 +3,7 @@ package sn.sn.Basic;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import sn.sn.City.CityRuntime;
 import sn.sn.Quest.Quest_CE;
 
 import static sn.sn.Sn.*;
@@ -15,12 +16,14 @@ public class LoginEvent implements Listener {
         loadCollectors();
 
         if(!eco_system_set)
-            if(!initVault()) {
-                sendInfo("[SN][WARNING]vault插件挂钩失败，请检查vault插件。");
+            if(!Other.initVault()) {
+                Other.sendInfo("[SN][WARNING]vault插件挂钩失败，请检查vault插件。");
                 return;
             } else if(!sn_economy.hasAccount(event.getPlayer())) sn_economy.createPlayerAccount(event.getPlayer());
 
         if(!config_yml.getBoolean("login-load"))return;
+
+        new CityRuntime(event.getPlayer()).start();
 
         if(playerquest_yml.contains(event.getPlayer().getName()+".nowquest")){
             if(Quest_CE.loadQuest(event.getPlayer(),playerquest_yml.getString(event.getPlayer().getName()+".nowquest")))

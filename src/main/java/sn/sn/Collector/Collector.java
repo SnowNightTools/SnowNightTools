@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static sn.sn.Sn.sendDebug;
+import static sn.sn.Basic.Other.sendDebug;
 
 public class Collector {
 

@@ -9,6 +9,7 @@ import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import sn.sn.Basic.Other;
 import sn.sn.Range.Range;
 
 import java.util.ArrayList;
@@ -28,17 +29,17 @@ public class CollectorRuntime implements Runnable {
     @Override
     public void run() {
         if (entity instanceof Item) {
-            sendDebug("Collector 1");
+            Other.sendDebug("Collector 1");
             for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-                sendDebug("Collector 2");
+                Other.sendDebug("Collector 2");
                 if (collectors.containsKey(onlinePlayer)) {
-                    sendDebug("Collector 3");
+                    Other.sendDebug("Collector 3");
                     for (Collector collector : collectors.get(onlinePlayer)) {
-                        sendDebug("Collector 4");
+                        Other.sendDebug("Collector 4");
                         for (Range range : collector.getRanges()) {
                             if (range.getWorld() != null) {
                                 if (range.isInRange(entity.getLocation())) {
-                                    sendDebug("Collector 5");
+                                    Other.sendDebug("Collector 5");
                                     Chest chest;
                                     BlockState bs;
                                     try {
@@ -46,11 +47,11 @@ public class CollectorRuntime implements Runnable {
                                         bs = block.getState();
                                         chest = (Chest) bs;
                                     } catch (Exception e) {
-                                        sendError(e.getLocalizedMessage());
-                                        sendError("collector在运行时无法找到箱子:");
-                                        sendError("player:" + onlinePlayer.getName());
-                                        sendError("collector:" + collector.getName());
-                                        sendError("range:" + range);
+                                        Other.sendError(e.getLocalizedMessage());
+                                        Other.sendError("collector在运行时无法找到箱子:");
+                                        Other.sendError("player:" + onlinePlayer.getName());
+                                        Other.sendError("collector:" + collector.getName());
+                                        Other.sendError("range:" + range);
                                         return;
                                     }
                                     HashMap<Integer, ItemStack> item_left = chest.getBlockInventory().addItem(((Item) entity).getItemStack());
@@ -80,7 +81,7 @@ public class CollectorRuntime implements Runnable {
             im.setLore(lore);
             item.setItemMeta(im);
             rubbishes.add(item);
-            sendDebug("Collector 6");
+            Other.sendDebug("Collector 6");
             entity.remove();
         }
     }

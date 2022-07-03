@@ -26,6 +26,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 import org.jetbrains.annotations.NotNull;
+import sn.sn.City.City;
 import sn.sn.Range.Range;
 import sn.sn.Sn;
 
@@ -192,7 +193,7 @@ public class SnFileIO {
         try{
             return Objects.requireNonNull(ymlfile.getItemStack(path+".dr"));
         } catch (IndexOutOfBoundsException|NullPointerException|IllegalArgumentException|ClassCastException ignore){}
-        Sn.sendInfo("物品在读取时无法直接读取，尝试使用详细信息读取!");
+        Other.sendInfo("物品在读取时无法直接读取，尝试使用详细信息读取!");
 
 
         String tmpmtrilname = ymlfile.getString(path+".type");
@@ -979,7 +980,7 @@ public class SnFileIO {
             ymlfile.set(path + ".line", nown);
             ymlfile.set(path + ".items",null);
         } catch (Exception e) {
-            Sn.sendInfo(e.getLocalizedMessage());
+            Other.sendInfo(e.getLocalizedMessage());
         }
 
         for (int i = 0; i < nown; i++) {
@@ -1014,7 +1015,7 @@ public class SnFileIO {
                 temp.setWorld(Bukkit.getWorld(UUID.fromString(Objects.requireNonNull(ymlfile.getString(path + ".world")))));
                 return temp;
             } catch (Exception e) {
-                Sn.sendError(e.getLocalizedMessage());
+                Other.sendError(e.getLocalizedMessage());
             }
         } else return new Range(ymlfile.getDouble(path+".startX"),
                 ymlfile.getDouble(path+".startY"),
@@ -1049,5 +1050,69 @@ public class SnFileIO {
         meta.setDisplayName(Bukkit.getOfflinePlayer(player).getName());
         head.setItemMeta(meta);
         return head;
+    }
+
+    public static City readCityFromYml(YamlConfiguration ymlfile, String path) throws IllegalArgumentException{
+        City temp = new City();
+
+        temp.setWelcomeMessage(ymlfile.getString(path+".welcome_message"));
+        temp.setIcon(readItemStackFromYml(ymlfile,path+".icon"));
+        temp.setName(ymlfile.getString(path+".name"));
+        if(ymlfile.getBoolean(path+".admin"))temp.setAdmin();
+        temp.setMayor(UUID.fromString(ymlfile.getString(path+".mayor","")));
+
+        int dp_line = ymlfile.getInt(path+".dp_line",0);
+        List<String> description = new ArrayList<>();
+        for (int i = 0; i < dp_line; i++) {
+            description.add(ymlfile.getString(path+".description."+i));
+        }
+        temp.setDescription(description);
+
+        int res_amt = ymlfile.getInt(path+".res_amt",0);
+        for (int i = 0; i < res_amt; i++) {
+            temp.addResident(UUID.fromString(ymlfile.getString(path+".resident."+i,"")));
+        }
+
+        int range_amt = ymlfile.getInt(path+".range_amt",0);
+        for (int i = 0; i < range_amt; i++) {
+            temp.addTerritorial(readRangeFromYml(ymlfile, path+".range."+i));
+        }
+
+        int perm_grp_amt = ymlfile.getInt(path+".perm_grp_amt",0);
+        for (int i = 0; i < perm_grp_amt; i++) {
+            String name = ymlfile.getString(path+".perm."+i+".name");
+            int pg_player_amt = ymlfile.getInt(path+".perm."+i+".pg_player_amt",0);
+            for (int i1 = 0; i1 < pg_player_amt; i1++) {
+                temp.addPlayerToPermGroup(name,UUID.fromString(ymlfile.getString(path+".perm."+i+".player."+i1,"")));
+            }
+            int pg_perm_amt = ymlfile.getInt(path+".perm."+i+".pg_perm_amt",0);
+            for (int i1 = 0; i1 < pg_perm_amt; i1++) {
+                String perm = ymlfile.getString(path+".perm."+i+".perm."+i1+".p_name","");
+                boolean on = ymlfile.getBoolean(path+".perm."+i+".perm."+i1+".p_on",false);
+                temp.addPermToPermGroup(name,perm,on);
+            }
+        }
+
+        int warp_amt = ymlfile.getInt(path+".warp_amt",0);
+        for (int i = 0; i < warp_amt; i++) {
+            String warp = ymlfile.getString(path+".warp."+i+".name","");
+            temp.addWarp(warp,readLocationFromYml(ymlfile,path+".warp."+i+".loc"));
+        }
+
+        int chunk_amt = ymlfile.getInt(path+".chunk_amt",0);
+        for (int i = 0; i < chunk_amt; i++) {
+            World tw = Bukkit.getWorld(UUID.fromString(ymlfile.getString(path+".chunk."+i+".world","")));
+            int x = ymlfile.getInt(path+".chunk."+i+".x");
+            int z = ymlfile.getInt(path+".chunk."+i+".z");
+            if (tw == null) throw new IllegalArgumentException();
+            temp.addChunk(tw.getChunkAt(x,z));
+        }
+
+        int app_amt = ymlfile.getInt(path+".app_amt",0);
+        for (int i = 0; i < app_amt; i++) {
+            temp.addApplication(UUID.fromString(ymlfile.getString(path+".application."+i,"")));
+        }
+
+        return temp;
     }
 }

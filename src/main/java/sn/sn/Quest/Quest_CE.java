@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
+import sn.sn.Basic.Other;
 import sn.sn.Sn;
 
 import java.io.IOException;
@@ -317,7 +318,7 @@ public class Quest_CE implements CommandExecutor {
         if(sender instanceof Player){
             questPlayer = (Player)sender;
         } else {
-            sendInfo("玩家信息异常，请联系管理员。");
+            Other.sendInfo("玩家信息异常，请联系管理员。");
             return true;
         }
 
@@ -479,7 +480,7 @@ public class Quest_CE implements CommandExecutor {
 
     private boolean help() {
         if(questPlayer.isOp()) {
-            sendInfo("/quest create [任务名] 打开任务新建界面");
+            Other.sendInfo("/quest create [任务名] 打开任务新建界面");
             return true;
         } else return false;
     }
@@ -578,7 +579,7 @@ public class Quest_CE implements CommandExecutor {
 
                 break;
             default:
-                sendInfo("要查询这个信息，你可能需要换个指令（或者换个号QWQ）！");
+                Other.sendInfo("要查询这个信息，你可能需要换个指令（或者换个号QWQ）！");
                 break;
         }
     }
