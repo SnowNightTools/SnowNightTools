@@ -16,10 +16,11 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import sn.sn.Ask.AskSet;
+import sn.sn.Basic.PlayerOperation;
+import sn.sn.Basic.SnFileIO;
 import sn.sn.City.City;
 import sn.sn.Express.Express_CE;
 import sn.sn.Quest.*;
-import sn.sn.Basic.SnFileIO;
 
 import java.io.IOException;
 import java.util.*;
@@ -48,7 +49,7 @@ import static sn.sn.Sn.*;
 
 public class InvOperateEvent implements Listener {
 
-    public static Player commander;
+
     public static final ItemStack pg_up = new ItemStack(Material.WRITABLE_BOOK);
     public static final ItemStack cancel = new ItemStack(Material.BARRIER);
     public static final ItemStack confirm = new ItemStack(Material.EMERALD);
@@ -84,7 +85,9 @@ public class InvOperateEvent implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void InvCloseEvent(InventoryCloseEvent inv_close) {
 
+        Player commander;
         commander = Bukkit.getPlayer(inv_close.getPlayer().getUniqueId());
+        if(commander==null)return;
         if(inv_close.getView().getTitle().equalsIgnoreCase(ChatColor.BLUE+"雪花速递")){
             SnFileIO.saveInvToYml(share_yml,share_file,commander.getName(), show_inv.get(commander));
             //保存文件
@@ -106,116 +109,184 @@ public class InvOperateEvent implements Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     public void allIOEvent(InventoryClickEvent inv_click) {
-
+        Player commander;
         commander = Bukkit.getPlayer(inv_click.getView().getPlayer().getUniqueId());
         if(inv_click.getView().getTitle().equalsIgnoreCase(ChatColor.BLUE+"雪花速递")){
-            if (workExpressIO(inv_click)) return;
+            if (workExpressIO(inv_click,commander)) return;
         }
 
         if(inv_click.getView().getTitle().contains("Bin")){
-            workCollectorIO(inv_click);
+            workCollectorIO(inv_click,commander);
             return;
         }
 
         if(inv_click.getView().getTitle().equalsIgnoreCase(ChatColor.BLUE+"正在创建一个新任务，请填写以下信息")){
-            if (workQuestSetIO(inv_click)) return;
+            if (workQuestSetIO(inv_click,commander)) return;
         }
 
         if(inv_click.getView().getTitle().equalsIgnoreCase(ChatColor.GREEN+"创建一个任务条件")){
-            workQuestActionSetIO(inv_click);
+            workQuestActionSetIO(inv_click,commander);
             return;
         }
 
         if(inv_click.getView().getTitle().equalsIgnoreCase(ChatColor.GREEN+"任务达成的条件列表")){
             isSetTorC.put(commander,true);
-            if (workActionSettingViewIO(inv_click)) return;
+            if (workActionSettingViewIO(inv_click,commander)) return;
         }
         if(inv_click.getView().getTitle().equalsIgnoreCase(ChatColor.GREEN+"任务触发或接受的条件列表")){
             isSetTorC.put(commander,false);
-            if (workActionSettingViewIO(inv_click)) return;
+            if (workActionSettingViewIO(inv_click,commander)) return;
         }
 
         if(inv_click.getView().getTitle().equalsIgnoreCase(ChatColor.GREEN+"选择任务类型")){
-            if (workQuestTypeSetIO(inv_click)) return;
+            if (workQuestTypeSetIO(inv_click,commander)) return;
         }
 
         if(inv_click.getView().getTitle().equalsIgnoreCase(ChatColor.GREEN+"任务奖励设置")){
-            if (workQuestRewardSetIO(inv_click)) return;
+            if (workQuestRewardSetIO(inv_click,commander)) return;
         }
 
         if(inv_click.getView().getTitle().equalsIgnoreCase(ChatColor.GREEN+"请放入物品奖励")){
-            workQuestRewardItemSetIO(inv_click);
+            workQuestRewardItemSetIO(inv_click,commander);
             return;
         }
 
         if(inv_click.getView().getTitle().equalsIgnoreCase(ChatColor.GREEN+"请设置物品条件")){
-            workQuestItemConditionSetIO(inv_click);
+            workQuestItemConditionSetIO(inv_click,commander);
             return;
         }
 
         if(inv_click.getView().getTitle().contains("父任务设置：请选择父任务")) {
-            if (workParentQuestSetIO(inv_click)) return;
+            if (workParentQuestSetIO(inv_click,commander)) return;
         }
 
         if(inv_click.getView().getTitle().equalsIgnoreCase(ChatColor.GREEN+"选择实体类型")){
-            workQuestEntityTypeSetIO(inv_click);
+            workQuestEntityTypeSetIO(inv_click,commander);
             return;
         }
 
         if(inv_click.getView().getTitle().equalsIgnoreCase(ChatColor.GREEN+"选择一种实体")){
-            workQuestEntitySetIO(inv_click);
+            workQuestEntitySetIO(inv_click,commander);
             return;
         }
         if(inv_click.getView().getTitle().equalsIgnoreCase("位置变量设置")){
-            if (workLocVarSetIO(inv_click)) return;
+            if (workLocVarSetIO(inv_click,commander)) return;
         }
 
         if(inv_click.getView().getTitle().equalsIgnoreCase(ChatColor.RED+"删除一个任务条件")){
-            if (workQuestConditionRemoveIO(inv_click)) return;
+            if (workQuestConditionRemoveIO(inv_click,commander)) return;
         }
 
         if(inv_click.getView().getTitle().equalsIgnoreCase("整数型变量设置")){
-            workIntVarSetIO(inv_click);
+            workIntVarSetIO(inv_click,commander);
             return;
         }
 
         if(inv_click.getView().getTitle().contains("城市加入申请管理面板")) {
-            workCityApplicationAcceptIO(inv_click);
+            workCityApplicationAcceptIO(inv_click,commander);
             return;
         }
 
         if(inv_click.getView().getTitle().contains("Warps List: ")){
-            workWarpListIO(inv_click);
+            workCityWarpListIO(inv_click,commander);
             return;
         }
 
         if(inv_click.getView().getTitle().contains("Residents List: ")){
-            workResidentsListIO(inv_click);
+            workCityResidentsListIO(inv_click,commander);
             return;
         }
 
+        if(inv_click.getView().getTitle().contains("CityManage")){
+            if (workCityManageIO(inv_click, commander)) return;
+        }
+
         if(inv_click.getView().getTitle().contains("MyCity")) {
-            workMyCityIO(inv_click);
+            workMyCityIO(inv_click,commander);
         }
     }
 
-    private void workWarpListIO(InventoryClickEvent inv_click) {
+    private boolean workCityManageIO(InventoryClickEvent inv_click,Player commander) {
+        if (OpenUI.uiINIT(inv_click)) return true;
+        String s = getCity(inv_click);
+        City city = cities.get(s);
+        if (city == null) return true;
+        boolean edit = inv_click.getView().getTitle().contains("(Edit)");
+        switch (inv_click.getSlot()){
+            case 4:
+                if(edit) OpenUI.openCityIconSetUI(city,commander,1);
+                return true;
+            case 5:
+                return true;
+            case 31:
+                if(edit) {
+                    if (city.resetWarp("spawn",commander.getLocation())) {
+                        commander.sendMessage("Spawn设置成功");
+                    } else commander.sendMessage("Spawn设置失败");
+                    return true;
+                }
+                workCityWarp(commander,"spawn","");
+                commander.closeInventory();
+                return true;
+            case 40:
+                OpenUI.openCityWarpListUI(city,commander,1,edit);
+                return true;
+            case 27:
+                PlayerOperation.tryCMITpa(commander,city.getMayor());
+                commander.closeInventory();
+                return true;
+            case 36:
+                OpenUI.openCityResidentsListUI(city,commander,1,edit);
+                return true;
+            case 45:
+                edit = !edit;
+                OpenUI.openCityManageUI(city,commander,edit);
+                return true;
+            case 3:
+                if(commander.isOp()||commander.hasPermission("sn.city.admin")){
+                    city.setAdmin();
+                    OpenUI.openCityManageUI(city,commander,edit);
+                }
+                return true;
+            case 53:
+                if(commander.isOp()||commander.hasPermission("sn.city.admin")){
+                    cities.remove(city.getName());
+                    city_names.remove(city.getName());
+                    commander.sendMessage("城市已经删除！");
+                    commander.closeInventory();
+                }
+                return true;
+        }
+        return false;
+    }
+
+    private String getCity(InventoryClickEvent inv_click) {
+        String s = inv_click.getView().getTitle().split(" ")[1];
+        if (s.contains(" Page ")) {
+            s = s.split(" Page ")[0];
+        }
+        return s;
+    }
+
+    private void workCityWarpListIO(InventoryClickEvent inv_click,Player commander) {
         if (OpenUI.uiINIT(inv_click)) return;
-        City city = City.getCity(commander);
+        String s = getCity(inv_click);
+        City city = cities.get(s);
         if (city == null) return;
         String page_str = getPage(inv_click);
         if(page_str == null) return;
         int page = Integer.parseInt(page_str);
         int page_amount = (city.getResidents().size()-1)/45 +1;
+        boolean edit = inv_click.getView().getTitle().contains("(Edit)");
         switch (inv_click.getSlot()){
             case 53:
                 if(page != page_amount){
-                    OpenUI.openCityWarpListUI(commander,page+1);
+                    OpenUI.openCityWarpListUI(city,commander,page+1,edit);
                 }
                 return;
             case 45:
                 if(page != 1){
-                    OpenUI.openCityWarpListUI(commander,page-1);
+                    OpenUI.openCityWarpListUI(city,commander,page-1,edit);
                 }
                 return;
             default:
@@ -223,18 +294,23 @@ public class InvOperateEvent implements Listener {
                 if(item==null) return;
                 String warp_name = Objects.requireNonNull(item.getItemMeta()).getDisplayName();
                 if(warp_name.contains("共有")) return;
-                workCityWarp(commander,warp_name,"发送了未知的错误。");
+                if(edit){
+                    city.resetWarp(warp_name,commander.getLocation());
+                    commander.sendMessage("Warp："+warp_name+"已经重新设置！");
+                } else workCityWarp(commander,warp_name,"发送了未知的错误。");
         }
     }
 
-    private void workResidentsListIO(InventoryClickEvent inv_click) {
+    private void workCityResidentsListIO(InventoryClickEvent inv_click,Player commander) {
         if (OpenUI.uiINIT(inv_click)) return;
-        City city = City.getCity(commander);
+        String s = getCity(inv_click);
+        City city = cities.get(s);
         if (city == null) return;
         String page_str = getPage(inv_click);
         if(page_str == null) return;
         int page = Integer.parseInt(page_str);
         int page_amount = (city.getResidents().size()-1)/45 +1;
+        boolean edit = inv_click.getView().getTitle().contains("(Edit)");
         switch (inv_click.getSlot()){
             case 53:
                 if(page != page_amount){
@@ -252,13 +328,29 @@ public class InvOperateEvent implements Listener {
                 if(item.getItemMeta() instanceof SkullMeta){
                     OfflinePlayer player = ((SkullMeta) item.getItemMeta()).getOwningPlayer();
                     if(player==null) return;
+                    if(edit) {
+                        List<String> q = new ArrayList<>();
+                        q.add("若确认，请直接输入：\"confirm tick "+player.getName()+"\"");
+                        String ans = "confirm tick "+player.getName();
+                        Consumer<String> react = (str) -> {
+                            if(str.equals(ans))city.removeResident(player);
+                        };
+                        List<Consumer<String>> list = new ArrayList<>();
+                        list.add(react);
+                        AskSet.askSetAsync(commander,
+                                q,
+                                list,
+                                (player1)-> player1.sendMessage("操作成功"),
+                                (player1)-> player1.sendMessage("操作失败"));
+                        return;
+                    }
                     if(!player.isOnline()) return;
                     commander.performCommand("/cmi tpa "+ player.getName());
                 }
         }
     }
 
-    private void workMyCityIO(InventoryClickEvent inv_click) {
+    private void workMyCityIO(InventoryClickEvent inv_click,Player commander) {
         if (OpenUI.uiINIT(inv_click)) return;
         City city = City.getCity(commander);
         if (city == null) return;
@@ -285,7 +377,7 @@ public class InvOperateEvent implements Listener {
         }
     }
 
-    private void workCityApplicationAcceptIO(InventoryClickEvent inv_click) {
+    private void workCityApplicationAcceptIO(InventoryClickEvent inv_click,Player commander) {
         if (OpenUI.uiINIT(inv_click)) return;
         OfflinePlayer p;
         try {
@@ -301,6 +393,17 @@ public class InvOperateEvent implements Listener {
         }
         City city = City.checkMayorAndGetCity(commander);
         if (city == null) return;
+        if (inv_click.getClick().equals(ClickType.RIGHT)) {
+            city.shelveApplication(p.getUniqueId());
+            commander.sendMessage("搁置了"+p.getName()+"的请求");
+            String page_str =  getPage(inv_click);
+            if (page_str == null) {
+                OpenUI.openCityApplicationAcceptUI(city,commander);
+            } else {
+                OpenUI.openCityApplicationAcceptUI(city,commander, Integer.parseInt(page_str));
+            }
+            return;
+        }
         List<String> conf = new ArrayList<>();
         conf.add(ChatColor.GREEN + "你确认要添加" + p.getName() + "到城市中吗？");
         conf.add(ChatColor.LIGHT_PURPLE + "请注意，这代表着城市需要对该玩家的行为负责！");
@@ -342,7 +445,7 @@ public class InvOperateEvent implements Listener {
         return sp;
     }
 
-    private void workIntVarSetIO(InventoryClickEvent inv_click) {
+    private void workIntVarSetIO(InventoryClickEvent inv_click,Player commander) {
         if (OpenUI.uiINIT(inv_click)) return;
         int ind = inv_click.getSlot();
         int ord = 0;
@@ -396,7 +499,7 @@ public class InvOperateEvent implements Listener {
         OpenUI.openIntSettingUI(commander);
     }
 
-    private boolean workQuestConditionRemoveIO(InventoryClickEvent inv_click) {
+    private boolean workQuestConditionRemoveIO(InventoryClickEvent inv_click,Player commander) {
         if (OpenUI.uiINIT(inv_click)) return true;
         List<QuestAction> target = quest_setting.get(commander).getQuest_accept_condition();
         if(isSetTorC.get(commander)) target = quest_setting.get(commander).getQuest_target();
@@ -414,7 +517,7 @@ public class InvOperateEvent implements Listener {
         return false;
     }
 
-    private boolean workLocVarSetIO(InventoryClickEvent inv_click) {
+    private boolean workLocVarSetIO(InventoryClickEvent inv_click,Player commander) {
         if (OpenUI.uiINIT(inv_click)) return true;
         //反转 重设
         int opr = 0;
@@ -536,7 +639,7 @@ public class InvOperateEvent implements Listener {
         return false;
     }
 
-    private void workQuestEntitySetIO(InventoryClickEvent inv_click) {
+    private void workQuestEntitySetIO(InventoryClickEvent inv_click,Player commander) {
         if (OpenUI.uiINIT(inv_click)) return;
 
         try {
@@ -551,7 +654,7 @@ public class InvOperateEvent implements Listener {
 
     }
 
-    private void workQuestEntityTypeSetIO(InventoryClickEvent inv_click) {
+    private void workQuestEntityTypeSetIO(InventoryClickEvent inv_click,Player commander) {
         if (OpenUI.uiINIT(inv_click)) return;
 
         if(inv_click.getSlot()==53) {
@@ -574,7 +677,7 @@ public class InvOperateEvent implements Listener {
         commander.openInventory(tmp_cet);
     }
 
-    private boolean workParentQuestSetIO(InventoryClickEvent inv_click) {
+    private boolean workParentQuestSetIO(InventoryClickEvent inv_click,Player commander) {
         if (OpenUI.uiINIT(inv_click)) return true;
         ClickType cli = inv_click.getClick();//获得clickType 类型
         if (cli.isKeyboardClick() || cli == ClickType.WINDOW_BORDER_LEFT || cli == ClickType.WINDOW_BORDER_RIGHT) {
@@ -589,7 +692,7 @@ public class InvOperateEvent implements Listener {
             } catch (NullPointerException e){
                 return true;
             }
-            if (workPositionSet(name)) return true;
+            if (workPositionSet(name,commander)) return true;
             OpenUI.openQuestSettingUI(commander);
             return true;
 
@@ -613,14 +716,14 @@ public class InvOperateEvent implements Listener {
                 OpenUI.openPositionChooseMultiPageUI(commander, pg_index - 1);
                 return true;
             }
-            if (workPositionSet(name)) return true;
+            if (workPositionSet(name,commander)) return true;
             OpenUI.openQuestSettingUI(commander);
             return true;
         }
         return false;
     }
 
-    private void workQuestItemConditionSetIO(InventoryClickEvent inv_click) {
+    private void workQuestItemConditionSetIO(InventoryClickEvent inv_click,Player commander) {
         if (OpenUI.uiINIT(inv_click)) return;
         ClickType cli = inv_click.getClick();//获得clickType 类型
         if(cli.isKeyboardClick()||cli.equals(ClickType.WINDOW_BORDER_LEFT)||cli==ClickType.WINDOW_BORDER_RIGHT){
@@ -661,7 +764,7 @@ public class InvOperateEvent implements Listener {
         quest_action_setting.get(commander).getQuestactiondata().setQuesttargetitem(list);
     }
 
-    private void workQuestRewardItemSetIO(InventoryClickEvent inv_click) {
+    private void workQuestRewardItemSetIO(InventoryClickEvent inv_click,Player commander) {
         if (OpenUI.uiINIT(inv_click)) return;
         ClickType cli = inv_click.getClick();//获得clickType 类型
         if(cli.isKeyboardClick()||cli.equals(ClickType.WINDOW_BORDER_LEFT)||cli==ClickType.WINDOW_BORDER_RIGHT){
@@ -704,7 +807,7 @@ public class InvOperateEvent implements Listener {
         quest_setting.get(commander).setQuestreward(tmp_qr);
     }
 
-    private boolean workQuestRewardSetIO(InventoryClickEvent inv_click) {
+    private boolean workQuestRewardSetIO(InventoryClickEvent inv_click,Player commander) {
         if (OpenUI.uiINIT(inv_click)) return true;
         ClickType cli = inv_click.getClick();//获得clickType 类型
         if(cli.isKeyboardClick()||cli.equals(ClickType.WINDOW_BORDER_LEFT)||cli==ClickType.WINDOW_BORDER_RIGHT){
@@ -744,7 +847,7 @@ public class InvOperateEvent implements Listener {
         return false;
     }
 
-    private boolean workQuestTypeSetIO(InventoryClickEvent inv_click) {
+    private boolean workQuestTypeSetIO(InventoryClickEvent inv_click,Player commander) {
         if (OpenUI.uiINIT(inv_click)) return true;
         ClickType cli = inv_click.getClick();//获得clickType 类型
         if(cli.isKeyboardClick()||cli==ClickType.WINDOW_BORDER_LEFT||cli==ClickType.WINDOW_BORDER_RIGHT){
@@ -784,7 +887,7 @@ public class InvOperateEvent implements Listener {
         return false;
     }
 
-    private void workQuestActionSetIO(InventoryClickEvent inv_click) {
+    private void workQuestActionSetIO(InventoryClickEvent inv_click,Player commander) {
         //open by openActionCreateUI();
         if (OpenUI.uiINIT(inv_click)) return;
         ClickType cli = inv_click.getClick();//获得clickType 类型
@@ -846,7 +949,7 @@ public class InvOperateEvent implements Listener {
         }
     }
 
-    private boolean workQuestSetIO(InventoryClickEvent inv_click) {
+    private boolean workQuestSetIO(InventoryClickEvent inv_click,Player commander) {
         if (OpenUI.uiINIT(inv_click)) return true;
         ClickType cli = inv_click.getClick();//获得clickType 类型
         if(cli.isKeyboardClick()||cli==ClickType.WINDOW_BORDER_LEFT||cli==ClickType.WINDOW_BORDER_RIGHT){
@@ -958,7 +1061,7 @@ public class InvOperateEvent implements Listener {
         return false;
     }
 
-    private void workCollectorIO(InventoryClickEvent inv_click) {
+    private void workCollectorIO(InventoryClickEvent inv_click,Player commander) {
         if(inv_click.getView().getTitle().contains("Page")){
             List<ItemStack> items = item_temp.get(commander);
             int pages = items.size()/45 +1;
@@ -987,7 +1090,7 @@ public class InvOperateEvent implements Listener {
         }
     }
 
-    private boolean workExpressIO(InventoryClickEvent inv_click) {
+    private boolean workExpressIO(InventoryClickEvent inv_click,Player commander) {
         if (OpenUI.uiINIT(inv_click)) return true;
 
         ClickType cli = inv_click.getClick();//获得clickType 类型
@@ -1021,7 +1124,7 @@ public class InvOperateEvent implements Listener {
         return false;
     }
     
-    private boolean workActionSettingViewIO(InventoryClickEvent inv_click) {
+    private boolean workActionSettingViewIO(InventoryClickEvent inv_click,Player commander) {
         if (OpenUI.uiINIT(inv_click)) return true;
         ClickType cli = inv_click.getClick();//获得clickType 类型
         if(cli.isKeyboardClick()||cli==ClickType.WINDOW_BORDER_LEFT||cli==ClickType.WINDOW_BORDER_RIGHT){
@@ -1045,7 +1148,7 @@ public class InvOperateEvent implements Listener {
         return false;
     }
 
-    private boolean workPositionSet(@NotNull String name) {
+    private boolean workPositionSet(@NotNull String name,Player commander) {
         if(name.equals("无父任务")){
             QuestPosition tmp = new QuestPosition();
             tmp.setParentquest(null);
@@ -1113,123 +1216,6 @@ public class InvOperateEvent implements Listener {
         b.setDisplayName(dp_name);
         a.setItemMeta(b);
         return a;
-    }
-
-    public static class LocSet{
-        private int x;
-        private int y;
-        private int z;
-        private boolean xm = true;
-        private boolean ym = true;
-        private boolean zm = true;
-        private World world;
-
-        public int getX() {
-            return x;
-        }
-
-        public int getY() {
-            return y;
-        }
-
-        public int getZ() {
-            return z;
-        }
-
-        public boolean isXm() {
-            return xm;
-        }
-
-        public boolean isYm() {
-            return ym;
-        }
-
-        public boolean isZm() {
-            return zm;
-        }
-
-        public void setWorld(World world) {
-            this.world = world;
-        }
-        public void revXm(){
-            this.xm = !this.xm;
-        }
-        public void revYm(){
-            this.ym = !this.ym;
-        }
-        public void revZm(){
-            this.zm = !this.zm;
-        }
-
-        public void setX(int x) {
-            this.x = x;
-        }
-
-        public void setY(int y) {
-            this.y = y;
-        }
-
-        public void setZ(int z) {
-            this.z = z;
-        }
-
-        public void addX(int x) {
-            this.x += x;
-        }
-
-        public void addY(int y) {
-            this.y += y;
-        }
-
-        public void addZ(int z) {
-            this.z += z;
-        }
-
-        public World getWorld() {
-            return world;
-        }
-
-        @Override
-        protected Object clone() throws CloneNotSupportedException {
-            return super.clone();
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof LocSet)) return false;
-            LocSet locSet = (LocSet) o;
-            return getX() == locSet.getX() && getY() == locSet.getY() && getZ() == locSet.getZ() && isXm() == locSet.isXm() && isYm() == locSet.isYm() && isZm() == locSet.isZm() && Objects.equals(getWorld(), locSet.getWorld());
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(getX(), getY(), getZ(), isXm(), isYm(), isZm(), getWorld());
-        }
-
-        @Override
-        public String toString() {
-            return "LocSet{" +
-                    "x=" + x +
-                    ", y=" + y +
-                    ", z=" + z +
-                    ", xm=" + xm +
-                    ", ym=" + ym +
-                    ", zm=" + zm +
-                    ", world=" + world +
-                    '}';
-        }
-
-        public LocSet(Location l){
-            this.x = (int) l.getX();
-            this.y = (int) l.getY();
-            this.z = (int) l.getZ();
-            this.world = l.getWorld();
-        }
-
-        public Location getLoc() {
-            return new Location(world,x,y,z);
-        }
     }
 
 }

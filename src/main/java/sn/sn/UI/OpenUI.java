@@ -9,6 +9,8 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import sn.sn.Basic.LocSet;
+import sn.sn.City.CITY_TYPE;
 import sn.sn.City.City;
 import sn.sn.Quest.Quest;
 import sn.sn.Quest.QuestAction;
@@ -17,9 +19,10 @@ import sn.sn.Quest.QuestSettingType;
 
 import java.util.*;
 
-import static sn.sn.UI.InvOperateEvent.*;
-import static sn.sn.Sn.*;
 import static sn.sn.Basic.SnFileIO.getSkull;
+import static sn.sn.Sn.*;
+import static sn.sn.UI.InvOperateEvent.pg_dn;
+import static sn.sn.UI.InvOperateEvent.pg_up;
 
 @SuppressWarnings("SpellCheckingInspection")
 public class OpenUI {
@@ -27,7 +30,7 @@ public class OpenUI {
 
     public static void openQuestSettingUI(Player questPlayer, String questname){
         try {
-            setting_state.remove(InvOperateEvent.commander);
+            setting_state.remove(questPlayer);
         } catch (NullPointerException ignored) {
         }
         Inventory questcreate = Bukkit.createInventory(questPlayer,9, ChatColor.BLUE+"正在创建一个新任务，请填写以下信息");
@@ -346,9 +349,9 @@ public class OpenUI {
 
     public static void openLocSettingUI(Player commander) {
         if(!loc_setting.containsKey(commander)){
-            loc_setting.put(commander, new InvOperateEvent.LocSet(Bukkit.getWorlds().get(0).getSpawnLocation()));
+            loc_setting.put(commander, new LocSet(Bukkit.getWorlds().get(0).getSpawnLocation()));
         }
-        InvOperateEvent.LocSet ls = loc_setting.get(commander);
+        LocSet ls = loc_setting.get(commander);
         Inventory tmpls = Bukkit.createInventory(commander, 54 ,"位置变量设置");
         List<String> a =new ArrayList<>();
         a.add("现在的位置信息:");
@@ -484,16 +487,27 @@ public class OpenUI {
         return getItem(typname,dpname,lore,false);
     }
 
+
+
     public static void openCityResidentsListUI(Player player,int now_page){
         City city = City.getCity(player);
+        openCityResidentsListUI(city,player,now_page,false);
+    }
+
+    public static void openCityResidentsListUI(City city,Player player,int now_page,boolean edit){
         if(city == null){
             player.sendMessage("找不到你的小镇哦~");
             return;
         }
         int page_amount = (city.getResidents().size()-1)/45 + 1;
-        Inventory temp = Bukkit.createInventory(player,54,"Residents List: "+city.getName()+" Page "+now_page+" of "+page_amount);
+        Inventory temp;
+        if (edit) {
+            temp = Bukkit.createInventory(player,54,"Residents List(Edit): "+city.getName()+" Page "+now_page+" of "+page_amount);
+        } else temp = Bukkit.createInventory(player,54,"Residents List: "+city.getName()+" Page "+now_page+" of "+page_amount);
         int now = (now_page-1) * 45;
         int in_page = 0;
+        List<String> lore = new ArrayList<>();
+        if(edit) lore.add("点击将该玩家踢出城市！");
         List<UUID> residents = city.getResidents();
         for (int i = now, residentsSize = residents.size(); (i < residentsSize)&&(i < now+45+in_page);i++) {
             UUID resident = residents.get(i);
@@ -501,7 +515,7 @@ public class OpenUI {
                 in_page = 1;
                 continue;
             }
-            temp.addItem(getSkull(resident, null));
+            temp.addItem(getSkull(resident, lore));
         }
         if(now_page != 1)temp.setItem(45,pg_up);
         if(now_page != page_amount)temp.setItem(53,pg_dn);
@@ -511,12 +525,19 @@ public class OpenUI {
 
     public static void openCityWarpListUI(Player player,int now_page){
         City city = City.getCity(player);
+        openCityWarpListUI(city,player,now_page,false);
+    }
+
+    public static void openCityWarpListUI(City city,Player player,int now_page, boolean edit){
         if(city == null){
             player.sendMessage("找不到你的小镇哦~");
             return;
         }
         int page_amount = (city.getWarps().size()-1)/45 + 1;
-        Inventory temp = Bukkit.createInventory(player,54,"Warp List: "+city.getName()+" Page "+now_page+" of "+page_amount);
+        Inventory temp;
+        if (edit) {
+            temp = Bukkit.createInventory(player,54,"Warp List(Edit): "+city.getName()+" Page "+now_page+" of "+page_amount);
+        } else temp = Bukkit.createInventory(player,54,"Warp List: "+city.getName()+" Page "+now_page+" of "+page_amount);
         int now = (now_page-1) * 45;
         Map<String, Location> warps = city.getWarps();
         int i = 0;
@@ -528,6 +549,7 @@ public class OpenUI {
                 lore.add("Y= " + warps.get(s).getY());
                 lore.add("Z= " + warps.get(s).getZ());
                 lore.add("World= "+ Objects.requireNonNull(warps.get(s).getWorld()).getName());
+                if(edit) lore.add("点击进行重新设置！");
                 temp.addItem(getItem("PAPER",s,lore));
             }
         }
@@ -537,8 +559,7 @@ public class OpenUI {
         player.openInventory(temp);
     }
 
-    public static boolean openCityManageUI(Player player,boolean edit){
-        City city = City.checkMayorAndGetCity(player);
+    public static boolean openCityManageUI(City city, Player player,boolean edit){
         if(city == null){
             return true;
         }
@@ -549,12 +570,19 @@ public class OpenUI {
         } else temp = Bukkit.createInventory(player,54,"CityManage: "+city.getName());
 
         ItemStack is = city.getIcon();
-
-        if(is==null) is = getItem("SNOWBALL",city.getName(),lore);
+        if(edit){
+            lore.add("点我设置城市的标志和描述");
+        }
+        lore.addAll(city.getDescription());
+        if(is==null) {
+            is = getItem("SNOWBALL", city.getName(), lore);
+        }
         else {
             Objects.requireNonNull(is.getItemMeta()).setLore(lore);
         }
         temp.setItem(4,is);
+
+        temp.setItem(5,city.getType().getSymbolItemStack());
 
         if(city.getWarp("spawn")!=null){
             lore = new ArrayList<>();
@@ -580,13 +608,36 @@ public class OpenUI {
         lore.add(ChatColor.GREEN+"点击进入城市居民管理界面");
         temp.setItem(36,getItem("PLAYER_HEAD","城市居民列表",lore));
 
+        lore = new ArrayList<>();
+        lore.add("点我进入或退出编辑状态");
+        temp.setItem(45,getItem("WOODEN_HOE","编辑状态",lore,edit));
+
+        if(player.isOp()||player.hasPermission("sn.city.admin")){
+            lore = new ArrayList<>();
+            lore.add("删除这个城市！");
+            temp.setItem(53,getItem("BARRIER",ChatColor.RED+"删除这个城市",lore));
+
+            lore = new ArrayList<>();
+            lore.add("给与这个城市ADMIN权限");
+            temp.setItem(3,getItem("BARRIER",ChatColor.RED+"设为ADMIN",lore,city.getType().equals(CITY_TYPE.ADMIN)));
+        }
+
         player.openInventory(temp);
         return true;
+    }
+
+    public static boolean openCityManageUI(Player player,boolean edit){
+        City city = City.checkMayorAndGetCity(player);
+        return openCityManageUI(city,player,edit);
     }
 
 
     public static boolean openMyCityUI(Player player){
         City city = City.getCity(player);
+        return openMyCityUI(city,player);
+    }
+
+    public static boolean openMyCityUI(City city,Player player){
         if(city == null){
             return true;
         }
@@ -642,13 +693,64 @@ public class OpenUI {
         player.openInventory(temp);
     }
 
-    public static void openCityPermGroupChooseUI(Player commander) {
-        City city = City.checkMayorAndGetCity(commander);
+    public static void openCityPermGroupChooseUI(City city,Player commander) {
         if(city == null) return;
         Inventory temp = Bukkit.createInventory(commander,54,"权限组选择界面: "+city.getName());
         for (String s : city.getPermGroup().keySet()) {
             temp.addItem(getItem("PAPER",s,null));
         }
         commander.openInventory(temp);
+    }
+
+    public static void openCityPermGroupChooseUI(Player commander) {
+        City city = City.checkMayorAndGetCity(commander);
+        openCityPermGroupChooseUI(city,commander);
+    }
+
+    public static void openCityAdminUI(Player commander,int page) {
+
+        int totpage = cities.size()/45 +1;
+        Inventory temp = Bukkit.createInventory(commander,54,"City Admin Panel: Page "+page+" of "+totpage);
+
+        int index = (page - 1) * 45;
+        for (int i = 0; (i < 45)&&(index+i < city_names.size()); i++) {
+            String name = city_names.get(i+index);
+            List<String> lore = new ArrayList<>();
+            try {
+                lore.add("Mayor: " + Bukkit.getOfflinePlayer(cities.get(name).getMayor()).getName());
+            } catch (Exception ignored) {
+            }
+            lore.addAll(cities.get(name).getDescription());
+            temp.setItem(i, getItem("PAPER", name, lore));
+        }
+        if(page!=1) temp.setItem(45,pg_up);
+        if(page!=totpage) temp.setItem(53,pg_dn);
+        List<String> lore = new ArrayList<>();
+        lore.add("debug状态："+debug);
+        lore.add("开启debug会让后台接受更多信息");
+        temp.setItem(46,getItem("IRON_AXE","debug",lore,debug));
+    }
+
+    public static void openCityIconSetUI(City city, Player commander, int page) {
+        if(city == null){
+            return;
+        }
+        int totpage = Material.values().length/45 +1;
+        Inventory temp = Bukkit.createInventory(commander,54,"CityIconSet:+"+ city.getName() +" Page "+page+" of "+totpage);
+        int index = (page - 1) * 45;
+        for (int i = 0; (i < 45)&&(index+i < Material.values().length); i++) {
+            Material material = Material.values()[i+index];
+            temp.setItem(i, getItem(material.name(), material.name(), null));
+        }
+        if(page!=1) temp.setItem(45,pg_up);
+        if(page!=totpage) temp.setItem(53,pg_dn);
+        List<String> lore = new ArrayList<>();
+        lore.add("手持可以容纳文字的物品");
+        lore.add("比如成书");
+        lore.add("然后点这里可以设置城市描述");
+        lore.add("请注意，只记录第一页的内容");
+        lore.add("而且每行的长度是有限制的");
+        temp.setItem(46,getItem("BOOK","导入城市描述",lore));
+
     }
 }

@@ -6,6 +6,7 @@ import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import sn.sn.Range.Range;
 
@@ -19,7 +20,7 @@ public class City {
 
     private ItemStack icon;
     private String name;
-    private List<String> description;
+    private List<String> description = new ArrayList<>();
     private List<UUID> residents = new ArrayList<>(), application = new ArrayList<>();
     private Map<String, List<UUID>> perm_group;
     private UUID mayor;
@@ -29,6 +30,7 @@ public class City {
     private boolean activated = false;
     private Map<String, Location> warps = new HashMap<>();
     private CITY_TYPE type = CITY_TYPE.NOT_ACTIVE;
+    private boolean admin;
 
     @Nullable
     public static City getCity(OfflinePlayer player) {
@@ -64,11 +66,15 @@ public class City {
         return city;
     }
 
+    public CITY_TYPE getType() {
+        return type;
+    }
 
     public ItemStack getIcon() {
         return icon;
     }
 
+    @NotNull
     public List<String> getDescription() {
         return description;
     }
@@ -99,6 +105,12 @@ public class City {
             this.warps.put(name, loc);
             return true;
         } else return false;
+    }
+
+    public boolean resetWarp(String name, Location loc){
+        if(!warps.containsKey(name)) return false;
+        warps.put(name,loc);
+        return true;
     }
 
     public void addApplication(UUID applier) {
@@ -197,6 +209,7 @@ public class City {
     }
 
     public boolean upgrade() {
+        if(admin)return false;
         CITY_TYPE new_type = CITY_TYPE.getCityTypeByLevel(type.getPermLevel() + 1);
         if (new_type == null) return false;
         activated = new_type.getPermLevel() >= 1;
@@ -205,6 +218,7 @@ public class City {
     }
 
     public boolean downgrade() {
+        if(admin)return false;
         CITY_TYPE new_type = CITY_TYPE.getCityTypeByLevel(type.getPermLevel() - 1);
         if (new_type == null) return false;
         activated = new_type.getPermLevel() >= 1;
@@ -253,11 +267,16 @@ public class City {
         return territorial;
     }
 
-    public void removeResident(Player commander) {
+    public void removeResident(OfflinePlayer commander) {
         residents.remove(commander.getUniqueId());
     }
 
     public void removeTerritorial(int index) {
         territorial.remove(index);
+    }
+
+    public void setAdmin() {
+        type = CITY_TYPE.ADMIN;
+        admin = true;
     }
 }

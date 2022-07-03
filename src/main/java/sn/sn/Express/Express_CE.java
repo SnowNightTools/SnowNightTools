@@ -92,7 +92,6 @@ import static sn.sn.Sn.*;
 
 public class Express_CE implements CommandExecutor {
 
-    protected Player sender_player;
 
     public static void setStateFalse(Player senderPlayer) {
         Sn.share_yml.set(senderPlayer.getName()+".using",false);
@@ -105,29 +104,26 @@ public class Express_CE implements CommandExecutor {
         } catch (IOException | InvalidConfigurationException ignored) {}
     }
 
-    private void setStateFalse(){
-        setStateFalse(sender_player);
-    }
-
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String[] args){
 
-
+        Player sender_player;
         //获取玩家背包信息
         if(sender instanceof Player){
             sender_player = (Player)sender;
         } else {
             sendInfo("玩家信息异常，请联系管理员。");
+            return true;
         }
 
         if(label.equalsIgnoreCase("express")&& sender_player.hasPermission("sn.express")) {
 
             if(args.length==0)
-                return help();
+                return help(sender_player);
 
 
             if(args[0].equalsIgnoreCase("help")||args[0].equalsIgnoreCase("？")||args[0].equalsIgnoreCase("?")){
-                return help();
+                return help(sender_player);
             }
 
             if(args[0].equalsIgnoreCase("mes")&& sender_player.hasPermission("sn.express.mes")){
@@ -137,17 +133,17 @@ public class Express_CE implements CommandExecutor {
             }
 
             if(args[0].equalsIgnoreCase("reset_state")){
-                return workExpressResetStateCE(args);
+                return workExpressResetStateCE(args,sender_player);
             }
 
             if(args[0].equalsIgnoreCase("sn.set_path")){
-                if (workExpressSetPathCE(args)) return false;
+                if (workExpressSetPathCE(args,sender_player)) return false;
             }
 
-            checkExpressPlayerAndFile();
+            checkExpressPlayerAndFile(sender_player);
 
             if(args[0].equalsIgnoreCase("clean")){
-                return workExpressCleanCE();
+                return workExpressCleanCE(sender_player);
             }
 
             //判断是否同时使用雪花速递 using：true 则不允许使用
@@ -162,7 +158,7 @@ public class Express_CE implements CommandExecutor {
             } catch (IOException e) {
                 sender_player.sendMessage(ChatColor.YELLOW+"系统繁忙，请稍后再试~");
                 sender_player.sendMessage(ChatColor.YELLOW+"若短时间内多次出现该信息，请联系管理员！");
-                setStateFalse();
+                setStateFalse(sender_player);
                 return false;
             }
 
@@ -175,13 +171,21 @@ public class Express_CE implements CommandExecutor {
             }
         }
 
-        setStateFalse();
+        setStateFalse(sender_player);
         return true;
     }
 
     private boolean workExpressShowCE(@NotNull CommandSender sender) {
+        Player sender_player;
+        //获取玩家背包信息
+        if(sender instanceof Player){
+            sender_player = (Player)sender;
+        } else {
+            sendInfo("玩家信息异常，请联系管理员。");
+            return true;
+        }
         if(!sender_player.hasPermission("sn.express.show")){
-            noPermission("sn.express.show");
+            noPermission("sn.express.show",sender_player);
             return false;
         }
         //为玩家创建一个inventory，只在开启和关闭时进行文件操作。
@@ -205,15 +209,23 @@ public class Express_CE implements CommandExecutor {
     }
 
     private boolean workExpressSendCE(@NotNull CommandSender sender, @NotNull String[] args) {
+        Player sender_player;
+        //获取玩家背包信息
+        if(sender instanceof Player){
+            sender_player = (Player)sender;
+        } else {
+            sendInfo("玩家信息异常，请联系管理员。");
+            return true;
+        }
         if(!sender_player.hasPermission("sn.express.send")){
-            noPermission("sn.express.send");
+            noPermission("sn.express.send",sender_player);
             return false;
         }
         //sendInfo("玩家"+sender.getName()+"尝试使用express send");
 
         if(args.length == 1){
-            help();
-            setStateFalse();
+            help(sender_player);
+            setStateFalse(sender_player);
             return true;
         }
         if(args[1].equalsIgnoreCase("hand")){
@@ -256,7 +268,7 @@ public class Express_CE implements CommandExecutor {
             }
 
             sender_player.sendMessage("物品"+ hand +"已经发送！");
-            setStateFalse();
+            setStateFalse(sender_player);
             return true;
         }
 
@@ -269,7 +281,7 @@ public class Express_CE implements CommandExecutor {
                 chest = (Chest) target_block.getState();
             } else {
                 sender_player.sendMessage("请指向一个箱子！");
-                setStateFalse();
+                setStateFalse(sender_player);
                 return true;
             }
 
@@ -287,7 +299,7 @@ public class Express_CE implements CommandExecutor {
             int n_max =Sn.share_yml.getInt(sender.getName() + ".max");
             if (n+ n_inv > n_max) {
                 sender_player.sendMessage(ChatColor.RED+"可用空间不足");
-                setStateFalse();
+                setStateFalse(sender_player);
                 return true;
             }
 
@@ -307,23 +319,24 @@ public class Express_CE implements CommandExecutor {
                 sender_player.sendMessage("文件保存可能出错！");
                 if(remains.isEmpty()) chest.getBlockInventory().clear();
                 else chest.getBlockInventory().setContents(remains.getContents());
-                setStateFalse();
+                setStateFalse(sender_player);
                 return false;
             }
 
             if(remains.isEmpty()) chest.getBlockInventory().clear();
             else chest.getBlockInventory().setContents(remains.getContents());
-            setStateFalse();
+            setStateFalse(sender_player);
             return true;
         }
 
-        setStateFalse();
+        setStateFalse(sender_player);
         return true;
     }
 
-    private boolean workExpressCleanCE() {
+    private boolean workExpressCleanCE(Player sender_player) {
+
         if(!sender_player.hasPermission("sn.express.clean")){
-            noPermission("sn.express.clean");
+            noPermission("sn.express.clean",sender_player);
             return false;
         }
         Sn.share_yml.set(sender_player.getName()+".using",false);
@@ -339,7 +352,7 @@ public class Express_CE implements CommandExecutor {
         return true;
     }
 
-    private void checkExpressPlayerAndFile() {
+    private void checkExpressPlayerAndFile(Player sender_player) {
         try {
             share_yml.load(share_file);
         } catch (IOException | InvalidConfigurationException e) {
@@ -355,9 +368,9 @@ public class Express_CE implements CommandExecutor {
         }
     }
 
-    private boolean workExpressSetPathCE(@NotNull String[] args) {
+    private boolean workExpressSetPathCE(@NotNull String[] args,Player sender_player) {
         if(!sender_player.hasPermission("sn.express.set_path")){
-            noPermission("sn.express.set_path");
+            noPermission("sn.express.set_path",sender_player);
             return true;
         }
         String path = args[1];
@@ -406,9 +419,9 @@ public class Express_CE implements CommandExecutor {
         return false;
     }
 
-    private boolean workExpressResetStateCE(@NotNull String[] args) {
+    private boolean workExpressResetStateCE(@NotNull String[] args,Player sender_player) {
         if(!sender_player.hasPermission("sn.express.reset_state")){
-            noPermission("sn.express.reset_state");
+            noPermission("sn.express.reset_state",sender_player);
             return false;
         }
         if(args.length == 1){
@@ -442,13 +455,13 @@ public class Express_CE implements CommandExecutor {
         return true;
     }
 
-    private void noPermission(String per) {
+    private void noPermission(String per,Player sender_player) {
         sender_player.sendMessage("你没有"+per+"权限");
-        setStateFalse();
+        setStateFalse(sender_player);
     }
 
 
-    private boolean help() {
+    private boolean help(Player sender_player) {
         sender_player.sendMessage(ChatColor.GREEN+"欢迎使用雪花速递~");
         if(sender_player.isOp()) {
 

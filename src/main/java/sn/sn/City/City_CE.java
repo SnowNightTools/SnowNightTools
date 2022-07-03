@@ -184,11 +184,16 @@ public class City_CE implements CommandExecutor {
         }
 
 
+        if(!args[0].equals("admin")) return help();
         // Only For OP:
+        if(!commander.hasPermission("sn.city.admin") || commander.isOp()) return help();
         // /city admin remove <name> 删除一个城市，需要op操作。
+
         // /city admin add <perm> 添加一个可以被城主设置的权限。
         // /city admin 打开小镇系统管理面板
-
+        if(args.length == 1){
+            OpenUI.openCityAdminUI(commander,1);
+        }
 
 
         return false;

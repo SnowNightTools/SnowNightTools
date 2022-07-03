@@ -15,10 +15,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import sn.sn.Basic.AutoSave;
-import sn.sn.Basic.LoginEvent;
-import sn.sn.Basic.SayToEveryoneThread;
-import sn.sn.Basic.SnFileIO;
+import sn.sn.Basic.*;
 import sn.sn.City.City;
 import sn.sn.City.City_CE;
 import sn.sn.Collector.Collector;
@@ -70,7 +67,7 @@ public class Sn extends JavaPlugin {
     public static Map<Player, EntityType> entity_type_setting = new HashMap<>();
     public static Map<Player, Boolean> isSetTorC = new HashMap<>();//true when commander is setting Target
     public static Map<OfflinePlayer, Boolean> city_joined = new HashMap<>();//true when commander has joint a city.
-    public static Map<Player, InvOperateEvent.LocSet> loc_setting = new HashMap<>();
+    public static Map<Player, LocSet> loc_setting = new HashMap<>();
     public static Map<Player, Double> double_setting = new HashMap<>();
     public static Map<Player, Integer> int_setting = new HashMap<>();
     public static Map<Player, String> string_setting = new HashMap<>();
