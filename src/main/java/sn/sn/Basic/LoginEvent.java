@@ -4,7 +4,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import sn.sn.City.CityRuntime;
-import sn.sn.Quest.Quest_CE;
+import sn.sn.Quest.Quest;
 
 import static sn.sn.Sn.*;
 
@@ -26,7 +26,7 @@ public class LoginEvent implements Listener {
         new CityRuntime(event.getPlayer()).start();
 
         if(playerquest_yml.contains(event.getPlayer().getName()+".nowquest")){
-            if(Quest_CE.loadQuest(event.getPlayer(),playerquest_yml.getString(event.getPlayer().getName()+".nowquest")))
+            if(Quest.loadQuest(event.getPlayer(),playerquest_yml.getString(event.getPlayer().getName()+".nowquest")))
                 event.getPlayer().sendMessage("你的任务已加载，你可以完成任务辣！");
             else event.getPlayer().sendMessage("你的任务加载失败了，请联系管理员！");
         } else {

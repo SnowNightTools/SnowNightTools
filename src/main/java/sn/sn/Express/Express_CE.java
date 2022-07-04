@@ -14,13 +14,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import sn.sn.Ask.AskSet;
 import sn.sn.Basic.Other;
-import sn.sn.UI.InvOperateEvent;
-import sn.sn.Sn;
 import sn.sn.Basic.SnFileIO;
+import sn.sn.Sn;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Consumer;
 
 import static sn.sn.Sn.*;
 
@@ -82,11 +84,11 @@ import static sn.sn.Sn.*;
 
 
    类：
-        主类: express
+        CE主类: Express_CE
         附属类：InvOperateEvent
 
    方法：
-        private boolean help()
+        private boolean help(Player p)
         向使用者发送信息。
 
 */
@@ -138,7 +140,7 @@ public class Express_CE implements CommandExecutor {
             }
 
             if(args[0].equalsIgnoreCase("sn.set_path")){
-                if (workExpressSetPathCE(args,sender_player)) return false;
+                if (workExpressSetPathCE(sender_player)) return false;
             }
 
             checkExpressPlayerAndFile(sender_player);
@@ -189,19 +191,10 @@ public class Express_CE implements CommandExecutor {
             noPermission("sn.express.show",sender_player);
             return false;
         }
+
         //为玩家创建一个inventory，只在开启和关闭时进行文件操作。
-        show_inv.put(sender_player, Bukkit.createInventory(sender_player,54,ChatColor.BLUE+"雪花速递"));
-
-        //读取文件
-        String str_line = sender.getName() + ".line";
-        int n = Sn.share_yml.getInt(str_line);
-        for(int i=0;i<n;i++){
-            ItemStack temp_stack = SnFileIO.readItemStackFromYml(share_yml, sender.getName() + ".items"+'.'+i);
-            show_inv.get(sender_player).addItem(temp_stack);//添加
-            show_inv.get(sender_player).setItem(i, temp_stack);//设置GUI
-        }
-        InvOperateEvent.show_inv_n_max = n;
-
+        show_inv.put(sender_player,
+                SnFileIO.readInvFromYml(sender_player, sender.getName(), share_yml, ChatColor.BLUE+"雪花速递"));
 
         //打开GUI
         sender_player.openInventory(show_inv.get(sender_player));
@@ -369,54 +362,29 @@ public class Express_CE implements CommandExecutor {
         }
     }
 
-    private boolean workExpressSetPathCE(@NotNull String[] args,Player sender_player) {
+    private boolean workExpressSetPathCE(Player sender_player) {
         if(!sender_player.hasPermission("sn.express.set_path")){
             noPermission("sn.express.set_path",sender_player);
             return true;
         }
-        String path = args[1];
 
-        //检测目录是否有空格
-        int i=2;
-        while(args[i] != null)
-            args[1]= args[1]+' '+ args[i++];
-
-
-        Other.sendInfo("3s后即将设置sharePath，请结束任何速递指令!");
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException ignored) {
-        }
-        Other.sendInfo("你的sharePath即将设置为"+path);
-        config_yml.set("share_path",path);
-        Other.sendInfo("正在寻找目录……");
-
-        try {
-            if(!Sn.share_file.getParentFile().exists()){
-                Other.sendInfo("目录不存在，正在自动创建……");
-                if(Sn.share_file.getParentFile().mkdirs()) Other.sendInfo("创建成功！");
-                else Other.sendInfo("创建失败，请检查文件权限。");
-            } else Other.sendInfo("目录已找到！");
-        } catch (NullPointerException e){
-            Other.sendInfo("你的目录出现错误，请不要在目录中包含空格，或选择手动配置config文件");
-        }
-
-        Other.sendInfo("准备创建文件……");
-        try {
-            if(Sn.share_file.createNewFile()){
-                Other.sendInfo("share_file 重载成功");
+        List<String> q = new ArrayList<>();
+        q.add("请输入share.yml的路径");
+        List<Consumer<String>> d = new ArrayList<>();
+        d.add((str)->{
+            if(!str.endsWith(File.separator)) str = str + File.separator;
+            share_path = str;
+            config_yml.set("share-path",share_path);
+            try {
+                config_yml.save(config_file);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        config_yml.set("share_path_ed","true");
+            Other.sendInfo("完成，请/reload,或重启服务器。");
+        });
 
-        try {
-            config_yml.save(config_file);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        Other.sendInfo("完成，请/reload,或重启服务器。");
+        AskSet.askSetAsync(sender_player,q,d,null,p -> p.sendMessage("设置被打断！"));
+
         return false;
     }
 
@@ -470,12 +438,15 @@ public class Express_CE implements CommandExecutor {
             sender_player.sendMessage(ChatColor.GREEN + "/express send hand 发送手上的物品到快递箱");
             sender_player.sendMessage(ChatColor.GREEN + "/express send box 发送你指向的箱子内的物品到快递箱");
             sender_player.sendMessage(ChatColor.GREEN + "/express show 查看你的快递箱");
+            sender_player.sendMessage(ChatColor.GREEN + "/express reset_state 切换快递使用状态");
+            sender_player.sendMessage(ChatColor.GREEN + "/express clean 删除自己的快递箱");
             sender_player.sendMessage(ChatColor.GREEN + "/express setpath 设置快递箱的服务端文件地址");
             sender_player.sendMessage(ChatColor.GREEN + "/express mes 让后台打印雪花速递的存储地址信息");
         } else {
             sender_player.sendMessage(ChatColor.GREEN + "你可以使用下列命令");
             sender_player.sendMessage(ChatColor.GREEN + "/express send hand 发送手上的物品到快递箱");
             sender_player.sendMessage(ChatColor.GREEN + "/express send box 发送你指向的箱子内的物品到快递箱");
+            sender_player.sendMessage(ChatColor.GREEN + "/express clean 删除自己的快递箱");
             sender_player.sendMessage(ChatColor.GREEN + "/express show 查看你的快递箱并取出你的快递");
         }
         return true;

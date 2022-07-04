@@ -14,10 +14,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Axolotl;
 import org.bukkit.entity.TropicalFish;
-import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemFlag;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.*;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
@@ -1123,5 +1120,17 @@ public class SnFileIO {
             file.createNewFile();
         }
         return file;
+    }
+
+    public static Inventory readInvFromYml(InventoryHolder holder, String path, YamlConfiguration ymlfile, String title) {
+        Inventory temp = Bukkit.createInventory(holder,54,title);
+        String str_line = path + ".line";
+        int n = ymlfile.getInt(str_line);
+        for(int i=0;i<n;i++){
+            ItemStack temp_stack = readItemStackFromYml(ymlfile, path + ".items"+'.'+i);
+            temp.addItem(temp_stack);//添加
+            temp.setItem(i, temp_stack);//设置GUI
+        }
+        return temp;
     }
 }

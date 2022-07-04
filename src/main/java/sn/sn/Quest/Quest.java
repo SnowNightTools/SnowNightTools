@@ -18,6 +18,7 @@ import static sn.sn.Sn.*;
 
 @SerializableAs("SnQuest")
 public class Quest implements Cloneable, ConfigurationSerializable, Serializable {
+
     private int quest_number;
     private String quest_name;
     private QuestPosition questposition = null;
@@ -41,6 +42,92 @@ public class Quest implements Cloneable, ConfigurationSerializable, Serializable
     public Quest(YamlConfiguration ymlfile, String name) {
         quest_name = name;
         quest_number = ymlfile.getInt("Amount");//amount比序号大1，所以不用+1
+    }
+
+    public static Boolean loadQuest(Player player, String name) {
+
+        if(!isQuestExist(name)){
+            player.sendMessage("任务无法找到，请联系管理员！");
+            return false;
+        }
+
+        if(!getQuest(name).isOn()){
+            if(playerquest_yml.contains(player.getName()+".questenable")){
+                player.sendMessage("任务未启动，尝试启动其他任务！");
+                addQuest(player,name);
+                return loadQuest(player,playerquest_yml.getString(player.getName()+".questenable.0"));
+            }
+            player.sendMessage("任务启动失败！");
+            return false;
+        }
+        if(!Objects.requireNonNull(playerquest_yml.getString(player.getName() + ".nowquest")).equalsIgnoreCase(name)) {
+            int amount = playerquest_yml.getInt(player.getName() + "amount");
+            boolean found = false;
+            for (int i = 0; i < amount; i++) {
+                if (Objects.equals(playerquest_yml.getString(player.getName() + ".questenable." + i), name)) {
+                    playerquest_yml.set(player.getName() + ".questenable." + i, playerquest_yml.getString(player.getName() + ".nowquest"));
+                    playerquest_yml.set(player.getName() + ".nowquest", name);
+                    found = true;
+                    break;
+                }
+            }
+            if(!found){
+                player.sendMessage("无法找到任务，请联系管理员！");
+                return false;
+            }
+        }
+
+        QuestRuntime a = new QuestRuntime();
+        a.runTaskAsynchronously(sn);
+        playerquest_yml.set(player.getName()+".nowtaskid",a.getTaskId());
+
+        try {
+            playerquest_yml.save(playerquest_file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    public static Quest getQuest(int id){
+        return quests.get(id);
+    }
+
+    public static void addQuest(Player player, String name){
+        addQuest(player.getName(),name);
+    }
+
+    public static void addQuest(OfflinePlayer player, String name){
+        addQuest(player.getName(),name);
+    }
+
+    public static void addQuest(String playername, String name) {
+        if(isQuestExist(name)){
+            int amount = playerquest_yml.getInt(playername+".enableamount");
+            playerquest_yml.set(playername+".questenable."+amount,name);
+            playerquest_yml.set(playername+".enableamount",amount+1);
+        }
+    }
+
+    public static Boolean isQuestExist(int id){
+        return isQuestExist(getQuest(id).getQuest_name());
+    }
+
+    public static Boolean isQuestExist(String name){
+        return isQuestExist(quest_yml,name);
+    }
+
+    public static Boolean isQuestExist(YamlConfiguration ymlfile, int id){
+        return isQuestExist(quest_yml,getQuest(id).getQuest_name());
+    }
+
+    public static Boolean isQuestExist(YamlConfiguration ymlfile, String name){
+        return ymlfile.contains(name);
+    }
+
+    public static Quest getQuest(String name){
+        int id = quest_yml.getInt("inside."+name);
+        return quests.get(id);
     }
 
     public boolean isOn() {
@@ -79,14 +166,14 @@ public class Quest implements Cloneable, ConfigurationSerializable, Serializable
         Collection<? extends Player> tmp2 = Bukkit.getOnlinePlayers();
         for (OfflinePlayer tmp_player : Bukkit.getOfflinePlayers()) {
             if (playerquest_yml.getString(tmp_player.getName() + ".nowquest", "").equals(quest_name)) {
-                Quest_CE.addQuest(tmp_player, playerquest_yml.getString(tmp_player.getName() + ".nowquest"));
+                addQuest(tmp_player, playerquest_yml.getString(tmp_player.getName() + ".nowquest"));
                 playerquest_yml.set(tmp_player.getName() + ".nowquest", null);
                 playerquest_yml.set(tmp_player.getName() + ".process", null);
             }
         }
         for (Player tmp_player : tmp2) {
             if (playerquest_yml.getString(tmp_player.getName() + ".nowquest", "").equals(quest_name)) {
-                Quest_CE.addQuest(tmp_player, playerquest_yml.getString(tmp_player.getName() + ".nowquest"));
+                addQuest(tmp_player, playerquest_yml.getString(tmp_player.getName() + ".nowquest"));
                 playerquest_yml.set(tmp_player.getName() + ".nowquest", null);
                 playerquest_yml.set(tmp_player.getName() + ".process", null);
             }
@@ -109,11 +196,11 @@ public class Quest implements Cloneable, ConfigurationSerializable, Serializable
         }
 
         if (this.getQuestposition().getChildquest() != null) {
-            Quest_CE.addQuest(winner, this.getQuestposition().getChildquest());
-            Quest_CE.addQuest(winner, this.getQuestposition().getChildquestother1());
-            Quest_CE.addQuest(winner, this.getQuestposition().getChildquestother2());
-            Quest_CE.addQuest(winner, this.getQuestposition().getChildquestother3());
-            Quest_CE.loadQuest(winner, this.getQuestposition().getChildquest());
+            addQuest(winner, this.getQuestposition().getChildquest());
+            addQuest(winner, this.getQuestposition().getChildquestother1());
+            addQuest(winner, this.getQuestposition().getChildquestother2());
+            addQuest(winner, this.getQuestposition().getChildquestother3());
+            loadQuest(winner, this.getQuestposition().getChildquest());
         }
         addDoneQuest(winner, this);
         resetQuestProcess(winner);

@@ -2,6 +2,7 @@ package sn.sn.Quest;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
@@ -149,7 +150,7 @@ public class QuestRuntime extends BukkitRunnable {
     }
 
 
-    private Map<ItemStack,Boolean> getBlockListAndCnt(Player player, double distance, List<ItemStack> itemtocheck){
+    public static Map<ItemStack,Boolean> getBlockListAndCnt(Player player, double distance, List<ItemStack> itemtocheck){
         Map<ItemStack,Boolean> ret = new HashMap<>();
         List<Block> nowblock = getBlockList(player,distance);
         int[] cnt = new int[itemtocheck.size()+5];
@@ -169,31 +170,50 @@ public class QuestRuntime extends BukkitRunnable {
         return ret;
     }
 
-    private List<Block> getBlockList(Player player,double distance) {
+    public static List<Block> getBlockList(Player player,double distance) {
         return getBlockList(player.getWorld(),player.getLocation(),distance);
     }
 
-    private List<Block> getBlockList(World world,Location location,double distance) {
+    public static List<Block> getBlockList(World world,Location location,double distance) {
         Block block = world.getBlockAt(location);
         int x=block.getX(),y=block.getY(),z=block.getZ();
         List<Block> now = new ArrayList<>();
-        return getBlockInDistance(block,distance,x,y,z,now);
-
+        return getBlockInDistance(block,distance,x,y,z,now,new boolean[(int) (3*distance)][(int) (3*distance)][(int) (3*distance)]);
     }
 
-    private List<Block> getBlockInDistance(Block firstblock, double distance, int x, int y, int z, List<Block> now) {
-        if((x- firstblock.getX())*(x- firstblock.getX())+(y- firstblock.getY())*(y- firstblock.getY())+(z- firstblock.getZ())*(z- firstblock.getZ())>distance*distance) {
-            return now;
+    private static List<Block> getBlockInDistance(Block firstblock, double distance, int x, int y, int z, List<Block> now, boolean[][][] k) {
+        double n_d =(x- firstblock.getX())*(x- firstblock.getX())+(y- firstblock.getY())*(y- firstblock.getY())+(z- firstblock.getZ())*(z- firstblock.getZ());
+        if(n_d>distance*distance) {
+            return null;
         }
-        Other.sendDebug("Quest Runtime 5");
-        getBlockInDistance(firstblock,distance,x+1,y,z,now);
-        getBlockInDistance(firstblock,distance,x,y+1,z,now);
-        getBlockInDistance(firstblock,distance,x,y,z+1,now);
-        getBlockInDistance(firstblock,distance,x-1,y,z,now);
-        getBlockInDistance(firstblock,distance,x,y-1,z,now);
-        getBlockInDistance(firstblock,distance,x,y,z-1,now);
+
+        k[(int) (x- firstblock.getX()+distance)][(int) (y- firstblock.getY()+distance)][(int) (z- firstblock.getZ()+distance)] = true;
+
         World noww = firstblock.getWorld();
-        now.add(noww.getBlockAt(x, y, z));
+        Block got = noww.getBlockAt(x, y, z);
+        if(!got.getType().equals(Material.AIR))
+            now.add(got);
+
+        Other.sendDebug("Quest Runtime 5");
+        if (!k[(int) (x+1- firstblock.getX()+distance)][(int) (y- firstblock.getY()+distance)][(int) (z- firstblock.getZ()+distance)]) {
+            getBlockInDistance(firstblock,distance,x+1,y,z,now,k);
+        }
+        if (!k[(int) (x- firstblock.getX()+distance)][(int) (y+1- firstblock.getY()+distance)][(int) (z- firstblock.getZ()+distance)]) {
+            getBlockInDistance(firstblock,distance,x,y+1,z,now,k);
+        }
+        if (!k[(int) (x- firstblock.getX()+distance)][(int) (y- firstblock.getY()+distance)][(int) (z+1- firstblock.getZ()+distance)]) {
+            getBlockInDistance(firstblock,distance,x,y,z+1,now,k);
+        }
+        if (!k[(int) (x-1- firstblock.getX()+distance)][(int) (y- firstblock.getY()+distance)][(int) (z- firstblock.getZ()+distance)]) {
+            getBlockInDistance(firstblock,distance,x-1,y,z,now,k);
+        }
+        if (!k[(int) (x- firstblock.getX()+distance)][(int) (y-1- firstblock.getY()+distance)][(int) (z- firstblock.getZ()+distance)]) {
+            getBlockInDistance(firstblock,distance,x,y-1,z,now,k);
+        }
+        if (!k[(int) (x- firstblock.getX()+distance)][(int) (y- firstblock.getY()+distance)][(int) (z-1- firstblock.getZ()+distance)]) {
+            getBlockInDistance(firstblock,distance,x,y,z-1,now,k);
+        }
+
         return now;
     }
 }

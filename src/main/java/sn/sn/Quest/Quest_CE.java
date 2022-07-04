@@ -1,6 +1,7 @@
 package sn.sn.Quest;
 
 import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -9,12 +10,9 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import sn.sn.Basic.Other;
-import sn.sn.Sn;
 
-import java.io.IOException;
 import java.util.*;
 
 import static sn.sn.UI.OpenUI.openQuestSettingUI;
@@ -219,91 +217,6 @@ public class Quest_CE implements CommandExecutor {
 
 
     public Player questPlayer;
-    static Plugin Snplugin = Sn.getPlugin(Sn.class);
-
-    public static Boolean loadQuest(Player player, String name) {
-
-        if(!isQuestExist(name)){
-            player.sendMessage("任务无法找到，请联系管理员！");
-            return false;
-        }
-
-        if(!getQuest(name).isOn()){
-            if(playerquest_yml.contains(player.getName()+".questenable")){
-                player.sendMessage("任务未启动，尝试启动其他任务！");
-                addQuest(player,name);
-                return loadQuest(player,playerquest_yml.getString(player.getName()+".questenable.0"));
-            }
-            player.sendMessage("任务启动失败！");
-            return false;
-        }
-        if(!Objects.requireNonNull(playerquest_yml.getString(player.getName() + ".nowquest")).equalsIgnoreCase(name)) {
-            int amount = playerquest_yml.getInt(player.getName() + "amount");
-            boolean found = false;
-            for (int i = 0; i < amount; i++) {
-                if (Objects.equals(playerquest_yml.getString(player.getName() + ".questenable." + i), name)) {
-                    playerquest_yml.set(player.getName() + ".questenable." + i, playerquest_yml.getString(player.getName() + ".nowquest"));
-                    playerquest_yml.set(player.getName() + ".nowquest", name);
-                    found = true;
-                    break;
-                }
-            }
-            if(!found){
-                player.sendMessage("无法找到任务，请联系管理员！");
-                return false;
-            }
-        }
-
-        QuestRuntime a = new QuestRuntime();
-        a.runTaskAsynchronously(Snplugin);
-        playerquest_yml.set(player.getName()+".nowtaskid",a.getTaskId());
-
-        try {
-            playerquest_yml.save(playerquest_file);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return true;
-    }
-
-    public static Quest getQuest(int id){
-        return quests.get(id);
-    }
-
-    public static void addQuest(Player player, String name){
-        addQuest(player.getName(),name);
-    }
-    public static void addQuest(OfflinePlayer player, String name){
-        addQuest(player.getName(),name);
-    }
-    public static void addQuest(String playername, String name) {
-        if(isQuestExist(name)){
-            int amount = playerquest_yml.getInt(playername+".enableamount");
-            playerquest_yml.set(playername+".questenable."+amount,name);
-            playerquest_yml.set(playername+".enableamount",amount+1);
-        }
-    }
-
-    public static Boolean isQuestExist(int id){
-        return isQuestExist(getQuest(id).getQuest_name());
-    }
-
-    public static Boolean isQuestExist(String name){
-        return isQuestExist(quest_yml,name);
-    }
-
-    public static Boolean isQuestExist(YamlConfiguration ymlfile,int id){
-        return isQuestExist(quest_yml,getQuest(id).getQuest_name());
-    }
-
-    public static Boolean isQuestExist(YamlConfiguration ymlfile, String name){
-        return ymlfile.contains(name);
-    }
-
-    public static Quest getQuest(String name){
-        int id = quest_yml.getInt("inside."+name);
-        return quests.get(id);
-    }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, String label,@NotNull String[] args) {
@@ -319,6 +232,21 @@ public class Quest_CE implements CommandExecutor {
             questPlayer = (Player)sender;
         } else {
             Other.sendInfo("玩家信息异常，请联系管理员。");
+            return true;
+        }
+
+        if(args[0].equals("test")){
+            List<Block> blockList = QuestRuntime.getBlockList(questPlayer.getWorld(), questPlayer.getLocation(), 10);
+            int index = 0;
+            for (Block block : blockList) {
+                questPlayer.sendMessage("--------------------------------");
+                questPlayer.sendMessage("index:" +index++);
+                questPlayer.sendMessage("block:" +block.getType());
+                questPlayer.sendMessage("state:" +block.getState());
+                questPlayer.sendMessage("loc:" +block.getLocation());
+                questPlayer.sendMessage("tem:" +block.getTemperature());
+                questPlayer.sendMessage("--------------------------------");
+            }
             return true;
         }
 
@@ -401,7 +329,7 @@ public class Quest_CE implements CommandExecutor {
         if(playerquest_yml.getBoolean(questPlayer.getName()+".rewarding",false)){
             playerquest_yml.set(questPlayer.getName()+".rewarding",null);
             String name = playerquest_yml.getString(questPlayer.getName()+".nowquest");
-            getQuest(name).succeed(questPlayer);
+            Quest.getQuest(name).succeed(questPlayer);
         }else questPlayer.sendMessage("你没有需要领取的奖励！");
         return true;
     }
@@ -415,7 +343,7 @@ public class Quest_CE implements CommandExecutor {
         int index = Integer.parseInt(args[1]);
         if(index>=0&&index<=amount){
             String questname = playerquest_yml.getString(questPlayer.getName() + ".questenable." + index);
-            if(!loadQuest(questPlayer,questname)){
+            if(!Quest.loadQuest(questPlayer,questname)){
                 questPlayer.sendMessage("任务选择失败！");
                 return false;
             } else return true;
@@ -473,7 +401,7 @@ public class Quest_CE implements CommandExecutor {
             show(nowquestname, questPlayer);
         }
         if(args[1].equalsIgnoreCase("other")) {
-            if(isQuestExist(args[2])) show(args[2], questPlayer);
+            if(Quest.isQuestExist(args[2])) show(args[2], questPlayer);
             else questPlayer.sendMessage("任务不存在！");
         }
     }
@@ -493,8 +421,8 @@ public class Quest_CE implements CommandExecutor {
     private void show(YamlConfiguration ymlfile, String name, Player player){
         switch (ymlfile.getInt(name+".type")){
             case 1:
-                if(isQuestExist(name)){
-                    Quest a = getQuest(name);
+                if(Quest.isQuestExist(name)){
+                    Quest a = Quest.getQuest(name);
                     player.sendMessage(ChatColor.GREEN+"任务名："+a.getQuest_name());
                     player.sendMessage(ChatColor.GREEN+"任务编号："+a.getQuest_number());
                     player.sendMessage(ChatColor.GREEN+"父任务："+a.getQuestposition().getParentquest());

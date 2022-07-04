@@ -29,7 +29,7 @@ import java.util.*;
 import java.util.function.Consumer;
 
 import static sn.sn.City.City_CE.workCityWarp;
-import static sn.sn.Quest.Quest_CE.getQuest;
+import static sn.sn.Quest.Quest.getQuest;
 import static sn.sn.Sn.*;
 
 
@@ -56,7 +56,6 @@ public class InvOperateEvent implements Listener {
     public static final ItemStack cancel = new ItemStack(Material.BARRIER);
     public static final ItemStack confirm = new ItemStack(Material.EMERALD);
     public static final ItemStack pg_dn = new ItemStack(Material.WRITABLE_BOOK);
-    public static int show_inv_n_max = 0;
 
     public InvOperateEvent(){
         ItemMeta confirm_meta = confirm.getItemMeta();
