@@ -204,12 +204,15 @@ public class QuestRuntime extends BukkitRunnable {
         if (!k[(int) (x- firstblock.getX()+distance)][(int) (y- firstblock.getY()+distance)][(int) (z+1- firstblock.getZ()+distance)]) {
             getBlockInDistance(firstblock,distance,x,y,z+1,now,k);
         }
+        if((int) (x-1- firstblock.getX()+distance)>=0)
         if (!k[(int) (x-1- firstblock.getX()+distance)][(int) (y- firstblock.getY()+distance)][(int) (z- firstblock.getZ()+distance)]) {
             getBlockInDistance(firstblock,distance,x-1,y,z,now,k);
         }
+        if((int) (y-1- firstblock.getY()+distance)>=0)
         if (!k[(int) (x- firstblock.getX()+distance)][(int) (y-1- firstblock.getY()+distance)][(int) (z- firstblock.getZ()+distance)]) {
             getBlockInDistance(firstblock,distance,x,y-1,z,now,k);
         }
+        if((int) (z-1- firstblock.getZ()+distance)>=0)
         if (!k[(int) (x- firstblock.getX()+distance)][(int) (y- firstblock.getY()+distance)][(int) (z-1- firstblock.getZ()+distance)]) {
             getBlockInDistance(firstblock,distance,x,y,z-1,now,k);
         }
