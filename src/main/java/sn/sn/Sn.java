@@ -91,7 +91,6 @@ public class Sn extends JavaPlugin {
 
     public static double tps;
 
-
     @Override
     public void onDisable() {
 
