@@ -163,7 +163,7 @@ public class Sn extends JavaPlugin {
             if(config_yml.contains("debug"))break;
         }
 
-        boolean sharepathed = config_yml.getBoolean("share-path-ed",false);
+
         debug = config_yml.getBoolean("debug",false);
         eco_use_vault = config_yml.getBoolean("vault",false);
 
