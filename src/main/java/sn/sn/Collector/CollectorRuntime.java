@@ -1,6 +1,7 @@
 package sn.sn.Collector;
 
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
@@ -10,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import sn.sn.Basic.Other;
+import sn.sn.Basic.SayToEveryoneThread;
 import sn.sn.Range.Range;
 
 import java.util.ArrayList;
@@ -24,6 +26,28 @@ public class CollectorRuntime implements Runnable {
     final Entity entity;
     public CollectorRuntime (Entity entity){
         this.entity = entity;
+    }
+
+    public static void runCollector(boolean once) {
+        Runnable clean = () -> {
+            Other.sendInfo("开始收集物品！");
+            rubbishes = new ArrayList<>();
+            for (World world : Bukkit.getWorlds()) {
+                for (Entity entity : world.getEntities()) {
+                    CollectorRuntime cr = new CollectorRuntime(entity);
+                    Bukkit.getScheduler().runTask(sn,cr);
+                }
+            }
+            new CollectorThrowThread().start();
+            Other.sendInfo("物品收集结束！");
+        };
+        if(once){
+            Bukkit.getScheduler().runTask(sn,()-> new SayToEveryoneThread("扫地即将开始！").start());
+            Bukkit.getScheduler().runTaskLater(sn, clean,200);
+        } else {
+            Bukkit.getScheduler().scheduleSyncRepeatingTask(sn,()-> new SayToEveryoneThread("扫地即将开始！").start(),0,36000);
+            Bukkit.getScheduler().scheduleSyncRepeatingTask(sn, clean,200,36000);
+        }
     }
 
     @Override

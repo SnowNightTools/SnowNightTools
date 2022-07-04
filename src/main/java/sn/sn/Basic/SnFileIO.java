@@ -235,7 +235,7 @@ public class SnFileIO {
         if(ymlfile.contains(path+".meta.enchant")) {
             int i=0;
             while (ymlfile.contains(path+".meta.enchant."+i)){
-                Sn.EnchantPair tempenp = new Sn.EnchantPair(Objects.requireNonNull(ymlfile.getString(path + ".meta.enchant." + i)));
+                Other.EnchantPair tempenp = new Other.EnchantPair(Objects.requireNonNull(ymlfile.getString(path + ".meta.enchant." + i)));
                 assert tmpmeta != null;
                 tmpmeta.addEnchant(tempenp.getA(),tempenp.getB(),true);
                 ++i;
@@ -1114,5 +1114,14 @@ public class SnFileIO {
         }
 
         return temp;
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public static File checkFile(String path) throws IOException {
+        File file = new File(path);
+        while (!file.exists()) {
+            file.createNewFile();
+        }
+        return file;
     }
 }

@@ -196,7 +196,7 @@ public class Collector_CE implements CommandExecutor {
     }
 
     private boolean runCollectorNow(@NotNull CommandSender sender) {
-        runCollector(true);
+        CollectorRuntime.runCollector(true);
         sender.sendMessage("开始准备扫地！");
         return true;
     }

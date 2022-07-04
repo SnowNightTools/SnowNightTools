@@ -4,7 +4,9 @@ import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import sn.sn.Sn;
 
@@ -71,5 +73,24 @@ public class Other {
             Sn.eco_system_set = true;
             return true;
         } else return false;
+    }
+
+    public static class EnchantPair {
+        Enchantment a;
+        int b;
+
+        public EnchantPair(String data){
+            int index = data.indexOf(' ');
+            a = Enchantment.getByKey(NamespacedKey.minecraft(data.substring(0,index)));
+            b = Integer.parseInt(data.substring(index+1));
+        }
+
+        public Enchantment getA() {
+            return a;
+        }
+
+        public int getB() {
+            return b;
+        }
     }
 }

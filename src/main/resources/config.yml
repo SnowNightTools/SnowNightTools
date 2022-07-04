@@ -1,9 +1,16 @@
+
+
 share-path: 'E:\\Mc server\'
 share-path-ed: true
+
 playerquest-path: 'E:\\Mc server\'
 playerquest-path-ed: true
+
 quest-path: 'E:\\Mc server\'
 quest-path-ed: true
+
 login-load: true
+
 debug: true
+
 vault: true

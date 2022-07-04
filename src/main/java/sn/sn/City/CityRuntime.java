@@ -3,7 +3,6 @@ package sn.sn.City;
 import org.bukkit.entity.Player;
 import sn.sn.Range.Range;
 
-import static sn.sn.Basic.Other.sendDebug;
 import static sn.sn.Sn.*;
 
 public class CityRuntime extends Thread{
@@ -18,7 +17,6 @@ public class CityRuntime extends Thread{
         while (true){
 
             try {
-                sendDebug("tps = "+ tps);
                 if(tps<5) sleep(2500);
                 else if(tps<10) sleep(1000);
                 else if(tps<15) sleep(500);

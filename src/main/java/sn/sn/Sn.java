@@ -2,23 +2,21 @@ package sn.sn;
 
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 import sn.sn.Basic.*;
 import sn.sn.City.City;
 import sn.sn.City.City_CE;
 import sn.sn.Collector.Collector;
 import sn.sn.Collector.CollectorRuntime;
-import sn.sn.Collector.CollectorThrowThread;
 import sn.sn.Collector.Collector_CE;
 import sn.sn.Express.Express_CE;
 import sn.sn.Quest.*;
@@ -54,6 +52,7 @@ public class Sn extends JavaPlugin {
     public static YamlConfiguration quest_yml;
     public static YamlConfiguration playerquest_yml;
     public static YamlConfiguration collector_yml;
+    public static String share_path, quest_path, playerquest_path, plugin_path;
 
     public static Map<Player, Location> start_point = new HashMap<>();
     public static Map<Player, Location> end_point = new HashMap<>();
@@ -80,45 +79,18 @@ public class Sn extends JavaPlugin {
     public static boolean eco_use_vault = true;
     public static boolean debug = true;
 
-    public static String plugin_path;
-    public static String share_path;
-
     public static Permission sn_perm;
     public static Economy sn_economy;
 
     public static List<ItemStack> rubbishes;
     public static List<Quest> quests = new ArrayList<>();
     public static Map<String, City> cities = new HashMap<>();
-
     public static List<String> bins;
     public static List<String> collector_names = new ArrayList<>();
     public static List<String> city_names = new ArrayList<>();
 
-    public String share_Path,quest_Path,playerquest_Path;
+    public static double tps;
 
-    public static double tps = 100;
-
-    public static void runCollector(boolean once) {
-        Runnable clean = () -> {
-            Other.sendInfo("开始收集物品！");
-            rubbishes = new ArrayList<>();
-            for (World world : Bukkit.getWorlds()) {
-                for (Entity entity : world.getEntities()) {
-                    CollectorRuntime cr = new CollectorRuntime(entity);
-                    Bukkit.getScheduler().runTask(sn,cr);
-                }
-            }
-            new CollectorThrowThread().start();
-            Other.sendInfo("物品收集结束！");
-        };
-        if(once){
-            Bukkit.getScheduler().runTask(sn,()-> new SayToEveryoneThread("扫地即将开始！").start());
-            Bukkit.getScheduler().runTaskLater(sn, clean,200);
-        } else {
-            Bukkit.getScheduler().scheduleSyncRepeatingTask(sn,()-> new SayToEveryoneThread("扫地即将开始！").start(),0,36000);
-            Bukkit.getScheduler().scheduleSyncRepeatingTask(sn, clean,200,36000);
-        }
-    }
 
     @Override
     public void onDisable() {
@@ -174,64 +146,56 @@ public class Sn extends JavaPlugin {
         registerClass(QuestActionData.class);
 
 
-        config_file = new File(data_folder.getAbsolutePath()+ "\\config.yml");
-        Other.sendInfo(data_folder.getAbsolutePath()+ "\\config.yml");
+        config_file = new File(data_folder.getAbsolutePath()+ File.separator + "config.yml");
+        Other.sendInfo(data_folder.getAbsolutePath()+ File.separator +"config.yml");
 
         int brkcnt1 = 1 ;
         while (true) {
-            Other.sendDebug("尝试寻找config 第"+brkcnt1+"次，会尝试5次。");
+            saveDefaultConfig();
 
-            config_file = new File(data_folder.getAbsolutePath()+ "\\config.yml");
+            Other.sendDebug("尝试寻找config 第"+brkcnt1+"次，会尝试5次。");
+            config_file = new File(data_folder.getAbsolutePath() + File.separator + "config.yml");
             brkcnt1 ++;
             if(brkcnt1 >= 5) {
-                sendError("config配置错误");
+                sendError("config为空文件，请配置雪夜插件的config文件！");
                 break;
             }
             config_yml = YamlConfiguration.loadConfiguration(config_file);
-            if(config_yml.contains("share-path"))break;
-            getConfig().options().copyDefaults();
-            saveDefaultConfig();
+            if(config_yml.contains("debug"))break;
         }
-        saveConfig();
 
         boolean sharepathed = config_yml.getBoolean("share-path-ed",false);
         debug = config_yml.getBoolean("debug",false);
         eco_use_vault = config_yml.getBoolean("vault",false);
 
-        if(sharepathed){
-            //如果已经设置过地址，默认文件已经创造。
-            share_Path = config_yml.getString("share-path");
-            try {
-                Sn.share_file = new File(share_Path + "share.yml");
-                Sn.share_yml = YamlConfiguration.loadConfiguration(Sn.share_file);
-            } catch (NullPointerException e){
-                Other.sendInfo("share.yml读取失败！ 请重新设置或者手动创建文件!");
-            }
-        } else {
-            Other.sendInfo("share.yml文件加载失败，请使用/express setpath [sharePath]为它添加地址，并使用/reload重载插件！");
-        }
 
+        share_path = config_yml.getString("share-path");
+        quest_path = config_yml.getString("quest-path");
+        playerquest_path = config_yml.getString("playerquest-path");
 
-        quest_Path = config_yml.getString("quest-path");
-        playerquest_Path = config_yml.getString("playerquest-path");
-
-        Other.sendInfo("quest_path=" + quest_Path);
-        Other.sendInfo("playerquest_Path=" + playerquest_Path);
+        Other.sendInfo("share_path=" + share_path);
+        Other.sendInfo("quest_path=" + quest_path);
+        Other.sendInfo("playerquest_path=" + playerquest_path);
 
 
         try {
-            city_file = new File(data_folder,"city.yml");
+
             collector_file = new File(data_folder,"collector.yml");
             //noinspection ResultOfMethodCallIgnored
             collector_file.createNewFile();
+
+            city_file = new File(data_folder,"city.yml");
             //noinspection ResultOfMethodCallIgnored
             city_file.createNewFile();
+
             bin_file = new File(data_folder,"bins.yml");
             //noinspection ResultOfMethodCallIgnored
             bin_file.createNewFile();
 
-            quest_file = checkFile(quest_Path + "quest.yml");
-            playerquest_file = checkFile(playerquest_Path + "playerquest.yml");
+            quest_file = SnFileIO.checkFile(quest_path + "quest.yml");
+            playerquest_file = SnFileIO.checkFile(playerquest_path + "playerquest.yml");
+            share_file = SnFileIO.checkFile(share_path + "share.yml");
+
         } catch (IOException e) {
             sendError(e.getLocalizedMessage());
         }
@@ -251,7 +215,7 @@ public class Sn extends JavaPlugin {
         loadBin();
 
         //load cities
-        loadCity();
+        loadCities();
 
         if(eco_use_vault)
             if(!Other.initVault()) Other.sendInfo("vault插件挂钩失败，请检查vault插件和经济、权限插件！");
@@ -259,17 +223,13 @@ public class Sn extends JavaPlugin {
         else eco_system_set = true;
 
         //Run the main threads
+        new QuestRuntime().runTaskTimerAsynchronously(this,0L,200L);
 
-        BukkitRunnable nt = new QuestRuntime();
-        nt.runTaskTimerAsynchronously(this,0L,200L);
+        CollectorRuntime.runCollector(false);
 
-        runCollector(false);
-        Bukkit.getScheduler().runTaskTimerAsynchronously(this,()->{
-            AutoSave as = new AutoSave();
-            as.start();
-        },0,72000);
+        Bukkit.getScheduler().runTaskTimerAsynchronously(this, new AutoSave()::start,0,72000);
 
-        Bukkit.getScheduler().runTaskTimerAsynchronously(this,()-> tps = getTPS(),0,20);
+        Bukkit.getScheduler().runTaskTimerAsynchronously(this,()-> getTPS(),0,20);
 
         Bukkit.getPluginManager().registerEvents(new LoginEvent(), this);
         Bukkit.getPluginManager().registerEvents(new RangeSelector(), this);
@@ -284,7 +244,7 @@ public class Sn extends JavaPlugin {
         Other.sendInfo("雪夜插件已加载~");
     }
 
-    private void loadCity() {
+    private void loadCities() {
         cities = new HashMap<>();
         city_names = new ArrayList<>();
         int n = city_yml.getInt("amount",0);
@@ -323,34 +283,6 @@ public class Sn extends JavaPlugin {
                     Other.sendInfo("警告！ 在加载"+questname+"时出现错误！");
                 }
             }
-        }
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    private File checkFile(String path) throws IOException {
-        File file = new File(path);
-        while (!file.exists()) {
-            file.createNewFile();
-        }
-        return file;
-    }
-
-    public static class EnchantPair {
-        Enchantment a;
-        int b;
-
-        public EnchantPair(String data){
-            int index = data.indexOf(' ');
-            a = Enchantment.getByKey(NamespacedKey.minecraft(data.substring(0,index)));
-            b = Integer.parseInt(data.substring(index+1));
-        }
-
-        public Enchantment getA() {
-            return a;
-        }
-
-        public int getB() {
-            return b;
         }
     }
 
