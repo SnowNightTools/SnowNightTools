@@ -90,7 +90,7 @@ public class Sn extends JavaPlugin {
     public static List<String> city_names = new ArrayList<>();
 
     public static double tps;
-
+    //测试
     @Override
     public void onDisable() {
 
