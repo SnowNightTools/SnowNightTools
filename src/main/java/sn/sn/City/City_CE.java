@@ -438,7 +438,7 @@ public class City_CE implements CommandExecutor {
         city.setMayor(commander.getUniqueId());
         city_joined.put(commander,true);
         cities.put(args[1],city);
-        commander.sendMessage(ChatColor.GREEN+"城市已经登记了！快去找两个小伙伴来激活这个城市吧！");
+        commander.sendMessage(ChatColor.GREEN+"城市已经登记了！快去找两个小伙伴来基活这个城市吧！");
         return true;
     }
 

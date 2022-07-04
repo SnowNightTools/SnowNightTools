@@ -145,8 +145,8 @@ public class Sn extends JavaPlugin {
         registerClass(QuestActionData.class);
 
 
-        config_file = new File(data_folder.getAbsolutePath()+ File.separator + "config.yml");
-        Other.sendInfo(data_folder.getAbsolutePath()+ File.separator +"config.yml");
+        config_file = new File(data_folder.getAbsolutePath() + File.separator + "config.yml");
+        Other.sendInfo(data_folder.getAbsolutePath() + File.separator + "config.yml");
 
         int brkcnt1 = 1 ;
         while (true) {
@@ -270,6 +270,9 @@ public class Sn extends JavaPlugin {
         }
     }
 
+    /**
+     * loadQuests可以把任务从文件中加载出来
+     */
     private void loadQuests() {
         quests = new ArrayList<>();
         int n = quest_yml.getInt("Amount");
