@@ -237,17 +237,22 @@ public class Quest_CE implements CommandExecutor {
 
         if(args[0].equals("test")){
             new Thread(() -> {
-                List<Block> blockList = QuestRuntime.getBlockList(questPlayer.getWorld(), questPlayer.getLocation(), 10);
+                List<Block> blockList = QuestRuntime.getBlockListOnGround(questPlayer.getLocation(), Double.parseDouble(args[1]));
                 int index = 0;
+                if(blockList!=null)
                 for (Block block : blockList) {
                     questPlayer.sendMessage("--------------------------------");
-                    questPlayer.sendMessage("index:" +index++);
-                    questPlayer.sendMessage("block:" +block.getType());
-                    questPlayer.sendMessage("state:" +block.getState());
-                    questPlayer.sendMessage("loc:" +block.getLocation());
-                    questPlayer.sendMessage("tem:" +block.getTemperature());
+                    try {
+                        questPlayer.sendMessage("index:" +index++);
+                        questPlayer.sendMessage("block:" +block.getType());
+                        questPlayer.sendMessage("state:" +block.getState());
+                        questPlayer.sendMessage("loc:" +block.getLocation());
+                        questPlayer.sendMessage("tem:" +block.getTemperature());
+                    } catch (Exception ignored) {
+                    }
                     questPlayer.sendMessage("--------------------------------");
                 }
+                else Other.sendDebug("Test false");
             }).start();
             return true;
         }
@@ -438,21 +443,21 @@ public class Quest_CE implements CommandExecutor {
                     List<QuestAction> tempqa = a.getQuestAcceptCondition();
                     for (int i = 0; i < a.getQuestAcceptConditionAmount(); i++) {
                         player.sendMessage(ChatColor.WHITE + "操作"+(i+1)+"：");
-                        show(ymlfile, tempqa.get(i).getQuestactionname(),player);
+                        show(ymlfile, tempqa.get(i).getQuest_action_name(),player);
                     }
                 } else player.sendMessage("查询失败~");
                 break;
             case 3:
                 QuestAction a = new QuestAction();
                 a.readQaFromYml(ymlfile, name);
-                switch (a.getQuestactiontype()){
+                switch (a.getQuest_action_type()){
                     case BUILD:
                         player.sendMessage(ChatColor.GREEN+"这个操作是一个建筑操作，请按照任务描述进行建筑~");
                         ymlfile.set(player.getName()+".check",false);
                         break;
                     case COLLECT:
                         player.sendMessage(ChatColor.GREEN+"这个操作是一个收集操作，你需要收集以下物品：");
-                        List<ItemStack> b = a.getQuestactiondata().getQuesttargetitem();
+                        List<ItemStack> b = a.getQuest_action_data().getQuesttargetitem();
                         for (ItemStack stack : b) {
                             player.sendMessage(ChatColor.WHITE + stack.toString());
                         }
@@ -460,7 +465,7 @@ public class Quest_CE implements CommandExecutor {
                         break;
                     case CRUSADE:
                         player.sendMessage(ChatColor.GREEN+"这个操作是一个讨伐操作，你需要讨伐以下怪物：");
-                        Map<EntityType,Integer> c = a.getQuestactiondata().getQuesttargetentity();
+                        Map<EntityType,Integer> c = a.getQuest_action_data().getQuesttargetentity();
                         for (EntityType key:c.keySet()) {
                             player.sendMessage(ChatColor.WHITE+key.getKey().getKey().toLowerCase()+" 数量："+c.get(key));
                         }
@@ -468,20 +473,20 @@ public class Quest_CE implements CommandExecutor {
                         break;
                     case FIND_NPC:
                         player.sendMessage(ChatColor.GREEN+"这个操作是一个寻找操作，你需要找到以下NPC：");
-                        Entity d= Bukkit.getEntity(a.getQuestactiondata().getQuesttargetnpc());
+                        Entity d= Bukkit.getEntity(a.getQuest_action_data().getQuesttargetnpc());
                         assert d != null;
                         player.sendMessage(ChatColor.WHITE+"它叫"+d.getName());
                         ymlfile.set(player.getName()+".check",true);
                         break;
                     case FIND_ITEM:
                         player.sendMessage(ChatColor.GREEN+"这个操作是一个寻找操作，你需要找到这个物品：");
-                        ItemStack f = a.getQuestactiondata().getQuesttargetitem().get(0);
+                        ItemStack f = a.getQuest_action_data().getQuesttargetitem().get(0);
                         player.sendMessage(ChatColor.WHITE+f.toString());
                         ymlfile.set(player.getName()+".check",true);
                         break;
                     case HUSBANDRY:
                         player.sendMessage(ChatColor.GREEN+"这个操作是一个养小动物的操作，你的身边需要有以下小动物：");
-                        Map<EntityType,Integer> e = a.getQuestactiondata().getQuesttargetentity();
+                        Map<EntityType,Integer> e = a.getQuest_action_data().getQuesttargetentity();
                         for (EntityType key:e.keySet()) {
                             player.sendMessage(ChatColor.WHITE+key.getKey().getKey().toLowerCase()+" 数量："+e.get(key));
                         }
@@ -489,7 +494,7 @@ public class Quest_CE implements CommandExecutor {
                         break;
                     case AGRICULTURE:
                         player.sendMessage(ChatColor.GREEN+"这个操作是一个种植操作，你的身边需要出现下列作物：");
-                        List<ItemStack> g = a.getQuestactiondata().getQuesttargetitem();
+                        List<ItemStack> g = a.getQuest_action_data().getQuesttargetitem();
                         for (ItemStack itemStack : g) {
                             player.sendMessage(ChatColor.WHITE + itemStack.toString());
                         }
@@ -497,7 +502,7 @@ public class Quest_CE implements CommandExecutor {
                         break;
                     case FIND_POSITION:
                         player.sendMessage(ChatColor.GREEN+"这个操作是一个寻找操作，你需要找到这个坐标：");
-                        player.sendMessage(ChatColor.WHITE+"["+a.getQuestactiondata().getTargetpositionx()+','+a.getQuestactiondata().getTargetpositiony()+','+a.getQuestactiondata().getTargetpositionz()+']');
+                        player.sendMessage(ChatColor.WHITE+"["+a.getQuest_action_data().getTargetpositionx()+','+a.getQuest_action_data().getTargetpositiony()+','+a.getQuest_action_data().getTargetpositionz()+']');
                         ymlfile.set(player.getName()+".check",true);
                         break;
                     case ACCOMPLISHMENT:

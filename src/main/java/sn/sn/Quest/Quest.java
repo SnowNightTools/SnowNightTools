@@ -363,12 +363,12 @@ public class Quest implements Cloneable, ConfigurationSerializable, Serializable
             ymlfile.set(quest_name + ".property-set.questdescription." + i, quest_description.get(i));
         }
         for (int i = 0; i < quest_accept_condition_amount; i++) {
-            ymlfile.set(quest_name + ".property-inherit.questacceptcondition." + i, quest_accept_condition.get(i).getQuestactionname());
+            ymlfile.set(quest_name + ".property-inherit.questacceptcondition." + i, quest_accept_condition.get(i).getQuest_action_name());
             quest_accept_condition.get(i).saveQaToYml(ymlfile);
         }
 
         for (int i = 0; i < quest_target_amount; i++) {
-            ymlfile.set(quest_name + ".property-inherit.questtarget." + i, quest_target.get(i).getQuestactionname());
+            ymlfile.set(quest_name + ".property-inherit.questtarget." + i, quest_target.get(i).getQuest_action_name());
             quest_target.get(i).saveQaToYml(ymlfile);
         }
 

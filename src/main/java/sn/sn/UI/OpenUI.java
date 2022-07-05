@@ -199,30 +199,30 @@ public class OpenUI {
         Inventory tmpacui = Bukkit.createInventory(commander,18,ChatColor.GREEN+"创建一个任务条件");
         int i = 0;
         for (QuestActionType value : QuestActionType.values()) {
-            tmpacui.setItem(i++, getItem("PAPER",value.getKey().getKey(),null, quest_action_setting.get(commander).getQuestactiontype().getKey() == (value).getKey()));
+            tmpacui.setItem(i++, getItem("PAPER",value.getKey().getKey(),null, quest_action_setting.get(commander).getQuest_action_type().getKey() == (value).getKey()));
         }
         List<String> a = new ArrayList<>();
-        if(!quest_action_setting.get(commander).getQuestactiondata().getQuesttargetitem().isEmpty())
-            for (ItemStack itemStack : quest_action_setting.get(commander).getQuestactiondata().getQuesttargetitem()) {
+        if(!quest_action_setting.get(commander).getQuest_action_data().getQuesttargetitem().isEmpty())
+            for (ItemStack itemStack : quest_action_setting.get(commander).getQuest_action_data().getQuesttargetitem()) {
                 a.add(itemStack.serialize().toString());
             }
-        tmpacui.setItem(9, getItem("GRASS","设置物品信息",a,!quest_action_setting.get(commander).getQuestactiondata().getQuesttargetitem().isEmpty()));
+        tmpacui.setItem(9, getItem("GRASS","设置物品信息",a,!quest_action_setting.get(commander).getQuest_action_data().getQuesttargetitem().isEmpty()));
         a.clear();
-        if(!quest_action_setting.get(commander).getQuestactiondata().getQuesttargetentity().isEmpty())
-            for (EntityType key : quest_action_setting.get(commander).getQuestactiondata().getQuesttargetentity().keySet()) {
-                a.add(key.name()+' '+ quest_action_setting.get(commander).getQuestactiondata().getQuesttargetentity().get(key));
+        if(!quest_action_setting.get(commander).getQuest_action_data().getQuesttargetentity().isEmpty())
+            for (EntityType key : quest_action_setting.get(commander).getQuest_action_data().getQuesttargetentity().keySet()) {
+                a.add(key.name()+' '+ quest_action_setting.get(commander).getQuest_action_data().getQuesttargetentity().get(key));
             }
-        tmpacui.setItem(10, getItem("SPAWNER","设置实体信息",a,!quest_action_setting.get(commander).getQuestactiondata().getQuesttargetentity().isEmpty()));
+        tmpacui.setItem(10, getItem("SPAWNER","设置实体信息",a,!quest_action_setting.get(commander).getQuest_action_data().getQuesttargetentity().isEmpty()));
 
-        tmpacui.setItem(11, getItem("VILLAGER_SPAWN_EGG","设置npc信息",null, quest_action_setting.get(commander).getQuestactiondata().getQuesttargetnpc()!=null));
+        tmpacui.setItem(11, getItem("VILLAGER_SPAWN_EGG","设置npc信息",null, quest_action_setting.get(commander).getQuest_action_data().getQuesttargetnpc()!=null));
 
         a.clear();
-        if(quest_action_setting.get(commander).getQuestactiondata().getTargetlocation()!=null)
-        a.add(quest_action_setting.get(commander).getQuestactiondata().getTargetlocation().toString());
-        tmpacui.setItem(12, getItem("COMPASS","设置位置信息",a,!quest_action_setting.get(commander).getQuestactiondata().isLocSet()));
+        if(quest_action_setting.get(commander).getQuest_action_data().getTargetlocation()!=null)
+        a.add(quest_action_setting.get(commander).getQuest_action_data().getTargetlocation().toString());
+        tmpacui.setItem(12, getItem("COMPASS","设置位置信息",a,!quest_action_setting.get(commander).getQuest_action_data().isLocSet()));
         a.clear();
-        a.add(String.valueOf(quest_action_setting.get(commander).getQuestactiondata().getQuesttimelimit()));
-        tmpacui.setItem(13, getItem("CLOCK","设置时间限制",a, quest_action_setting.get(commander).getQuestactiondata().getQuesttimelimit()!=-1));
+        a.add(String.valueOf(quest_action_setting.get(commander).getQuest_action_data().getQuesttimelimit()));
+        tmpacui.setItem(13, getItem("CLOCK","设置时间限制",a, quest_action_setting.get(commander).getQuest_action_data().getQuesttimelimit()!=-1));
         tmpacui.setItem(17, InvOperateEvent.confirm);
         commander.openInventory(tmpacui);
     }
@@ -251,7 +251,7 @@ public class OpenUI {
     private static void setTempItemMeta(Inventory tmptarget, List<QuestAction> target, int i, ItemStack tmpis) {
         ItemMeta tmpitm = tmpis.getItemMeta();
         assert tmpitm != null;
-        tmpitm.setDisplayName(target.get(i).getQuestactionname());
+        tmpitm.setDisplayName(target.get(i).getQuest_action_name());
         List<String> a = new ArrayList<>();
         for (String s : target.get(i).serialize().keySet()) {
             a.add(s+"->"+target.get(i).serialize().get(s).toString());

@@ -1,6 +1,7 @@
 package sn.sn.Collector;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -14,10 +15,7 @@ import sn.sn.Basic.Other;
 import sn.sn.Basic.SayToEveryoneThread;
 import sn.sn.Range.Range;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import static sn.sn.Sn.*;
 
@@ -100,8 +98,10 @@ public class CollectorRuntime implements Runnable {
             if (lore == null) {
                 lore = new ArrayList<>();
             }
+            lore.add(ChatColor.GRAY+"从垃圾堆里捡回来的……");
             lore.add(String.valueOf(new Date().getTime()));
-            lore.add(entity.getLocation().toString());
+            lore.add("World: "+ Objects.requireNonNull(entity.getLocation().getWorld()).getName());
+            lore.add("Location: ("+ (int)entity.getLocation().getX()+","+(int)entity.getLocation().getY()+","+(int)entity.getLocation().getZ()+")");
             im.setLore(lore);
             item.setItemMeta(im);
             rubbishes.add(item);

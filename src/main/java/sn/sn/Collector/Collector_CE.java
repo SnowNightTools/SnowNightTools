@@ -99,6 +99,7 @@ public class Collector_CE implements CommandExecutor {
 
         if(args[0].equals("save")&&sender.isOp()){
             new AutoSave().start();
+            commander.sendMessage("Sn插件文件保存已经开始");
             return true;
         }
 
@@ -147,6 +148,7 @@ public class Collector_CE implements CommandExecutor {
 
         if(args[1].equals("bins")&&args[2].equals("clean_file")){
             new CollectorFileCleanThread().start();
+            commander.sendMessage("文件清理进程已经开始运行");
             return true;
         }
 
@@ -168,6 +170,7 @@ public class Collector_CE implements CommandExecutor {
         }
         bins = new ArrayList<>(bins.subList(rem_amt,bins.size()));
         new AutoSave().start();
+        commander.sendMessage("操作成功");
         return true;
     }
 

@@ -5,6 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -24,135 +25,10 @@ public class QuestRuntime extends BukkitRunnable {
 
 
 
-    @SuppressWarnings("BusyWait")
-    @Override
-    public void run() {
-        if(eco_use_vault)
-            if(!eco_system_set)
-                if(!Other.initVault()) {
-                    Other.sendInfo("[SN][WARNING]vault插件挂钩失败，请检查vault插件。");
-                }
-        Other.sendDebug("Quest Runtime 1");
-        for (Player player: Bukkit.getServer().getOnlinePlayers()) {
-            if(playerquest_yml.contains(player.getName())){
-                if(playerquest_yml.contains(player.getName()+".nowtaskid")){
-                    if(playerquest_yml.getInt(player.getName()+".nowtaskid")==this.getTaskId()){
-                        if(debug) player.sendMessage("snQuest在线程"+this.getTaskId()+"检测你的任务情况~");
-                        while(playerquest_yml.getBoolean(player.getName()+".check",true)) {
-                            Other.sendDebug("Quest Runtime 3");
-                            int checktime = playerquest_yml.getInt(player.getName()+".checktime",5000);
-                            try {
-                                Thread.sleep(checktime);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-
-                            String name = playerquest_yml.getString(player.getName() + ".nowquest");
-                            Quest quest = new Quest(name);
-                            quest.readQuestFromYml(name);
-
-                            if(!quest.isOn()){
-                                this.cancel();
-                                return;
-                            }
-
-                            for (QuestAction action : quest.getQuest_target()) {
-                                boolean questsucceed = false;
-                                double defaultdistance = 50;
-                                if (action.getQuestactiondata().getDefaultdistance() != -1)
-                                    defaultdistance = action.getQuestactiondata().getDefaultdistance();
-                                switch (action.getQuestactiontype()) {
-                                    case FIND_POSITION:
-                                        Location loc = player.getLocation();
-                                        if (loc.distance(action.getQuestactiondata().getTargetlocation()) > defaultdistance) {
-                                            questsucceed = true;
-                                        }
-                                        break;
-
-                                    case ACCOMPLISHMENT:
-                                    case HUSBANDRY:
-                                        List<Entity> tg = player.getNearbyEntities(defaultdistance, defaultdistance, defaultdistance);
-                                        Map<EntityType, Integer> tmap = new HashMap<>();
-                                        Map<EntityType, Integer> questt = action.getQuestactiondata().getQuesttargetentity();
-                                        for (Entity tent : tg) {
-                                            if (!tmap.containsKey(tent.getType())) tmap.put(tent.getType(), 1);
-                                            else tmap.put(tent.getType(), tmap.get(tent.getType()) + 1);
-                                        }
-                                        boolean success = true;
-                                        for (EntityType type : questt.keySet()) {
-                                            if (tmap.getOrDefault(type, 0) < questt.get(type)) {
-                                                success = false;
-                                                break;
-                                            }
-                                        }
-                                        questsucceed = success;
-                                        break;
-
-                                    case FIND_NPC:
-                                        Location l = player.getLocation();
-                                        Entity e = Bukkit.getEntity(action.getQuestactiondata().getQuesttargetnpc());
-                                        assert e != null;
-                                        if (l.distance(e.getLocation()) <= defaultdistance) {
-                                            questsucceed = true;
-                                        }
-                                        break;
-
-                                    case AGRICULTURE:
-                                        success = true;
-                                        Map<ItemStack, Boolean> titbmap = getBlockListAndCnt(player, defaultdistance, action.getQuestactiondata().getQuesttargetitem());
-                                        for (ItemStack stack : action.getQuestactiondata().getQuesttargetitem()) {
-                                            if (!titbmap.get(stack)) {
-                                                success = false;
-                                                break;
-                                            }
-                                        }
-
-                                        questsucceed = success;
-                                        break;
-
-                                    case CRUSADE:
-                                        success = true;
-                                        for (EntityType et: action.getQuestactiondata().getQuesttargetentity().keySet())
-                                            if (playerquest_yml.getInt(player.getName() + ".process." + action.getQuestactionname() + "." + et.getKey().getKey(), 0) < action.getQuestactiondata().getQuesttargetentity().get(et)) {
-                                                success = false;
-                                                break;
-                                            }
-                                        questsucceed = success;
-                                        break;
-
-                                    case FIND_ITEM:
-                                    case COLLECT:
-                                    case BUILD:
-                                        break;
-                                }
-                                if(questsucceed){
-                                    playerquest_yml.set(player.getName()+".progress."+action.getQuestactionname(),true);
-                                }
-
-                            }
-                            boolean questend = true;
-                            List<QuestAction> questtarget = quest.getQuest_target();
-                            for (QuestAction action : questtarget) {
-                                if (!playerquest_yml.getBoolean(player.getName() + ".progress." + action.getQuestactionname(), false))
-                                    questend = false;
-                            }
-                            if(questend)quest.succeed(player);
-                        }
-                        if(debug) player.sendMessage("snQuest在"+this.getTaskId()+"检测你的任务情况的线程已经结束！");
-                    }
-                }
-
-            }
-
-        }
-
-        this.cancel();
-    }
-
-
     public static Map<ItemStack,Boolean> getBlockListAndCnt(Player player, double distance, List<ItemStack> itemtocheck){
         Map<ItemStack,Boolean> ret = new HashMap<>();
-        List<Block> nowblock = getBlockList(player,distance);
+        List<Block> nowblock = getBlockListOnGround(player.getLocation(),distance);
+        if(nowblock == null)return null;
         int[] cnt = new int[itemtocheck.size()+5];
         boolean succeed;
         int i=0;
@@ -168,6 +44,46 @@ public class QuestRuntime extends BukkitRunnable {
             ret.put(stack,succeed);
         }
         return ret;
+    }
+
+    /**Count the blocks that upside is air in a distance.
+     * Use about 20s to count the blocks in 100 distance,
+     * although it is up to your server. Do not use it repeatedly.
+     * @param ori the center Location
+     * @param distance the distance to get
+     * @return the block list
+     */
+    public static List<Block> getBlockListOnGround(Location ori, double distance){
+
+        World world = ori.getWorld();
+        if(world == null)return null;
+
+        List<Block> temp = new ArrayList<>();
+
+        for (int x = 0; x <= distance ; x++) {
+            for (int z = 0; z <= distance ; z++) {
+                Block t1 = world.getBlockAt(ori.getBlockX()+x, ori.getBlockY(), ori.getBlockZ()+z);
+                Block t2 = world.getBlockAt(ori.getBlockX()+x, ori.getBlockY(), ori.getBlockZ()-z);
+                Block t3 = world.getBlockAt(ori.getBlockX()-x, ori.getBlockY(), ori.getBlockZ()+z);
+                Block t4 = world.getBlockAt(ori.getBlockX()-x, ori.getBlockY(), ori.getBlockZ()-z);
+                Block c1 = getBlockAtXZ(t1, distance);
+                Block c2 = getBlockAtXZ(t2, distance);
+                Block c3 = getBlockAtXZ(t3, distance);
+                Block c4 = getBlockAtXZ(t4, distance);
+                boolean jump = !checkC(ori, distance, temp, c1);
+                if (checkC(ori, distance, temp, c2)) {
+                    jump = false;
+                }
+                if (checkC(ori, distance, temp, c3)) {
+                    jump = false;
+                }
+                if (checkC(ori, distance, temp, c4)) {
+                    jump = false;
+                }
+                if(jump) break;
+            }
+        }
+        return temp;
     }
 
     public static List<Block> getBlockList(Player player,double distance) {
@@ -218,5 +134,165 @@ public class QuestRuntime extends BukkitRunnable {
         }
 
         return now;
+    }
+
+    private static boolean checkC(Location ori, double distance, List<Block> temp, Block c1) {
+        if(c1 != null){
+            if(c1.getLocation().distanceSquared(ori) <= squard(distance)){
+                temp.add(c1);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static double squard(double distance) {
+        return distance * distance;
+    }
+
+    private static Block getBlockAtXZ(Block t,double distance){
+        if( (!t.getType().equals(Material.AIR)) && t.getRelative(BlockFace.UP,1).getType().equals(Material.AIR)){
+            return t;
+        }
+        if( (t.getType().equals(Material.AIR)) && !t.getRelative(BlockFace.DOWN, 1).getType().equals(Material.AIR)){
+            return t.getRelative(BlockFace.DOWN, 1);
+        }
+        for (int y = 1; y <= distance ; y++) {
+            if(t.getRelative(BlockFace.UP,y+1).getType().equals(Material.AIR)&&
+                    !t.getRelative(BlockFace.UP,y).getType().equals(Material.AIR)){
+                return t.getRelative(BlockFace.UP,y);
+            }
+            if(t.getRelative(BlockFace.DOWN,y).getType().equals(Material.AIR)&&
+                    !t.getRelative(BlockFace.DOWN,y+1).getType().equals(Material.AIR)){
+                return t.getRelative(BlockFace.DOWN,y+1);
+            }
+        }
+        return null;
+    }
+
+    @SuppressWarnings("BusyWait")
+    @Override
+    public void run() {
+        if(eco_use_vault)
+            if(!eco_system_set)
+                if(!Other.initVault()) {
+                    Other.sendInfo("[SN][WARNING]vault插件挂钩失败，请检查vault插件。");
+                }
+        Other.sendDebug("Quest Runtime 1");
+        for (Player player: Bukkit.getServer().getOnlinePlayers()) {
+            if(playerquest_yml.contains(player.getName())){
+                if(playerquest_yml.contains(player.getName()+".nowtaskid")){
+                    if(playerquest_yml.getInt(player.getName()+".nowtaskid")==this.getTaskId()){
+                        if(debug) player.sendMessage("snQuest在线程"+this.getTaskId()+"检测你的任务情况~");
+                        while(playerquest_yml.getBoolean(player.getName()+".check",true)) {
+                            Other.sendDebug("Quest Runtime 3");
+                            int checktime = playerquest_yml.getInt(player.getName()+".checktime",5000);
+                            try {
+                                Thread.sleep(checktime);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+
+                            String name = playerquest_yml.getString(player.getName() + ".nowquest");
+                            Quest quest = new Quest(name);
+                            quest.readQuestFromYml(name);
+
+                            if(!quest.isOn()){
+                                this.cancel();
+                                return;
+                            }
+
+                            for (QuestAction action : quest.getQuest_target()) {
+                                boolean questsucceed = false;
+                                double defaultdistance = 50;
+                                if (action.getQuest_action_data().getDefaultdistance() != -1)
+                                    defaultdistance = action.getQuest_action_data().getDefaultdistance();
+                                switch (action.getQuest_action_type()) {
+                                    case FIND_POSITION:
+                                        Location loc = player.getLocation();
+                                        if (loc.distance(action.getQuest_action_data().getTargetlocation()) > defaultdistance) {
+                                            questsucceed = true;
+                                        }
+                                        break;
+
+                                    case ACCOMPLISHMENT:
+                                    case HUSBANDRY:
+                                        List<Entity> tg = player.getNearbyEntities(defaultdistance, defaultdistance, defaultdistance);
+                                        Map<EntityType, Integer> tmap = new HashMap<>();
+                                        Map<EntityType, Integer> questt = action.getQuest_action_data().getQuesttargetentity();
+                                        for (Entity tent : tg) {
+                                            if (!tmap.containsKey(tent.getType())) tmap.put(tent.getType(), 1);
+                                            else tmap.put(tent.getType(), tmap.get(tent.getType()) + 1);
+                                        }
+                                        boolean success = true;
+                                        for (EntityType type : questt.keySet()) {
+                                            if (tmap.getOrDefault(type, 0) < questt.get(type)) {
+                                                success = false;
+                                                break;
+                                            }
+                                        }
+                                        questsucceed = success;
+                                        break;
+
+                                    case FIND_NPC:
+                                        Location l = player.getLocation();
+                                        Entity e = Bukkit.getEntity(action.getQuest_action_data().getQuesttargetnpc());
+                                        assert e != null;
+                                        if (l.distance(e.getLocation()) <= defaultdistance) {
+                                            questsucceed = true;
+                                        }
+                                        break;
+
+                                    case AGRICULTURE:
+                                        success = true;
+                                        Map<ItemStack, Boolean> titbmap = getBlockListAndCnt(player, defaultdistance, action.getQuest_action_data().getQuesttargetitem());
+                                        if(titbmap == null) break;
+                                        for (ItemStack stack : action.getQuest_action_data().getQuesttargetitem()) {
+                                            if (!titbmap.get(stack)) {
+                                                success = false;
+                                                break;
+                                            }
+                                        }
+
+                                        questsucceed = success;
+                                        break;
+
+                                    case CRUSADE:
+                                        success = true;
+                                        for (EntityType et: action.getQuest_action_data().getQuesttargetentity().keySet())
+                                            if (playerquest_yml.getInt(player.getName() + ".process." + action.getQuest_action_name() + "." + et.getKey().getKey(), 0) < action.getQuest_action_data().getQuesttargetentity().get(et)) {
+                                                success = false;
+                                                break;
+                                            }
+                                        questsucceed = success;
+                                        break;
+
+                                    case FIND_ITEM:
+                                    case COLLECT:
+                                    case BUILD:
+                                        break;
+                                }
+                                if(questsucceed){
+                                    playerquest_yml.set(player.getName()+".progress."+action.getQuest_action_name(),true);
+                                }
+
+                            }
+                            boolean questend = true;
+                            List<QuestAction> questtarget = quest.getQuest_target();
+                            for (QuestAction action : questtarget) {
+                                if (!playerquest_yml.getBoolean(player.getName() + ".progress." + action.getQuest_action_name(), false))
+                                    questend = false;
+                            }
+                            if(questend)quest.succeed(player);
+                        }
+                        if(debug) player.sendMessage("snQuest在"+this.getTaskId()+"检测你的任务情况的线程已经结束！");
+                    }
+                }
+
+            }
+
+        }
+
+        this.cancel();
     }
 }

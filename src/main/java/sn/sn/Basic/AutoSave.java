@@ -14,6 +14,8 @@ public class AutoSave extends Thread{
     @Override
     synchronized public void run() {
         Other.sendInfo("开始自动保存配置。");
+
+        //collector save
         for (OfflinePlayer player : collectors.keySet()) {
             for (Collector collector : collectors.get(player)) {
                 collector.saveCollectorToYml(collector_yml,null);
@@ -23,22 +25,26 @@ public class AutoSave extends Thread{
         }
         collector_yml.set("amount",n);
 
+        //bins save
         int n = bin_yml.getInt("amount",0);
         for (int i = 0; i < n; i++) {
             bin_yml.set(String.valueOf(i),null);
         }
-
         n = bins.size();
         bin_yml.set("amount",n);
         for (int i = 0; i < n; i++) {
             bin_yml.set(String.valueOf(i),bins.get(i));
         }
 
+        //city save
         int cnt = 0;
         for (String city_name : city_names) {
             cities.get(city_name).saveCityToYml(city_yml,String.valueOf( cnt++ ));
         }
         city_yml.set("amount",cnt);
+
+        //quest save
+        n = 0;
 
 
         try {

@@ -79,7 +79,7 @@ public class InvOperateEvent implements Listener {
 
     private static void putEntitySet(Player commander, Object ignored){
         if(entity_type_setting.containsKey(commander)&& int_setting.containsKey(commander)) {
-            quest_action_setting.get(commander).getQuestactiondata().addQuesttargetentity(entity_type_setting.get(commander), int_setting.get(commander));
+            quest_action_setting.get(commander).getQuest_action_data().addQuesttargetentity(entity_type_setting.get(commander), int_setting.get(commander));
         }
     }
 
@@ -831,7 +831,7 @@ public class InvOperateEvent implements Listener {
             return;
         }
 
-        List<ItemStack> list = quest_action_setting.get(commander).getQuestactiondata().getQuesttargetitem();
+        List<ItemStack> list = quest_action_setting.get(commander).getQuest_action_data().getQuesttargetitem();
 
         if(cli.isLeftClick()){
             if(inv_click.getClickedInventory() == null|| inv_click.getCurrentItem() == null) return;
@@ -856,7 +856,7 @@ public class InvOperateEvent implements Listener {
             }
 
         }
-        quest_action_setting.get(commander).getQuestactiondata().setQuesttargetitem(list);
+        quest_action_setting.get(commander).getQuest_action_data().setQuesttargetitem(list);
     }
 
     private void workQuestRewardItemSetIO(InventoryClickEvent inv_click,Player commander) {
@@ -1001,11 +1001,11 @@ public class InvOperateEvent implements Listener {
             case 6:
             case 7:
             case 8:
-                quest_action_setting.get(commander).setQuestactiontype(QuestActionType.getFromInt(inv_click.getSlot()+1));
+                quest_action_setting.get(commander).setQuest_action_type(QuestActionType.getFromInt(inv_click.getSlot()+1));
                 OpenUI.openActionCreateUI(commander);
                 return;
             case 9:
-                List<ItemStack> quest_target_item = quest_action_setting.get(commander).getQuestactiondata().getQuesttargetitem();
+                List<ItemStack> quest_target_item = quest_action_setting.get(commander).getQuest_action_data().getQuesttargetitem();
                 Inventory qt_i_setting = Bukkit.createInventory(commander, 18,ChatColor.GREEN+"请设置物品条件");
                 qt_i_setting.setContents(quest_target_item.toArray(new ItemStack[9]));
                 qt_i_setting.setItem(17,confirm);
@@ -1018,12 +1018,12 @@ public class InvOperateEvent implements Listener {
                 OpenUI.openNPCSettingUI(commander);
                 return;
             case 12:
-                setting.put(commander, loc -> quest_action_setting.get(commander).getQuestactiondata().setTargetlocation((Location) loc));
+                setting.put(commander, loc -> quest_action_setting.get(commander).getQuest_action_data().setTargetlocation((Location) loc));
                 ui_opener.put(commander, OpenUI::openActionCreateUI);
                 OpenUI.openLocSettingUI(commander);
                 return;
             case 13:
-                setting.put(commander, set -> quest_action_setting.get(commander).getQuestactiondata().setQuesttimelimit((Integer) set));
+                setting.put(commander, set -> quest_action_setting.get(commander).getQuest_action_data().setQuesttimelimit((Integer) set));
                 ui_opener.put(commander, OpenUI::openActionCreateUI);
                 OpenUI.openIntSettingUI(commander);
                 return;

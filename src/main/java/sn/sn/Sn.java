@@ -199,6 +199,7 @@ public class Sn extends JavaPlugin {
             sendError(e.getLocalizedMessage());
         }
 
+        share_yml = YamlConfiguration.loadConfiguration(share_file);
         city_yml = YamlConfiguration.loadConfiguration(city_file);
         bin_yml = YamlConfiguration.loadConfiguration(bin_file);
         collector_yml = YamlConfiguration.loadConfiguration(collector_file);
