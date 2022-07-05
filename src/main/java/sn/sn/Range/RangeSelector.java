@@ -22,6 +22,9 @@ public class RangeSelector implements Listener {
         if(event.getItem()==null)return;
         ItemStack hoe = new ItemStack(Material.WOODEN_HOE);
         if(!Objects.equals(event.getItem(), hoe))return;
+
+        event.setCancelled(true);
+
         try {
             if(event.getAction()== Action.LEFT_CLICK_BLOCK){
                 Location t = Objects.requireNonNull(event.getClickedBlock()).getLocation();
