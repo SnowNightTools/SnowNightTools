@@ -63,9 +63,9 @@ public class OpenUI {
         List<String> positionlore = new ArrayList<>();
         positionlore.add(ChatColor.GREEN+"点我设置任务位置");
         if(quest_setting.get(questPlayer).isPositionSet()) {
-            positionlore.add(ChatColor.GREEN+"父任务"+ quest_setting.get(questPlayer).getQuestposition().getParentquest());
-            positionlore.add(ChatColor.GREEN+"子任务"+ quest_setting.get(questPlayer).getQuestposition().getChildquest());
-            positionlore.add(ChatColor.GREEN+"任务等级"+ quest_setting.get(questPlayer).getQuestposition().getQuestlevel());
+            positionlore.add(ChatColor.GREEN+"父任务"+ quest_setting.get(questPlayer).getQuestPosition().getParentquest());
+            positionlore.add(ChatColor.GREEN+"子任务"+ quest_setting.get(questPlayer).getQuestPosition().getChildquest());
+            positionlore.add(ChatColor.GREEN+"任务等级"+ quest_setting.get(questPlayer).getQuestPosition().getQuestlevel());
             positioniconmeta.addEnchant(Enchantment.LUCK,1,false);
         }
         positioniconmeta.setLore(positionlore);
@@ -82,7 +82,7 @@ public class OpenUI {
         if(quest_setting.get(questPlayer).isTypeSet()) {
             typelore.add(ChatColor.GREEN+ quest_setting.get(questPlayer).getQuestType().getKey().getKey());
             typeiconmeta.addEnchant(Enchantment.LUCK,1,false);
-            typeicon.setType(quest_setting.get(questPlayer).getQuesttype().getSymbol());
+            typeicon.setType(quest_setting.get(questPlayer).getQuestType().getSymbol());
         }
         typeiconmeta.setLore(typelore);
         typeicon.setItemMeta(typeiconmeta);
@@ -114,8 +114,8 @@ public class OpenUI {
         acccondtnlore.add(ChatColor.GREEN+"点我设置任务接受条件");
         acccondtnlore.add("如果没有特别的任务接受条件，");
         acccondtnlore.add("也请将其设置为“默认“！");
-        if(quest_setting.get(questPlayer).isAcceptconditionSet()) {
-            for (QuestAction action : quest_setting.get(questPlayer).getQustAccptCndtn()) {
+        if(quest_setting.get(questPlayer).isAcceptConditionSet()) {
+            for (QuestAction action : quest_setting.get(questPlayer).getQuestAcceptCondition()) {
                 acccondtnlore.addAll(Other.toStrList(action.serialize()));
             }
             acccondtniconmeta.addEnchant(Enchantment.ARROW_DAMAGE,1,false);
@@ -131,8 +131,8 @@ public class OpenUI {
         rewardiconmeta.setDisplayName("任务奖励");
         List<String> rewardlore = new ArrayList<>();
         rewardlore.add(ChatColor.GREEN+"点我设置任务奖励");
-        if(quest_setting.get(questPlayer).isRewardset()) {
-            rewardlore.addAll(Other.toStrList(quest_setting.get(questPlayer).getQuestreward().serialize()));
+        if(quest_setting.get(questPlayer).isRewardSet()) {
+            rewardlore.addAll(Other.toStrList(quest_setting.get(questPlayer).getQuestReward().serialize()));
             rewardiconmeta.addEnchant(Enchantment.CHANNELING,1,false);
         }
         rewardiconmeta.setLore(rewardlore);
@@ -191,7 +191,7 @@ public class OpenUI {
     }
 
     public static void openQuestSettingUI(Player questPlayer){
-        openQuestSettingUI(questPlayer, quest_setting.get(questPlayer).getQuest_name());
+        openQuestSettingUI(questPlayer, quest_setting.get(questPlayer).getQuestName());
     }
 
     public static void openActionCreateUI(Player commander) {
@@ -235,7 +235,7 @@ public class OpenUI {
         List<QuestAction> target;
         if(isSetTorC.get(commander)) {
             target = quest_setting.get(commander).getQuest_target();
-        } else target = quest_setting.get(commander).getQuest_accept_condition();
+        } else target = quest_setting.get(commander).getQuestAcceptCondition();
         if(target.size()!=0)
             for (int i = 0; i < target.size(); i++) {
                 ItemStack tmpis = new ItemStack(Material.REDSTONE,1);
@@ -267,7 +267,7 @@ public class OpenUI {
 
         for (int i = 0; i < 45; i++) {
             Quest quest = quests.get(i);
-            positionset.setItem(nowindex + i, getItem("BOOK", quest.getQuest_name(), quest.getQuest_description()));
+            positionset.setItem(nowindex + i, getItem("BOOK", quest.getQuestName(), quest.getQuestDescription()));
         }
         if(pgindex != 1)positionset.setItem(45, pg_up);
         if(quests.size() > nowindex + 45)positionset.setItem(53, InvOperateEvent.pg_dn);
@@ -276,7 +276,7 @@ public class OpenUI {
 
     public static void openActionDeleteUI(Player commander) {
         Inventory tmpacui = Bukkit.createInventory(commander,18,ChatColor.RED+"删除一个任务条件");
-        List<QuestAction> target = quest_setting.get(commander).getQuest_accept_condition();
+        List<QuestAction> target = quest_setting.get(commander).getQuestAcceptCondition();
         if(isSetTorC.get(commander)) target = quest_setting.get(commander).getQuest_target();
         if(target.size()!=0)
             for (int i = 0; i < target.size(); i++) {
@@ -293,17 +293,17 @@ public class OpenUI {
         a.add("设置为系统任务");
         a.add("系统任务在发放奖励时不会收取创建人物品");
 
-        rewardset.setItem(0, getItem("REDSTONE_BLOCK","系统任务",a, quest_setting.get(commander1).getQuestreward().isAdmin()));
+        rewardset.setItem(0, getItem("REDSTONE_BLOCK","系统任务",a, quest_setting.get(commander1).getQuestReward().isAdmin()));
         a = new ArrayList<>();
         a.add("设置经济奖励");
-        a.add(String.valueOf(quest_setting.get(commander1).getQuestreward().getRewardmoney()));
-        rewardset.setItem(3, getItem("EMERALD_BLOCK","经济奖励",a, quest_setting.get(commander1).getQuestreward().getRewardmoney() != 0));
+        a.add(String.valueOf(quest_setting.get(commander1).getQuestReward().getRewardmoney()));
+        rewardset.setItem(3, getItem("EMERALD_BLOCK","经济奖励",a, quest_setting.get(commander1).getQuestReward().getRewardmoney() != 0));
         a = new ArrayList<>();
         a.add("设置物品奖励");
-        for (ItemStack rewarditem : quest_setting.get(commander1).getQuestreward().getRewarditems()) {
+        for (ItemStack rewarditem : quest_setting.get(commander1).getQuestReward().getRewarditems()) {
             a.add(rewarditem.serialize().toString());
         }
-        rewardset.setItem(5, getItem("DIAMOND_BLOCK","物品奖励",a,!quest_setting.get(commander1).getQuestreward().getRewarditems().isEmpty()));
+        rewardset.setItem(5, getItem("DIAMOND_BLOCK","物品奖励",a,!quest_setting.get(commander1).getQuestReward().getRewarditems().isEmpty()));
         rewardset.setItem(8, InvOperateEvent.confirm);
         commander1.openInventory(rewardset);
     }
