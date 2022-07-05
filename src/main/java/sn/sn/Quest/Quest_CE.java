@@ -236,17 +236,19 @@ public class Quest_CE implements CommandExecutor {
         }
 
         if(args[0].equals("test")){
-            List<Block> blockList = QuestRuntime.getBlockList(questPlayer.getWorld(), questPlayer.getLocation(), 10);
-            int index = 0;
-            for (Block block : blockList) {
-                questPlayer.sendMessage("--------------------------------");
-                questPlayer.sendMessage("index:" +index++);
-                questPlayer.sendMessage("block:" +block.getType());
-                questPlayer.sendMessage("state:" +block.getState());
-                questPlayer.sendMessage("loc:" +block.getLocation());
-                questPlayer.sendMessage("tem:" +block.getTemperature());
-                questPlayer.sendMessage("--------------------------------");
-            }
+            new Thread(() -> {
+                List<Block> blockList = QuestRuntime.getBlockList(questPlayer.getWorld(), questPlayer.getLocation(), 10);
+                int index = 0;
+                for (Block block : blockList) {
+                    questPlayer.sendMessage("--------------------------------");
+                    questPlayer.sendMessage("index:" +index++);
+                    questPlayer.sendMessage("block:" +block.getType());
+                    questPlayer.sendMessage("state:" +block.getState());
+                    questPlayer.sendMessage("loc:" +block.getLocation());
+                    questPlayer.sendMessage("tem:" +block.getTemperature());
+                    questPlayer.sendMessage("--------------------------------");
+                }
+            }).start();
             return true;
         }
 
@@ -423,18 +425,18 @@ public class Quest_CE implements CommandExecutor {
             case 1:
                 if(Quest.isQuestExist(name)){
                     Quest a = Quest.getQuest(name);
-                    player.sendMessage(ChatColor.GREEN+"任务名："+a.getQuest_name());
-                    player.sendMessage(ChatColor.GREEN+"任务编号："+a.getQuest_number());
-                    player.sendMessage(ChatColor.GREEN+"父任务："+a.getQuestposition().getParentquest());
-                    player.sendMessage(ChatColor.GREEN+"子任务："+a.getQuestposition().getChildquest());
+                    player.sendMessage(ChatColor.GREEN+"任务名："+a.getQuestName());
+                    player.sendMessage(ChatColor.GREEN+"任务编号："+a.getQuestNumber());
+                    player.sendMessage(ChatColor.GREEN+"父任务："+a.getQuestPosition().getParentquest());
+                    player.sendMessage(ChatColor.GREEN+"子任务："+a.getQuestPosition().getChildquest());
                     player.sendMessage(ChatColor.GREEN+"任务描述：");
-                    List<String> tempstr = a.getQuest_description();
-                    for (int i = 0; i < a.getQuest_description_line(); i++) {
+                    List<String> tempstr = a.getQuestDescription();
+                    for (int i = 0; i < a.getQuestDescriptionLine(); i++) {
                         player.sendMessage(ChatColor.WHITE + tempstr.get(i));
                     }
                     player.sendMessage(ChatColor.GREEN+"任务目标：");
-                    List<QuestAction> tempqa = a.getQuest_accept_condition();
-                    for (int i = 0; i < a.getQuest_accept_condition_amount(); i++) {
+                    List<QuestAction> tempqa = a.getQuestAcceptCondition();
+                    for (int i = 0; i < a.getQuestAcceptConditionAmount(); i++) {
                         player.sendMessage(ChatColor.WHITE + "操作"+(i+1)+"：");
                         show(ymlfile, tempqa.get(i).getQuestactionname(),player);
                     }
