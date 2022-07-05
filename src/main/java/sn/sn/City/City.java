@@ -25,7 +25,8 @@ public class City {
     private ItemStack icon;
     private String name, welcome_message = "欢迎~";
     private List<String> description = new ArrayList<>();
-    private List<UUID> residents = new ArrayList<>(), application = new ArrayList<>();
+    private List<UUID> residents = new ArrayList<>();
+    private List<UUID> application = new ArrayList<>();
     private Map<String, List<UUID>> perm_group = new HashMap<>();
     private UUID mayor;
     private List<Range> territorial = new ArrayList<>();
@@ -344,6 +345,20 @@ public class City {
 
     public void removeTerritorial(int index) {
         territorial.remove(index);
+        checkChunks();
+    }
+
+    private void checkChunks() {
+        List<Chunk> del = new ArrayList<>();
+        for (Chunk chunk : chunks) {
+            if (!new Range(chunk).isInRange(territorial)) {
+                del.add(chunk);
+            }
+        }
+        for (Chunk chunk : del) {
+            chunks.remove(chunk);
+            chunk.getWorld().setChunkForceLoaded(chunk.getX(),chunk.getZ(),false);
+        }
     }
 
     public void setAdmin() {
