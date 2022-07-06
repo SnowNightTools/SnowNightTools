@@ -703,7 +703,7 @@ public class OpenUI {
     public static void openCityPermGroupChooseUI(City city,Player commander) {
         if(city == null) return;
         Inventory temp = Bukkit.createInventory(commander,54,"权限组选择界面: "+city.getName());
-        for (String s : city.getPermGroup().keySet()) {
+        for (String s : city.getPermGroupList().keySet()) {
             temp.addItem(getItem("PAPER",s,null));
         }
         commander.openInventory(temp);

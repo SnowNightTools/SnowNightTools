@@ -17,8 +17,7 @@ import java.util.*;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.pow;
-import static sn.sn.Sn.cities;
-import static sn.sn.Sn.city_joined;
+import static sn.sn.Sn.*;
 
 public class City {
 
@@ -73,6 +72,15 @@ public class City {
             return null;
         }
         return city;
+    }
+
+    public City(){
+        Map<String,Boolean> default_perm = new HashMap<>();
+        for (String s : perm_city_settable) {
+            default_perm.put(s,false);
+        }
+        perm_list.put("default",default_perm);
+        perm_group.put("default",residents);
     }
 
     public String getWelcomeMessage() {
@@ -257,8 +265,8 @@ public class City {
         this.mayor = mayor;
     }
 
-    public Map<String, List<UUID>> getPermGroup() {
-        return perm_group;
+    public Map<String, Map<String, Boolean>> getPermList() {
+        return perm_list;
     }
 
     public void addPlayerToPermGroup(String pg_name, UUID player) {
@@ -273,10 +281,8 @@ public class City {
         perm_list.put(pg_name,temp);
     }
 
-    public void addResident(UUID resident) {
-        this.residents.add(resident);
-        city_joined.put(Bukkit.getOfflinePlayer(resident), true);
-        this.checkType();
+    public Map<String, List<UUID>> getPermGroupList() {
+        return perm_group;
     }
 
     private void checkType() {
@@ -364,6 +370,13 @@ public class City {
     public void setAdmin() {
         type = CITY_TYPE.ADMIN;
         admin = true;
+    }
+
+    public void addResident(UUID resident) {
+        this.residents.add(resident);
+        perm_group.put("default",residents);
+        city_joined.put(Bukkit.getOfflinePlayer(resident), true);
+        this.checkType();
     }
 
 }

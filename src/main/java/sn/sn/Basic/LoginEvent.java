@@ -3,7 +3,7 @@ package sn.sn.Basic;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import sn.sn.City.CityRuntime;
+import sn.sn.City.CityPlayerRuntime;
 import sn.sn.Quest.Quest;
 
 import static sn.sn.Sn.*;
@@ -23,7 +23,7 @@ public class LoginEvent implements Listener {
 
         if(!config_yml.getBoolean("login-load"))return;
 
-        new CityRuntime(event.getPlayer()).start();
+        new CityPlayerRuntime(event.getPlayer()).start();
 
         if(playerquest_yml.contains(event.getPlayer().getName()+".nowquest")){
             if(Quest.loadQuest(event.getPlayer(),playerquest_yml.getString(event.getPlayer().getName()+".nowquest")))

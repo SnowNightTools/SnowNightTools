@@ -1,14 +1,19 @@
 package sn.sn.City;
 
 import org.bukkit.entity.Player;
+import sn.sn.Basic.Other;
 import sn.sn.Range.Range;
+
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import static sn.sn.Sn.*;
 
-public class CityRuntime extends Thread{
+public class CityPlayerRuntime extends Thread{
 
     private final Player tracker;
-    public CityRuntime(Player tracker){
+    public CityPlayerRuntime(Player tracker){
         this.tracker = tracker;
     }
 
@@ -33,8 +38,7 @@ public class CityRuntime extends Thread{
                     for (Range range : city.getTerritorial()) {
                         if(found)break;
                         if (range.isInRange(tracker.getLocation())) {
-                            city_in.put(tracker,city);
-                            tracker.sendTitle(city.getName(),city.getWelcomeMessage(),10,70,20);
+                            foundPermGrpAndSet(city);
                             found = true;
                         }
                     }
@@ -42,7 +46,10 @@ public class CityRuntime extends Thread{
 
             } else {
                 for (Range range : cin.getTerritorial()) {
-                    if(range.isInRange(tracker.getLocation())) found = true;
+                    if(range.isInRange(tracker.getLocation())) {
+                        found = true;
+                        Other.sendDebug(tracker.getName() + " in " + cin.getName());
+                    }
                 }
                 if(!found){
                     for (String s : cities.keySet()) {
@@ -51,8 +58,7 @@ public class CityRuntime extends Thread{
                         for (Range range : city.getTerritorial()) {
                             if(found)break;
                             if (range.isInRange(tracker.getLocation())) {
-                                city_in.put(tracker,city);
-                                tracker.sendTitle(city.getName(),city.getWelcomeMessage(),10,70,20);
+                                foundPermGrpAndSet(city);
                                 found = true;
                             }
                         }
@@ -65,5 +71,28 @@ public class CityRuntime extends Thread{
 
             if(!tracker.isOnline())return;
         }
+    }
+
+    private void foundPermGrpAndSet(City city) {
+        boolean grp_set = false;
+        city_in.put(tracker, city);
+        tracker.sendTitle(city.getName(), city.getWelcomeMessage(),10,70,20);
+        for (String group : sn_perm.getPlayerGroups(tracker)) {
+            sn_perm.playerRemoveGroup(tracker,group);
+        }
+        Map<String, List<UUID>> group = city.getPermGroupList();
+        for (String s1 : group.keySet()) {
+            List<UUID> uuids = group.get(s1);
+            if(uuids.contains(tracker.getUniqueId())){
+                String grp_name = city.getName() + '-' + s1;
+                sn_perm.playerAddGroup(tracker,grp_name);
+                grp_set = true;
+                break;
+            }
+        }
+        if(!grp_set){
+            sn_perm.playerAddGroup(tracker,"default");
+        }
+        tracker.sendMessage("你的权限已经更新！");
     }
 }
