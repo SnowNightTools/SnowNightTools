@@ -204,7 +204,7 @@ public class QuestRuntime extends BukkitRunnable {
 
                             for (QuestAction action : quest.getQuest_target()) {
                                 boolean questsucceed = false;
-                                double defaultdistance = 50;
+                                double defaultdistance = 30;
                                 if (action.getQuest_action_data().getDefaultdistance() != -1)
                                     defaultdistance = action.getQuest_action_data().getDefaultdistance();
                                 switch (action.getQuest_action_type()) {

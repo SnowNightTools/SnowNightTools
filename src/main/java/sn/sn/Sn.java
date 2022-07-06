@@ -88,6 +88,7 @@ public class Sn extends JavaPlugin {
     public static List<String> bins;
     public static List<String> collector_names = new ArrayList<>();
     public static List<String> city_names = new ArrayList<>();
+    public static List<String> perm_city_settable = new ArrayList<>();
 
     public static double tps;
 

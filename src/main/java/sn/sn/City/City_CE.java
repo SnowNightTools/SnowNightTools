@@ -92,9 +92,9 @@ public class City_CE implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 
-        if(!label.equals("city"))return help();
-        if(args.length==0) return help();
-        if(args[0].equals("help")||args[0].equals("?")||args[0].equals("？")) return help();
+        if(!label.equals("city"))return help(sender);
+        if(args.length==0) return help(sender);
+        if(args[0].equals("help")||args[0].equals("?")||args[0].equals("？")) return help(sender);
 
         if(!(sender instanceof Player)){
             return true;
@@ -160,7 +160,7 @@ public class City_CE implements CommandExecutor {
                 if (args[1].equals("add")) {
                     return workPermAddPlayerCE(args, commander);
                 }
-            } else return help();
+            } else return help(commander);
 
         // /city perm set [perm group name] [perm name]反转城市对特定权限组的权限，不填写则设置城市对居民的权限（打开面板）。
         if(args[0].equals("perm")&&args[1].equals("set")) {
@@ -186,18 +186,76 @@ public class City_CE implements CommandExecutor {
         }
 
 
-        if(!args[0].equals("admin")) return help();
+        if(!args[0].equals("admin")) return help(commander);
         // Only For OP:
-        if(!commander.hasPermission("sn.city.admin") || !commander.isOp()) return help();
-        // /city admin remove <name> 删除一个城市，需要op操作。
-        // /city admin add <perm> 添加一个可以被城主设置的权限。
+        if(!commander.hasPermission("sn.city.admin") || !commander.isOp()) return help(commander);
+
+
+        // /city admin perm add/remove <perm> 添加/删除一个可以被城主设置的权限。
+        // /city admin perm add/remove index <perm_index> 添加/删除一个可以被城主设置的权限。
+        // /city admin perm list 查看可以被城主设置的权限列表。
         // /city admin 打开小镇系统管理面板
         if(args.length == 1){
             OpenUI.openCityAdminUI(commander,1);
         }
 
+        if(args.length >= 3){
+            return workCityAdminPermSetCE(args, commander);
+        }
 
-        return false;
+        help(commander);
+        return true;
+    }
+
+    private boolean workCityAdminPermSetCE( @NotNull String[] args, Player commander) {
+        if(!args[1].equals("perm")) {
+            help(commander);
+            return true;
+        }
+        if(args[2].equals("add")){
+            if(args.length != 4) {
+                help(commander);
+                return true;
+            }
+            perm_city_settable.add(args[3]);
+            commander.sendMessage("添加了可设置权限: "+ args[3]);
+            return true;
+        }
+        if(args[2].equals("remove")){
+            if(args.length == 4) {
+                if (perm_city_settable.remove(args[3])) {
+                    commander.sendMessage("删除了可设置权限: " + args[3]);
+                } else commander.sendMessage("未找到可设置权限: " + args[3]);
+                return true;
+            } else {
+                if(args.length == 5){
+                    int index;
+                    try {
+                        index = Integer.parseInt(args[4]);
+                    } catch (NumberFormatException e) {
+                        commander.sendMessage("请输入正确的数字格式");
+                        return true;
+                    }
+                    if(index < 0 || index >= perm_city_settable.size()){
+                        commander.sendMessage("请输入正确的序号，请先输入/city admin perm list 查看可以被城主设置的权限列表。");
+                        return true;
+                    }
+                    String t = perm_city_settable.get(index);
+                    perm_city_settable.remove(index);
+                    commander.sendMessage(t + "已经被删除。");
+                    return true;
+                }
+
+            }
+        }
+        if(args[2].equals("list")){
+            int index = 0;
+            for (String s : perm_city_settable) {
+                commander.sendMessage(index++ + ": " + s);
+            }
+            commander.sendMessage("打印结束。");
+        }
+        return true;
     }
 
     private boolean workCityAcceptCE(@NotNull CommandSender sender, @NotNull String[] args, Player commander) {
@@ -223,7 +281,7 @@ public class City_CE implements CommandExecutor {
     }
 
     private boolean workCityAddWarpCE( @NotNull String[] args, Player commander) {
-        if(args.length < 2) return help();
+        if(args.length < 2) return help(commander);
         return workCitySetWarpCE(commander, args[1]);
     }
 
@@ -254,7 +312,7 @@ public class City_CE implements CommandExecutor {
 
     private boolean workCityRangeOperationCE( @NotNull String[] args, Player commander) {
         if(args.length==1) {
-            return help();
+            return help(commander);
         }
         if(args[1].equals("add")){
             Range tr;
@@ -290,7 +348,7 @@ public class City_CE implements CommandExecutor {
             return true;
         }
         if(args.length == 2) {
-            return help();
+            return help(commander);
         }
 
         if(args[1].equals("remove")){
@@ -319,7 +377,7 @@ public class City_CE implements CommandExecutor {
             OpenUI.openCityPermGroupChooseUI(commander);
             return true;
         }
-        if(args.length != 5)return help();
+        if(args.length != 5)return help(commander);
         City city = City.checkMayorAndGetCity(commander);
         if(city == null) return true;
         city.addPermToPermGroup(args[2],args[3],Boolean.getBoolean(args[4]));
@@ -328,7 +386,7 @@ public class City_CE implements CommandExecutor {
     }
 
     private boolean workPermAddPlayerCE( @NotNull String[] args, Player commander) {
-        if(args.length!=4) return help();
+        if(args.length!=4) return help(commander);
         Player ad = Bukkit.getPlayer(args[3]);
         if(ad == null){
             commander.sendMessage("玩家未在线！");
@@ -442,7 +500,72 @@ public class City_CE implements CommandExecutor {
         return true;
     }
 
-    private boolean help() {
+    private boolean help(CommandSender sender) {
+
+        sender.sendMessage(ChatColor.GREEN+"City Help Page");
+        if(sender instanceof Player){
+            Player commander = (Player) sender;
+            if(!city_joined.getOrDefault(commander,false)){
+                sender.sendMessage("/city create <name> 发起一个城市的新建，在达到三个人时正式成立城市，使用这个指令的人会成为市长，拥有管理权限。");
+                sender.sendMessage("/city join <name> 加入一个城市，一个人只能加入一个城市，但是可以同时发很多请求。");
+            } else {
+                City city = City.getCity(commander);
+                if(city == null){
+                    sender.sendMessage("你的城市信息出现异常，请联系管理员！");
+                    return true;
+                }
+                sender.sendMessage(ChatColor.GREEN+"你的城市: " + city.getName());
+                sender.sendMessage("/city spawn 回到自己小镇的出生点.");
+                sender.sendMessage("/city warp <warp> 去往特定传送点.");
+                sender.sendMessage("/city quit 退出小镇.");
+                sender.sendMessage("/city my 打开小镇菜单.");
+                if(city.getMayor().equals(commander.getUniqueId())){
+                    sender.sendMessage(ChatColor.GREEN+"接下来是您作为市长可以执行的指令：");
+                    sender.sendMessage("/city setwarp <name> 在小镇的领土中设置传送点.");
+                    sender.sendMessage("/city setspawn 设置小镇出生点.");
+                    sender.sendMessage("/city accept [player name/Offline player uuid] 同意一个人的加入请求，不填写[player name]，将会打开申请管理面板");
+                    sender.sendMessage("/city perm add <perm group name> <player name> 将一个特定的人添加进该权限组，需要玩家在线.");
+                    sender.sendMessage("/city perm set [perm group name] [perm name] 反转城市对特定权限组的权限，不填写则设置城市对居民的权限（打开面板）.");
+                    sender.sendMessage("/city range add 向城镇中添加区域（木锄选区）重叠部分不重复计算体积.");
+                    sender.sendMessage("/city range add chunk 把身下的区块区域添加到城镇领土中.");
+                    sender.sendMessage("/city range list 列出所有区域.");
+                    sender.sendMessage("/city range remove <index> 向小镇中删除区域.");
+                    sender.sendMessage("/city loadchunk 让插件常加载脚下的方块,需要整个区块都在城镇区域内.");
+                }
+                if(commander.isOp()||commander.hasPermission("Sn.city.admin")){
+                    sender.sendMessage("/city admin perm add/remove <perm> 添加/删除一个可以被城主设置的权限");
+                    sender.sendMessage("/city admin perm add/remove index <perm_index> 添加/删除一个可以被城主设置的权限.");
+                    sender.sendMessage("/city admin perm list 查看可以被城主设置的权限列表.");
+                    sender.sendMessage("/city admin 打开小镇系统管理面板.");
+
+                }
+            }
+        }
+
+        // /city create <name> 发起一个城市的新建，在达到三个人时正式成立城市，使用这个指令的人会成为市长，拥有管理权限。
+        // /city create-give-up 放弃一个城市的新建。
+        // /city join <name> 加入一个城市，一个人只能加入一个城市，但是可以同时发很多请求，不储存请求，每次重启请求刷新。
+        // /city spawn 回到自己小镇的出生点。
+        // /city warp <warp> 回到自己小镇的出生点。
+        // /city quit 退出小镇，小镇人数少于4人时不能退出小镇
+        // /city my 打开小镇菜单（传送点，出生点，各个成员，点击可以tpa或者warp之类的）
+        // 若是Mayor打开小镇菜单， 则打开小镇管理面板
+        // Only For Mayor:
+        // /city setwarp <name> 在小镇的领土中设置传送点
+        // /city accept [player name/Offline player uuid] 同意一个人的加入请求，不填写[player name]，将会打开所有申请人的面板，可以在面板上处理请求。
+        // /city perm add <perm group name> <player name> 将一个特定的人添加进该权限组，需要玩家在线。
+        // /city perm set [perm group name] [perm name]反转城市对特定权限组的权限，不填写则设置城市对居民的权限（打开面板）。
+        // /city range add 向小镇中添加区域 体积上限与人数（用单独的枚举类CITY_TYPE来实现）有关。
+        // /city range add chunk 把身下的区块区域添加到城镇领土中。
+        // /city range list 列出所有区域。
+        // /city range remove <index> 向小镇中删除区域。
+        // /city setspawn 设置小镇出生点
+        // /city loadchunk 让插件常加载脚下的方块
+        // Only For OP:
+        // /city admin perm add/remove <perm> 添加/删除一个可以被城主设置的权限。
+        // /city admin perm add/remove index <perm_index> 添加/删除一个可以被城主设置的权限。
+        // /city admin perm list 查看可以被城主设置的权限列表。
+        // /city admin 打开小镇系统管理面板
         Other.sendDebug("City Help Page Called");
         return true;
     }
