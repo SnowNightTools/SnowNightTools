@@ -397,6 +397,9 @@ public class City_CE implements CommandExecutor {
             commander.sendMessage("玩家未在线！");
             return true;
         }
+        if(args[2].equals("residents")||args[2].equals("mayor")){
+            commander.sendMessage("权限组" + args[2] + "的玩家是不能被修改的！");
+        }
         City city = City.checkMayorAndGetCity(commander);
         if(city == null) return true;
         city.addPlayerToPermGroup(args[2],ad.getUniqueId());
