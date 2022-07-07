@@ -559,31 +559,6 @@ public class City_CE implements CommandExecutor {
                 }
             }
         }
-
-        // /city create <name> 发起一个城市的新建，在达到三个人时正式成立城市，使用这个指令的人会成为市长，拥有管理权限。
-        // /city create-give-up 放弃一个城市的新建。
-        // /city join <name> 加入一个城市，一个人只能加入一个城市，但是可以同时发很多请求，不储存请求，每次重启请求刷新。
-        // /city spawn 回到自己小镇的出生点。
-        // /city warp <warp> 回到自己小镇的出生点。
-        // /city quit 退出小镇，小镇人数少于4人时不能退出小镇
-        // /city my 打开小镇菜单（传送点，出生点，各个成员，点击可以tpa或者warp之类的）
-        // 若是Mayor打开小镇菜单， 则打开小镇管理面板
-        // Only For Mayor:
-        // /city setwarp <name> 在小镇的领土中设置传送点
-        // /city accept [player name/Offline player uuid] 同意一个人的加入请求，不填写[player name]，将会打开所有申请人的面板，可以在面板上处理请求。
-        // /city perm add <perm group name> <player name> 将一个特定的人添加进该权限组，需要玩家在线。
-        // /city perm set [perm group name] [perm name]反转城市对特定权限组的权限，不填写则设置城市对居民的权限（打开面板）。
-        // /city range add 向小镇中添加区域 体积上限与人数（用单独的枚举类CITY_TYPE来实现）有关。
-        // /city range add chunk 把身下的区块区域添加到城镇领土中。
-        // /city range list 列出所有区域。
-        // /city range remove <index> 向小镇中删除区域。
-        // /city setspawn 设置小镇出生点
-        // /city loadchunk 让插件常加载脚下的方块
-        // Only For OP:
-        // /city admin perm add/remove <perm> 添加/删除一个可以被城主设置的权限。
-        // /city admin perm add/remove index <perm_index> 添加/删除一个可以被城主设置的权限。
-        // /city admin perm list 查看可以被城主设置的权限列表。
-        // /city admin 打开小镇系统管理面板
         Other.sendDebug("City Help Page Called");
         return true;
     }

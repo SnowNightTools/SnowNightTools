@@ -206,7 +206,7 @@ public class InvOperateEvent implements Listener {
             return;
         }
 
-        if(inv_click.getView().getTitle().contains("Warps List")){
+        if(inv_click.getView().getTitle().contains("Warp List")){
             workCityWarpListIO(inv_click,commander);
             return;
         }
@@ -586,9 +586,26 @@ public class InvOperateEvent implements Listener {
                 return;
             case 53:
                 if(commander.isOp()||commander.hasPermission("sn.city.admin")){
-                    cities.remove(city.getName());
-                    city_names.remove(city.getName());
-                    commander.sendMessage("城市已经删除！");
+                    String ans = "confirm remove "+city.getName();
+                    List<String> qes = new ArrayList<>();
+                    qes.add("确认删除吗？请输入" + ans + "来确认!");
+                    List<Consumer<String>> lc = new ArrayList<>();
+                    Consumer<String> con = (str)->{
+                        if(str.equals(ans)) {
+                            cities.remove(city.getName());
+                            city_names.remove(city.getName());
+                            city_joined.remove(Bukkit.getOfflinePlayer(city.getMayor()));
+                            for (Map.Entry<Player, City> entry : city_in.entrySet()) {
+                                if (entry.getValue().equals(city)) {
+                                    city_in.remove(entry.getKey());
+                                }
+                            }
+                            city.getResidents().forEach(u -> city_joined.remove(Bukkit.getOfflinePlayer(u)));
+                            commander.sendMessage("城市已经删除！");
+                        }
+                    };
+                    lc.add(con);
+                    AskSetEvent.askSetAsync(commander,qes,lc,null,null);
                     commander.closeInventory();
                 }
         }

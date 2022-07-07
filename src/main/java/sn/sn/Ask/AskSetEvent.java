@@ -41,10 +41,11 @@ public class AskSetEvent implements Listener {
             while (tmpl.size() != i+1){
                 //noinspection BusyWait
                 Thread.sleep(500);
-                if(waiting % 10 == 0)
-                    commander.sendMessage("你设置了"+tmpl.size()+"/"+amount+"个参数,你还有"+(time_limit - waiting)+"秒来完成设置");
+                if(waiting % 10 == 0) {
+                    commander.sendMessage("你设置了" + tmpl.size() + "/" + amount + "个参数,你还有" + (time_limit - waiting) + "秒来完成设置");
+                    commander.sendMessage(questions.get(i));
+                }
                 waiting += 0.5;
-                commander.sendMessage(questions.get(i));
                 if(waiting >= time_limit){
                     commander.sendMessage("设置取消");
                     if(n_done!=null)
