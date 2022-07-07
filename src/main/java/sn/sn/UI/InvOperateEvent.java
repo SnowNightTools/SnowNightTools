@@ -382,7 +382,13 @@ public class InvOperateEvent implements Listener {
                         Other.sendError("在操作城镇权限时发现非法物品存在于UI界面");
                         return;
                     }
-                    city.removePlayerFromPermGroup(name, Objects.requireNonNull(((SkullMeta) im).getOwningPlayer()).getUniqueId());
+                    try {
+                        city.removePlayerFromPermGroup(name, Objects.requireNonNull(((SkullMeta) im).getOwningPlayer()).getUniqueId());
+                    } catch (Exception e) {
+                        commander.sendMessage("可能出现错误，建议删除该权限组并重新创建，或联系管理员!");
+                        commander.closeInventory();
+                        return;
+                    }
                     OpenUI.openCityPermGroupSetUI(city, commander,name,perm_page,player_page);
                 }
         }
