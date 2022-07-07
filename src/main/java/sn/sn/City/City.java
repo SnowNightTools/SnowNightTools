@@ -79,7 +79,7 @@ public class City {
     public City(){
         Map<String,Boolean> default_perm = new HashMap<>();
         for (String s : perm_city_settable) {
-            default_perm.put(s,false);
+            default_perm.put(s,true);
         }
         Map<String,Boolean> mayor_perm = new HashMap<>();
         for (String s : perm_city_settable) {
@@ -87,8 +87,8 @@ public class City {
         }
 
         perm_list.put("mayor",mayor_perm);
-        perm_list.put("default",default_perm);
-        perm_group.put("default",residents);
+        perm_list.put("residents",default_perm);
+        perm_group.put("residents",residents);
     }
 
     public String getWelcomeMessage() {
@@ -274,7 +274,7 @@ public class City {
         perm_set.add(mayor);
         List<UUID> t = new ArrayList<>();
         t.add(mayor);
-        perm_group.put("default",t);
+        perm_group.put("mayor",t);
     }
 
     public Map<String, Map<String, Boolean>> getPermList() {
@@ -282,6 +282,7 @@ public class City {
     }
 
     public void addPlayerToPermGroup(String pg_name, UUID player) {
+        if(pg_name.equals("mayor")||pg_name.equals("residents")) return;
         if(perm_set.contains(player))return;
         perm_set.add(player);
         List<UUID> list = this.perm_group.getOrDefault(pg_name, new ArrayList<>());

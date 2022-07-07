@@ -833,8 +833,8 @@ public class OpenUI {
         if(perm_page!=1) temp.setItem(48,perm_front_page);
         if(player_page!=player_totpage) temp.setItem(47,player_next_page);
         if(perm_page!=perm_totpage) temp.setItem(49,perm_next_page);
-
-        temp.setItem(50,getItem("EMERALD","向这个权限组添加玩家",null));
+        if(!(name.equals("residents")||name.equals("mayor")))
+            temp.setItem(50,getItem("EMERALD","向这个权限组添加玩家",null));
         temp.setItem(52,getItem("PAPER",city.getName(),null));
         temp.setItem(53,confirm);
         commander.openInventory(temp);

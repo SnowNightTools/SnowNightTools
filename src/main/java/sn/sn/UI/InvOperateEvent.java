@@ -359,7 +359,8 @@ public class InvOperateEvent implements Listener {
                     OpenUI.openCityPermGroupSetUI(city, commander,name,perm_page + 1,player_page);
                 return;
             case 50:
-                OpenUI.openCityPermGroupAddPlayerUI(city, commander,name,1);
+                if(!(name.equals("residents")||name.equals("mayor")))
+                    OpenUI.openCityPermGroupAddPlayerUI(city, commander,name,1);
                 return;
             case 53:
                 OpenUI.openCityPermGroupChooseUI(city, commander);
