@@ -232,7 +232,7 @@ public class InvOperateEvent implements Listener {
         }
 
         if(inv_click.getView().getTitle().contains("权限组选择界面")){
-            workCityPermChooseCE(inv_click, commander);
+            workCityPermChooseIO(inv_click, commander);
             return;
         }
 
@@ -435,7 +435,7 @@ public class InvOperateEvent implements Listener {
         }
     }
 
-    private void workCityPermChooseCE(InventoryClickEvent inv_click, Player commander) {
+    private void workCityPermChooseIO(InventoryClickEvent inv_click, Player commander) {
         if (OpenUI.uiINIT(inv_click)) return;
         String s = getCity(inv_click);
         City city = cities.get(s);

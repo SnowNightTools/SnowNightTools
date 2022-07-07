@@ -307,6 +307,7 @@ public class City {
             }
         } else temp.put(perm,on);
         perm_list.put(pg_name,temp);
+        perm_group.put(pg_name,new ArrayList<>());
     }
 
     public Map<String, List<UUID>> getPermGroupList() {
