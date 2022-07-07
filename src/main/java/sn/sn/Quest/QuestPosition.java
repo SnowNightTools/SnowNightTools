@@ -13,8 +13,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 
-import static sn.sn.Sn.quest_yml;
 import static sn.sn.Basic.Other.sendInfo;
+import static sn.sn.Sn.quest_yml;
 
 @SerializableAs("SnQuestPosition")
 public class QuestPosition implements Cloneable, ConfigurationSerializable, Serializable {
@@ -71,8 +71,8 @@ public class QuestPosition implements Cloneable, ConfigurationSerializable, Seri
     }
 
 
-    public Boolean readQpFromYml(String name) {
-        return readQpFromYml(quest_yml, name);
+    public void readQpFromYml(String name) {
+        readQpFromYml(quest_yml, name);
     }
 
     public Boolean readQpFromYml(YamlConfiguration ymlfile, String name) {

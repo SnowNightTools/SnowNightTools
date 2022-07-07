@@ -90,13 +90,13 @@ public class Other {
     }
 
     public static class EnchantPair {
-        Enchantment a;
-        int b;
+        final Enchantment a;
+        final int b;
 
-        public EnchantPair(String data){
+        public EnchantPair(String data) {
             int index = data.indexOf(' ');
-            a = Enchantment.getByKey(NamespacedKey.minecraft(data.substring(0,index)));
-            b = Integer.parseInt(data.substring(index+1));
+            a = Enchantment.getByKey(NamespacedKey.minecraft(data.substring(0, index)));
+            b = Integer.parseInt(data.substring(index + 1));
         }
 
         public Enchantment getA() {

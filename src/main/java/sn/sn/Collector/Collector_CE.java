@@ -375,8 +375,8 @@ public class Collector_CE implements CommandExecutor {
         }
 
         Range tr = getRange(commander);
-        if(tr.getArea() > range_perm){
-            sender.sendMessage(ChatColor.RED+"你选区的大小（"+tr.getArea()+"）大于你的权限（"+range_perm*range_perm*range_perm+"）");
+        if (Objects.requireNonNull(tr).getArea() > range_perm) {
+            sender.sendMessage(ChatColor.RED + "你选区的大小（" + tr.getArea() + "）大于你的权限（" + range_perm * range_perm * range_perm + "）");
             return true;
         }
 

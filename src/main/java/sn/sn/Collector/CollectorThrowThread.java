@@ -14,7 +14,7 @@ import static sn.sn.Sn.*;
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class CollectorThrowThread extends Thread{
 
-    public static File rubbishes_folder = new File(data_folder,"rubbishes");
+    public static final File rubbishes_folder = new File(data_folder, "rubbishes");
 
     @Override
     public void run() {

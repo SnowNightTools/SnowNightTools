@@ -5,7 +5,7 @@ import org.bukkit.entity.Player;
 
 public class SayToEveryoneThread extends Thread{
 
-    String say;
+    final String say;
 
     public SayToEveryoneThread(String say){
         this.say = say;

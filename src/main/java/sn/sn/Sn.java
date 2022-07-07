@@ -57,24 +57,24 @@ public class Sn extends JavaPlugin {
     public static YamlConfiguration city_perm_corresponding_material_yml;
     public static String share_path, quest_path, playerquest_path, plugin_path;
 
-    public static Map<Player, Location> start_point = new HashMap<>();
-    public static Map<Player, Location> end_point = new HashMap<>();
-    public static Map<Player, City> city_in = new HashMap<>();
+    public static final Map<Player, Location> start_point = new HashMap<>();
+    public static final Map<Player, Location> end_point = new HashMap<>();
+    public static final Map<Player, City> city_in = new HashMap<>();
     public static Map<OfflinePlayer, List<Collector>> collectors = new HashMap<>();
-    public static Map<Player, QuestAction> quest_action_setting = new HashMap<>();
-    public static Map<Player, Inventory> show_inv = new HashMap<>();
-    public static Map<Player, List<ItemStack>> item_temp = new HashMap<>();
-    public static Map<Player, Quest> quest_setting = new HashMap<>();
-    public static Map<Player, Consumer<Object>> setting = new HashMap<>();
+    public static final Map<Player, QuestAction> quest_action_setting = new HashMap<>();
+    public static final Map<Player, Inventory> show_inv = new HashMap<>();
+    public static final Map<Player, List<ItemStack>> item_temp = new HashMap<>();
+    public static final Map<Player, Quest> quest_setting = new HashMap<>();
+    public static final Map<Player, Consumer<Object>> setting = new HashMap<>();
     public static Map<Player, Consumer<ArrayList<Object>>> setting_list = new HashMap<>();
-    public static Map<Player, QuestSettingType> setting_state = new HashMap<>();
-    public static Map<Player, Consumer<Player>> ui_opener = new HashMap<>();
-    public static Map<Player, EntityType> entity_type_setting = new HashMap<>();
-    public static Map<Player, Boolean> isSetTorC = new HashMap<>();//true when commander is setting Target
-    public static Map<OfflinePlayer, Boolean> city_joined = new HashMap<>();//true when commander has joint a city.
-    public static Map<Player, LocSet> loc_setting = new HashMap<>();
+    public static final Map<Player, QuestSettingType> setting_state = new HashMap<>();
+    public static final Map<Player, Consumer<Player>> ui_opener = new HashMap<>();
+    public static final Map<Player, EntityType> entity_type_setting = new HashMap<>();
+    public static final Map<Player, Boolean> isSetTorC = new HashMap<>();//true when commander is setting Target
+    public static final Map<OfflinePlayer, Boolean> city_joined = new HashMap<>();//true when commander has joint a city.
+    public static final Map<Player, LocSet> loc_setting = new HashMap<>();
     public static Map<Player, Double> double_setting = new HashMap<>();
-    public static Map<Player, Integer> int_setting = new HashMap<>();
+    public static final Map<Player, Integer> int_setting = new HashMap<>();
     public static Map<Player, String> string_setting = new HashMap<>();
     public static Map<Player, List<String>> list_str_setting = new HashMap<>();
 
@@ -89,9 +89,9 @@ public class Sn extends JavaPlugin {
     public static List<Quest> quests = new ArrayList<>();
     public static Map<String, City> cities = new HashMap<>();
     public static List<String> bins;
-    public static List<String> collector_names = new ArrayList<>();
+    public static final List<String> collector_names = new ArrayList<>();
     public static List<String> city_names = new ArrayList<>();
-    public static List<String> perm_city_settable = new ArrayList<>();
+    public static final List<String> perm_city_settable = new ArrayList<>();
 
     public static double tps;
 

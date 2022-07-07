@@ -331,8 +331,8 @@ public class Quest implements Cloneable, ConfigurationSerializable, Serializable
         return true;
     }
 
-    public Boolean saveQuestToYml() {
-        return saveQuestToYml(quest_yml);
+    public void saveQuestToYml() {
+        saveQuestToYml(quest_yml);
     }
 
     public Boolean saveQuestToYml(YamlConfiguration ymlfile) {

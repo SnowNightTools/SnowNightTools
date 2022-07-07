@@ -7,11 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static sn.sn.Sn.*;
+import static sn.sn.Sn.bins;
+import static sn.sn.Sn.data_folder;
 
 public class CollectorFileCleanThread extends Thread {
 
-    public static File rubbishes_folder = new File(data_folder,"rubbishes");
+    public static final File rubbishes_folder = new File(data_folder, "rubbishes");
 
     @Override
     public void run() {

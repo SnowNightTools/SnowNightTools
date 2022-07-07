@@ -1080,7 +1080,7 @@ public class SnFileIO {
             String name = ymlfile.getString(path+".perm."+i+".name");
             int pg_player_amt = ymlfile.getInt(path+".perm."+i+".pg_player_amt",0);
             for (int i1 = 0; i1 < pg_player_amt; i1++) {
-                temp.addPlayerToPermGroup(name,UUID.fromString(ymlfile.getString(path+".perm."+i+".player."+i1,"")));
+                temp.addPlayerToPermGroup(Objects.requireNonNull(name), UUID.fromString(ymlfile.getString(path + ".perm." + i + ".player." + i1, "")));
             }
             int pg_perm_amt = ymlfile.getInt(path+".perm."+i+".pg_perm_amt",0);
             for (int i1 = 0; i1 < pg_perm_amt; i1++) {
