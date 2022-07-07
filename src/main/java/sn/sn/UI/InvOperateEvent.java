@@ -585,6 +585,8 @@ public class InvOperateEvent implements Listener {
                     commander.sendMessage("已经将城市欢迎语设置为："+s1);
                 });
                 AskSetEvent.askSetAsync(commander,q,c,null, player -> player.sendMessage("操作取消！"));
+                commander.closeInventory();
+                return;
             case 3:
                 if(commander.isOp()||commander.hasPermission("sn.city.admin")){
                     city.setAdmin();
