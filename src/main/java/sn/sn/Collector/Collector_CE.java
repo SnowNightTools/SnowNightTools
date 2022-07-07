@@ -424,7 +424,7 @@ public class Collector_CE implements CommandExecutor {
             commander.openInventory(temp);
             return;
         }
-        Inventory temp = Bukkit.createInventory(commander,54,"Bin-"+time+" Page 1 of"+(items.size()/45 +1)+" ");
+        Inventory temp = Bukkit.createInventory(commander, 54, "Bin-" + time + "-Page 1 of" + (items.size() / 45 + 1) + " ");
         item_temp.put(commander,items);
         for (int i = 0; i < 45; i++) {
             temp.addItem(items.get(i));

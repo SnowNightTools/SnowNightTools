@@ -26,169 +26,169 @@ import static sn.sn.Basic.SnFileIO.getSkull;
 import static sn.sn.Sn.*;
 import static sn.sn.UI.InvOperateEvent.*;
 
-@SuppressWarnings("SpellCheckingInspection")
+//@SuppressWarnings("SpellCheckingInspection")
 public class OpenUI {
 
 
-    public static void openQuestSettingUI(Player questPlayer, String questname){
+    public static void openQuestSettingUI(Player questPlayer, String quest_name) {
         try {
             setting_state.remove(questPlayer);
         } catch (NullPointerException ignored) {
         }
-        Inventory questcreate = Bukkit.createInventory(questPlayer,9, ChatColor.BLUE+"正在创建一个新任务，请填写以下信息");
+        Inventory quest_create = Bukkit.createInventory(questPlayer, 9, ChatColor.BLUE + "正在创建一个新任务，请填写以下信息");
 
 
-        ItemStack nameicon = new ItemStack(Material.BOOK);
-        ItemMeta nameiconmeta = nameicon.getItemMeta();
-        assert nameiconmeta != null;
-        nameiconmeta.setDisplayName(questname);
-        List<String> namelore = new ArrayList<>();
-        namelore.add(ChatColor.RED+"任务名应该不含空格、\\、");
-        namelore.add(ChatColor.RED+"单双引号、英文句点等特殊字符");
-        namelore.add(ChatColor.RED+"任务名应该不以数字开头");
-        namelore.add(ChatColor.RED+"任务名应该独一无二");
-        namelore.add(ChatColor.YELLOW+"任务名最好不含中文字符");
-        namelore.add(ChatColor.YELLOW+"否则可能会出现意料之外的编码错误");
-        namelore.add(ChatColor.GREEN+"任务名最好与它的内容相对应");
-        namelore.add("例子：FirstQuestofSnowNightTown");
-        nameiconmeta.addEnchant(Enchantment.DIG_SPEED,1,false);
-        nameiconmeta.setLore(namelore);
-        nameicon.setItemMeta(nameiconmeta);
-        questcreate.setItem(4,nameicon);
+        ItemStack name_icon = new ItemStack(Material.BOOK);
+        ItemMeta name_icon_meta = name_icon.getItemMeta();
+        assert name_icon_meta != null;
+        name_icon_meta.setDisplayName(quest_name);
+        List<String> name_lore = new ArrayList<>();
+        name_lore.add(ChatColor.RED + "任务名应该不含空格、\\、");
+        name_lore.add(ChatColor.RED + "单双引号、英文句点等特殊字符");
+        name_lore.add(ChatColor.RED + "任务名应该不以数字开头");
+        name_lore.add(ChatColor.RED + "任务名应该独一无二");
+        name_lore.add(ChatColor.YELLOW + "任务名最好不含中文字符");
+        name_lore.add(ChatColor.YELLOW + "否则可能会出现意料之外的编码错误");
+        name_lore.add(ChatColor.GREEN + "任务名最好与它的内容相对应");
+        name_lore.add("例子：FirstQuestOfSnowNightTown");
+        name_icon_meta.addEnchant(Enchantment.DIG_SPEED, 1, false);
+        name_icon_meta.setLore(name_lore);
+        name_icon.setItemMeta(name_icon_meta);
+        quest_create.setItem(4, name_icon);
 
 
-        ItemStack positionicon = new ItemStack(QuestSettingType.QUESTPOSITION.getSymbol());
-        ItemMeta positioniconmeta = positionicon.getItemMeta();
-        assert positioniconmeta != null;
-        positioniconmeta.setDisplayName("任务位置");
-        List<String> positionlore = new ArrayList<>();
-        positionlore.add(ChatColor.GREEN+"点我设置任务位置");
-        if(quest_setting.get(questPlayer).isPositionSet()) {
-            positionlore.add(ChatColor.GREEN+"父任务"+ quest_setting.get(questPlayer).getQuestPosition().getParentquest());
-            positionlore.add(ChatColor.GREEN+"子任务"+ quest_setting.get(questPlayer).getQuestPosition().getChildquest());
-            positionlore.add(ChatColor.GREEN+"任务等级"+ quest_setting.get(questPlayer).getQuestPosition().getQuestlevel());
-            positioniconmeta.addEnchant(Enchantment.LUCK,1,false);
+        ItemStack position_icon = new ItemStack(QuestSettingType.QUESTPOSITION.getSymbol());
+        ItemMeta position_icon_meta = position_icon.getItemMeta();
+        assert position_icon_meta != null;
+        position_icon_meta.setDisplayName("任务位置");
+        List<String> position_lore = new ArrayList<>();
+        position_lore.add(ChatColor.GREEN + "点我设置任务位置");
+        if (quest_setting.get(questPlayer).isPositionSet()) {
+            position_lore.add(ChatColor.GREEN + "父任务" + quest_setting.get(questPlayer).getQuestPosition().getParentquest());
+            position_lore.add(ChatColor.GREEN + "子任务" + quest_setting.get(questPlayer).getQuestPosition().getChildquest());
+            position_lore.add(ChatColor.GREEN + "任务等级" + quest_setting.get(questPlayer).getQuestPosition().getQuestlevel());
+            position_icon_meta.addEnchant(Enchantment.LUCK, 1, false);
         }
-        positioniconmeta.setLore(positionlore);
-        positionicon.setItemMeta(positioniconmeta);
-        questcreate.setItem(5, positionicon);
+        position_icon_meta.setLore(position_lore);
+        position_icon.setItemMeta(position_icon_meta);
+        quest_create.setItem(5, position_icon);
 
 
-        ItemStack typeicon = new ItemStack(Material.ARROW);
-        ItemMeta typeiconmeta = typeicon.getItemMeta();
-        assert typeiconmeta != null;
-        typeiconmeta.setDisplayName("任务类型");
-        List<String> typelore = new ArrayList<>();
-        typelore.add(ChatColor.GREEN+"点我设置任务类型");
-        if(quest_setting.get(questPlayer).isTypeSet()) {
-            typelore.add(ChatColor.GREEN+ quest_setting.get(questPlayer).getQuestType().getKey().getKey());
-            typeiconmeta.addEnchant(Enchantment.LUCK,1,false);
-            typeicon.setType(quest_setting.get(questPlayer).getQuestType().getSymbol());
+        ItemStack type_icon = new ItemStack(Material.ARROW);
+        ItemMeta type_icon_meta = type_icon.getItemMeta();
+        assert type_icon_meta != null;
+        type_icon_meta.setDisplayName("任务类型");
+        List<String> type_lore = new ArrayList<>();
+        type_lore.add(ChatColor.GREEN + "点我设置任务类型");
+        if (quest_setting.get(questPlayer).isTypeSet()) {
+            type_lore.add(ChatColor.GREEN + quest_setting.get(questPlayer).getQuestType().getKey().getKey());
+            type_icon_meta.addEnchant(Enchantment.LUCK, 1, false);
+            type_icon.setType(quest_setting.get(questPlayer).getQuestType().getSymbol());
         }
-        typeiconmeta.setLore(typelore);
-        typeicon.setItemMeta(typeiconmeta);
-        questcreate.setItem(3, typeicon);
+        type_icon_meta.setLore(type_lore);
+        type_icon.setItemMeta(type_icon_meta);
+        quest_create.setItem(3, type_icon);
 
 
-        ItemStack targeticon = new ItemStack(QuestSettingType.QUESTACTION.getSymbol());
-        ItemMeta targeticonmeta = targeticon.getItemMeta();
-        assert targeticonmeta != null;
-        targeticonmeta.setDisplayName("任务目标");
-        List<String> targetlore = new ArrayList<>();
-        targetlore.add(ChatColor.GREEN+"点我设置任务目标");
-        if(quest_setting.get(questPlayer).isTargetSet()) {
+        ItemStack target_icon = new ItemStack(QuestSettingType.QUESTACTION.getSymbol());
+        ItemMeta target_icon_meta = target_icon.getItemMeta();
+        assert target_icon_meta != null;
+        target_icon_meta.setDisplayName("任务目标");
+        List<String> target_lore = new ArrayList<>();
+        target_lore.add(ChatColor.GREEN + "点我设置任务目标");
+        if (quest_setting.get(questPlayer).isTargetSet()) {
             for (QuestAction action : quest_setting.get(questPlayer).getQuest_target()) {
-                targetlore.addAll(Other.toStrList(action.serialize()));
+                target_lore.addAll(Other.toStrList(action.serialize()));
             }
-            targeticonmeta.addEnchant(Enchantment.ARROW_DAMAGE,1,false);
+            target_icon_meta.addEnchant(Enchantment.ARROW_DAMAGE, 1, false);
         }
-        targeticonmeta.setLore(targetlore);
-        targeticon.setItemMeta(targeticonmeta);
-        questcreate.setItem(6, targeticon);
+        target_icon_meta.setLore(target_lore);
+        target_icon.setItemMeta(target_icon_meta);
+        quest_create.setItem(6, target_icon);
 
 
-        ItemStack acccondtnicon = new ItemStack(QuestSettingType.QUESTACTION.getSymbol());
-        ItemMeta acccondtniconmeta = acccondtnicon.getItemMeta();
-        assert acccondtniconmeta != null;
-        acccondtniconmeta.setDisplayName("任务接受条件");
-        List<String> acccondtnlore = new ArrayList<>();
-        acccondtnlore.add(ChatColor.GREEN+"点我设置任务接受条件");
-        acccondtnlore.add("如果没有特别的任务接受条件，");
-        acccondtnlore.add("也请将其设置为“默认“！");
-        if(quest_setting.get(questPlayer).isAcceptConditionSet()) {
+        ItemStack icon = new ItemStack(QuestSettingType.QUESTACTION.getSymbol());
+        ItemMeta icon_meta = icon.getItemMeta();
+        assert icon_meta != null;
+        icon_meta.setDisplayName("任务接受条件");
+        List<String> lore = new ArrayList<>();
+        lore.add(ChatColor.GREEN + "点我设置任务接受条件");
+        lore.add("如果没有特别的任务接受条件，");
+        lore.add("也请将其设置为“默认“！");
+        if (quest_setting.get(questPlayer).isAcceptConditionSet()) {
             for (QuestAction action : quest_setting.get(questPlayer).getQuestAcceptCondition()) {
-                acccondtnlore.addAll(Other.toStrList(action.serialize()));
+                lore.addAll(Other.toStrList(action.serialize()));
             }
-            acccondtniconmeta.addEnchant(Enchantment.ARROW_DAMAGE,1,false);
+            icon_meta.addEnchant(Enchantment.ARROW_DAMAGE, 1, false);
         }
-        acccondtniconmeta.setLore(acccondtnlore);
-        acccondtnicon.setItemMeta(acccondtniconmeta);
-        questcreate.setItem(2, acccondtnicon);
+        icon_meta.setLore(lore);
+        icon.setItemMeta(icon_meta);
+        quest_create.setItem(2, icon);
 
 
-        ItemStack rewardicon = new ItemStack(QuestSettingType.QUESTREWARD.getSymbol());
-        ItemMeta rewardiconmeta = rewardicon.getItemMeta();
-        assert rewardiconmeta != null;
-        rewardiconmeta.setDisplayName("任务奖励");
-        List<String> rewardlore = new ArrayList<>();
-        rewardlore.add(ChatColor.GREEN+"点我设置任务奖励");
-        if(quest_setting.get(questPlayer).isRewardSet()) {
-            rewardlore.addAll(Other.toStrList(quest_setting.get(questPlayer).getQuestReward().serialize()));
-            rewardiconmeta.addEnchant(Enchantment.CHANNELING,1,false);
+        ItemStack reward_icon = new ItemStack(QuestSettingType.QUESTREWARD.getSymbol());
+        ItemMeta reward_icon_meta = reward_icon.getItemMeta();
+        assert reward_icon_meta != null;
+        reward_icon_meta.setDisplayName("任务奖励");
+        List<String> reward_lore = new ArrayList<>();
+        reward_lore.add(ChatColor.GREEN + "点我设置任务奖励");
+        if (quest_setting.get(questPlayer).isRewardSet()) {
+            reward_lore.addAll(Other.toStrList(quest_setting.get(questPlayer).getQuestReward().serialize()));
+            reward_icon_meta.addEnchant(Enchantment.CHANNELING, 1, false);
         }
-        rewardiconmeta.setLore(rewardlore);
-        rewardicon.setItemMeta(rewardiconmeta);
-        questcreate.setItem(7, rewardicon);
+        reward_icon_meta.setLore(reward_lore);
+        reward_icon.setItemMeta(reward_icon_meta);
+        quest_create.setItem(7, reward_icon);
 
 
-        ItemStack onicon = new ItemStack(Material.BARRIER);
-        ItemMeta oniconmeta = onicon.getItemMeta();
-        assert oniconmeta != null;
-        oniconmeta.setDisplayName("任务试运行");
-        List<String> onlore = new ArrayList<>();
+        ItemStack on_icon = new ItemStack(Material.BARRIER);
+        ItemMeta on_icon_meta = on_icon.getItemMeta();
+        assert on_icon_meta != null;
+        on_icon_meta.setDisplayName("任务试运行");
+        List<String> on_lore = new ArrayList<>();
 
-        if(quest_setting.get(questPlayer).isOn()){
-            oniconmeta.addEnchant(Enchantment.CHANNELING,1,false);
-            onicon.setType(Material.EMERALD);
-            onlore.add(ChatColor.GREEN+"任务现在正在运行！");
-            onlore.add(ChatColor.RED+"左键关闭任务！");
+        if (quest_setting.get(questPlayer).isOn()) {
+            on_icon_meta.addEnchant(Enchantment.CHANNELING, 1, false);
+            on_icon.setType(Material.EMERALD);
+            on_lore.add(ChatColor.GREEN + "任务现在正在运行！");
+            on_lore.add(ChatColor.RED + "左键关闭任务！");
         } else {
-            onlore.add(ChatColor.GREEN+"任务现在没有运行！");
-            onlore.add(ChatColor.RED+"左键打开任务！");
-            onlore.add(ChatColor.RED+"请在打开任务前确定所有参数已经被充分设置！");
+            on_lore.add(ChatColor.GREEN + "任务现在没有运行！");
+            on_lore.add(ChatColor.RED + "左键打开任务！");
+            on_lore.add(ChatColor.RED + "请在打开任务前确定所有参数已经被充分设置！");
         }
-        oniconmeta.setLore(onlore);
-        onicon.setItemMeta(oniconmeta);
-        questcreate.setItem(8, onicon);
+        on_icon_meta.setLore(on_lore);
+        on_icon.setItemMeta(on_icon_meta);
+        quest_create.setItem(8, on_icon);
 
 
-        ItemStack cficon = new ItemStack(Material.EMERALD);
-        ItemMeta cficonmeta = cficon.getItemMeta();
-        assert cficonmeta != null;
-        cficonmeta.setDisplayName("确认并创建任务");
-        List<String> cflore = new ArrayList<>();
-        cflore.add(ChatColor.GREEN+"点我确认并创建任务");
-        cflore.add("请确认所有状态准确地、充分地被设置！");
-        cflore.add("建议先试运行任务");
-        cflore.add("新建的任务的运行状态继承试运行状态");
-        cficonmeta.setLore(cflore);
-        cficon.setItemMeta(cficonmeta);
-        questcreate.setItem(1, cficon);
+        ItemStack cf_icon = new ItemStack(Material.EMERALD);
+        ItemMeta cf_icon_meta = cf_icon.getItemMeta();
+        assert cf_icon_meta != null;
+        cf_icon_meta.setDisplayName("确认并创建任务");
+        List<String> cf_lore = new ArrayList<>();
+        cf_lore.add(ChatColor.GREEN + "点我确认并创建任务");
+        cf_lore.add("请确认所有状态准确地、充分地被设置！");
+        cf_lore.add("建议先试运行任务");
+        cf_lore.add("新建的任务的运行状态继承试运行状态");
+        cf_icon_meta.setLore(cf_lore);
+        cf_icon.setItemMeta(cf_icon_meta);
+        quest_create.setItem(1, cf_icon);
 
 
-        ItemStack cicon = new ItemStack(Material.BARRIER);
-        ItemMeta ciconmeta = cicon.getItemMeta();
-        assert ciconmeta != null;
-        ciconmeta.setDisplayName("任务接受条件");
-        List<String> clore = new ArrayList<>();
-        clore.add(ChatColor.RED+"取消新建这个任务！");
-        clore.add(ChatColor.RED+"这会导致你刚才所完成的工作全部被删除！");
-        ciconmeta.setLore(clore);
-        cicon.setItemMeta(ciconmeta);
-        questcreate.setItem(0, cicon);
+        ItemStack c_icon = new ItemStack(Material.BARRIER);
+        ItemMeta c_icon_meta = c_icon.getItemMeta();
+        assert c_icon_meta != null;
+        c_icon_meta.setDisplayName("任务接受条件");
+        List<String> c_lore = new ArrayList<>();
+        c_lore.add(ChatColor.RED + "取消新建这个任务！");
+        c_lore.add(ChatColor.RED + "这会导致你刚才所完成的工作全部被删除！");
+        c_icon_meta.setLore(c_lore);
+        c_icon.setItemMeta(c_icon_meta);
+        quest_create.setItem(0, c_icon);
 
 
-        questPlayer.openInventory(questcreate);
+        questPlayer.openInventory(quest_create);
     }
 
     public static void openQuestSettingUI(Player questPlayer){
@@ -197,147 +197,147 @@ public class OpenUI {
 
     public static void openActionCreateUI(Player commander) {
 
-        Inventory tmpacui = Bukkit.createInventory(commander,18,ChatColor.GREEN+"创建一个任务条件");
+        Inventory tmp_ac_ui = Bukkit.createInventory(commander, 18, ChatColor.GREEN + "创建一个任务条件");
         int i = 0;
         for (QuestActionType value : QuestActionType.values()) {
-            tmpacui.setItem(i++, getItem("PAPER",value.getKey().getKey(),null, quest_action_setting.get(commander).getQuest_action_type().getKey() == (value).getKey()));
+            tmp_ac_ui.setItem(i++, getItem("PAPER", value.getKey().getKey(), null, quest_action_setting.get(commander).getQuest_action_type().getKey() == (value).getKey()));
         }
         List<String> a = new ArrayList<>();
         if(!quest_action_setting.get(commander).getQuest_action_data().getQuesttargetitem().isEmpty())
             for (ItemStack itemStack : quest_action_setting.get(commander).getQuest_action_data().getQuesttargetitem()) {
                 a.add(itemStack.serialize().toString());
             }
-        tmpacui.setItem(9, getItem("GRASS","设置物品信息",a,!quest_action_setting.get(commander).getQuest_action_data().getQuesttargetitem().isEmpty()));
+        tmp_ac_ui.setItem(9, getItem("GRASS", "设置物品信息", a, !quest_action_setting.get(commander).getQuest_action_data().getQuesttargetitem().isEmpty()));
         a.clear();
         if(!quest_action_setting.get(commander).getQuest_action_data().getQuesttargetentity().isEmpty())
             for (EntityType key : quest_action_setting.get(commander).getQuest_action_data().getQuesttargetentity().keySet()) {
                 a.add(key.name()+' '+ quest_action_setting.get(commander).getQuest_action_data().getQuesttargetentity().get(key));
             }
-        tmpacui.setItem(10, getItem("SPAWNER","设置实体信息",a,!quest_action_setting.get(commander).getQuest_action_data().getQuesttargetentity().isEmpty()));
+        tmp_ac_ui.setItem(10, getItem("SPAWNER", "设置实体信息", a, !quest_action_setting.get(commander).getQuest_action_data().getQuesttargetentity().isEmpty()));
 
-        tmpacui.setItem(11, getItem("VILLAGER_SPAWN_EGG","设置npc信息",null, quest_action_setting.get(commander).getQuest_action_data().getQuesttargetnpc()!=null));
+        tmp_ac_ui.setItem(11, getItem("VILLAGER_SPAWN_EGG", "设置npc信息", null, quest_action_setting.get(commander).getQuest_action_data().getQuesttargetnpc() != null));
 
         a.clear();
-        if(quest_action_setting.get(commander).getQuest_action_data().getTargetlocation()!=null)
-        a.add(quest_action_setting.get(commander).getQuest_action_data().getTargetlocation().toString());
-        tmpacui.setItem(12, getItem("COMPASS","设置位置信息",a,!quest_action_setting.get(commander).getQuest_action_data().isLocSet()));
+        if (quest_action_setting.get(commander).getQuest_action_data().getTargetlocation() != null)
+            a.add(quest_action_setting.get(commander).getQuest_action_data().getTargetlocation().toString());
+        tmp_ac_ui.setItem(12, getItem("COMPASS", "设置位置信息", a, !quest_action_setting.get(commander).getQuest_action_data().isLocSet()));
         a.clear();
         a.add(String.valueOf(quest_action_setting.get(commander).getQuest_action_data().getQuesttimelimit()));
-        tmpacui.setItem(13, getItem("CLOCK","设置时间限制",a, quest_action_setting.get(commander).getQuest_action_data().getQuesttimelimit()!=-1));
-        tmpacui.setItem(17, InvOperateEvent.confirm);
-        commander.openInventory(tmpacui);
+        tmp_ac_ui.setItem(13, getItem("CLOCK", "设置时间限制", a, quest_action_setting.get(commander).getQuest_action_data().getQuesttimelimit() != -1));
+        tmp_ac_ui.setItem(17, InvOperateEvent.confirm);
+        commander.openInventory(tmp_ac_ui);
     }
 
     public static void openActionSettingUI(Player commander) {
-        String viewname;
-        if(isSetTorC.get(commander)) viewname = ChatColor.GREEN+"任务达成的条件列表";
-        else viewname = ChatColor.GREEN+"任务触发或接受的条件列表";
-        Inventory tmptarget = Bukkit.createInventory(commander,18, viewname);
+        String view_name;
+        if (isSetTorC.get(commander)) view_name = ChatColor.GREEN + "任务达成的条件列表";
+        else view_name = ChatColor.GREEN + "任务触发或接受的条件列表";
+        Inventory tmp_target = Bukkit.createInventory(commander, 18, view_name);
         List<QuestAction> target;
-        if(isSetTorC.get(commander)) {
+        if (isSetTorC.get(commander)) {
             target = quest_setting.get(commander).getQuest_target();
         } else target = quest_setting.get(commander).getQuestAcceptCondition();
-        if(target.size()!=0)
+        if (target.size() != 0)
             for (int i = 0; i < target.size(); i++) {
-                ItemStack tmpis = new ItemStack(Material.REDSTONE,1);
-                setTempItemMeta(tmptarget, target, i, tmpis);
+                ItemStack tmp_is = new ItemStack(Material.REDSTONE, 1);
+                setTempItemMeta(tmp_target, target, i, tmp_is);
             }
 
-        tmptarget.setItem(9, getItem("DIAMOND_PICKAXE","添加一个条件",null));
-        tmptarget.setItem(10, getItem("DIAMOND_SHOVEL","删除一个条件",null));
-        tmptarget.setItem(17, InvOperateEvent.confirm);
-        commander.openInventory(tmptarget);
+        tmp_target.setItem(9, getItem("DIAMOND_PICKAXE", "添加一个条件", null));
+        tmp_target.setItem(10, getItem("DIAMOND_SHOVEL", "删除一个条件", null));
+        tmp_target.setItem(17, InvOperateEvent.confirm);
+        commander.openInventory(tmp_target);
     }
 
-    private static void setTempItemMeta(Inventory tmptarget, List<QuestAction> target, int i, ItemStack tmpis) {
-        ItemMeta tmpitm = tmpis.getItemMeta();
-        assert tmpitm != null;
-        tmpitm.setDisplayName(target.get(i).getQuest_action_name());
+    private static void setTempItemMeta(Inventory tmp_target, List<QuestAction> target, int i, ItemStack tmp_is) {
+        ItemMeta tmp_itm = tmp_is.getItemMeta();
+        assert tmp_itm != null;
+        tmp_itm.setDisplayName(target.get(i).getQuest_action_name());
         List<String> a = new ArrayList<>();
         for (String s : target.get(i).serialize().keySet()) {
-            a.add(s+"->"+target.get(i).serialize().get(s).toString());
+            a.add(s + "->" + target.get(i).serialize().get(s).toString());
         }
-        tmpitm.setLore(a);
-        tmpis.setItemMeta(tmpitm);
-        tmptarget.setItem(i,tmpis);
+        tmp_itm.setLore(a);
+        tmp_is.setItemMeta(tmp_itm);
+        tmp_target.setItem(i, tmp_is);
     }
 
-    public static void openPositionChooseMultiPageUI(Player commander, int pgindex) {
-        Inventory positionset = Bukkit.createInventory(commander,54,ChatColor.GREEN+"父任务设置：请选择父任务(第"+pgindex+"页)" );
-        int nowindex =45 * (pgindex - 1);
+    public static void openPositionChooseMultiPageUI(Player commander, int page) {
+        Inventory position_set = Bukkit.createInventory(commander, 54, ChatColor.GREEN + "父任务设置：请选择父任务(第" + page + "页)");
+        int now = 45 * (page - 1);
 
         for (int i = 0; i < 45; i++) {
             Quest quest = quests.get(i);
-            positionset.setItem(nowindex + i, getItem("BOOK", quest.getQuestName(), quest.getQuestDescription()));
+            position_set.setItem(now + i, getItem("BOOK", quest.getQuestName(), quest.getQuestDescription()));
         }
-        if(pgindex != 1)positionset.setItem(45, front_pg);
-        if(quests.size() > nowindex + 45)positionset.setItem(53, InvOperateEvent.next_pg);
-        commander.openInventory(positionset);
+        if (page != 1) position_set.setItem(45, front_pg);
+        if (quests.size() > now + 45) position_set.setItem(53, InvOperateEvent.next_pg);
+        commander.openInventory(position_set);
     }
 
     public static void openActionDeleteUI(Player commander) {
-        Inventory tmpacui = Bukkit.createInventory(commander,18,ChatColor.RED+"删除一个任务条件");
+        Inventory tmp_ac_ui = Bukkit.createInventory(commander, 18, ChatColor.RED + "删除一个任务条件");
         List<QuestAction> target = quest_setting.get(commander).getQuestAcceptCondition();
-        if(isSetTorC.get(commander)) target = quest_setting.get(commander).getQuest_target();
-        if(target.size()!=0)
+        if (isSetTorC.get(commander)) target = quest_setting.get(commander).getQuest_target();
+        if (target.size() != 0)
             for (int i = 0; i < target.size(); i++) {
-                ItemStack tmpis = new ItemStack(Material.BARRIER,1);
-                setTempItemMeta(tmpacui, target, i, tmpis);
+                ItemStack tmp_is = new ItemStack(Material.BARRIER, 1);
+                setTempItemMeta(tmp_ac_ui, target, i, tmp_is);
             }
-        tmpacui.setItem(17, InvOperateEvent.cancel);
-        commander.openInventory(tmpacui);
+        tmp_ac_ui.setItem(17, InvOperateEvent.cancel);
+        commander.openInventory(tmp_ac_ui);
     }
 
     public static void openRewardSettingUI(Player commander1) {
-        Inventory rewardset = Bukkit.createInventory(commander1,9,ChatColor.GREEN+"任务奖励设置" );
+        Inventory reward_set = Bukkit.createInventory(commander1, 9, ChatColor.GREEN + "任务奖励设置");
         List<String> a = new ArrayList<>();
         a.add("设置为系统任务");
         a.add("系统任务在发放奖励时不会收取创建人物品");
 
-        rewardset.setItem(0, getItem("REDSTONE_BLOCK","系统任务",a, quest_setting.get(commander1).getQuestReward().isAdmin()));
+        reward_set.setItem(0, getItem("REDSTONE_BLOCK", "系统任务", a, quest_setting.get(commander1).getQuestReward().isAdmin()));
         a = new ArrayList<>();
         a.add("设置经济奖励");
         a.add(String.valueOf(quest_setting.get(commander1).getQuestReward().getRewardmoney()));
-        rewardset.setItem(3, getItem("EMERALD_BLOCK","经济奖励",a, quest_setting.get(commander1).getQuestReward().getRewardmoney() != 0));
+        reward_set.setItem(3, getItem("EMERALD_BLOCK", "经济奖励", a, quest_setting.get(commander1).getQuestReward().getRewardmoney() != 0));
         a = new ArrayList<>();
         a.add("设置物品奖励");
-        for (ItemStack rewarditem : quest_setting.get(commander1).getQuestReward().getRewarditems()) {
-            a.add(rewarditem.serialize().toString());
+        for (ItemStack reward_item : quest_setting.get(commander1).getQuestReward().getRewarditems()) {
+            a.add(reward_item.serialize().toString());
         }
-        rewardset.setItem(5, getItem("DIAMOND_BLOCK","物品奖励",a,!quest_setting.get(commander1).getQuestReward().getRewarditems().isEmpty()));
-        rewardset.setItem(8, InvOperateEvent.confirm);
-        commander1.openInventory(rewardset);
+        reward_set.setItem(5, getItem("DIAMOND_BLOCK", "物品奖励", a, !quest_setting.get(commander1).getQuestReward().getRewarditems().isEmpty()));
+        reward_set.setItem(8, InvOperateEvent.confirm);
+        commander1.openInventory(reward_set);
     }
 
     public static void openEntityTypeSettingUI(Player commander) {
-        Inventory tmpetsui = Bukkit.createInventory(commander,54,ChatColor.GREEN+"选择实体类型");
+        Inventory tmp_ets_ui = Bukkit.createInventory(commander, 54, ChatColor.GREEN + "选择实体类型");
         int i = 1, j = 0;
-        List<String> tmplore = new ArrayList<>();
-        tmplore.add("这一组有下列实体：");
+        List<String> tmp_lore = new ArrayList<>();
+        tmp_lore.add("这一组有下列实体：");
 
         for (EntityType entitytype : EntityType.values()) {
-            tmplore.add(entitytype.name());
-            if(i == 8){
-                tmpetsui.setItem(j, getItem("CHEST","第"+(j+1)+"组实体类型",tmplore));
-                tmplore.clear();
-                tmplore.add("这一组有下列实体：");
-                i=1;
+            tmp_lore.add(entitytype.name());
+            if (i == 8) {
+                tmp_ets_ui.setItem(j, getItem("CHEST", "第" + (j + 1) + "组实体类型", tmp_lore));
+                tmp_lore.clear();
+                tmp_lore.add("这一组有下列实体：");
+                i = 1;
                 j++;
             } else i++;
         }
-        if(entity_type_setting.get(commander)!=null){
-            ItemStack tmpcon = InvOperateEvent.confirm.clone();
-            List<String> tmplist = new ArrayList<>();
-            tmplist.add("已经设置的实体类型：");
-            tmplist.add(entity_type_setting.get(commander).name());
-            ItemMeta tmpim = tmpcon.getItemMeta();
-            assert tmpim != null;
-            tmpim.setLore(tmplist);
-            tmpcon.setItemMeta(tmpim);
-            tmpetsui.setItem(53, InvOperateEvent.confirm);
-        } else tmpetsui.setItem(53, InvOperateEvent.cancel);
+        if (entity_type_setting.get(commander) != null) {
+            ItemStack tmp_con = InvOperateEvent.confirm.clone();
+            List<String> tmp_list = new ArrayList<>();
+            tmp_list.add("已经设置的实体类型：");
+            tmp_list.add(entity_type_setting.get(commander).name());
+            ItemMeta tmp_im = tmp_con.getItemMeta();
+            assert tmp_im != null;
+            tmp_im.setLore(tmp_list);
+            tmp_con.setItemMeta(tmp_im);
+            tmp_ets_ui.setItem(53, InvOperateEvent.confirm);
+        } else tmp_ets_ui.setItem(53, InvOperateEvent.cancel);
 
-        commander.openInventory(tmpetsui);
+        commander.openInventory(tmp_ets_ui);
 
     }
 
@@ -354,21 +354,21 @@ public class OpenUI {
             loc_setting.put(commander, new LocSet(Bukkit.getWorlds().get(0).getSpawnLocation()));
         }
         LocSet ls = loc_setting.get(commander);
-        Inventory tmpls = Bukkit.createInventory(commander, 54 ,"位置变量设置");
-        List<String> a =new ArrayList<>();
+        Inventory tmp_ls = Bukkit.createInventory(commander, 54, "位置变量设置");
+        List<String> a = new ArrayList<>();
         a.add("现在的位置信息:");
-        a.add("世界:"+ls.getWorld());
-        a.add("x:"+ls.getX());
-        a.add("y:"+ls.getY());
-        a.add("z:"+ls.getZ());
+        a.add("世界:" + ls.getWorld());
+        a.add("x:" + ls.getX());
+        a.add("y:" + ls.getY());
+        a.add("z:" + ls.getZ());
 
-        tmpls.setItem(0, getItem("COMPASS","反转X设置方向",a,ls.isXm()));
-        tmpls.setItem(2, getItem("COMPASS","反转Y设置方向",a,ls.isYm()));
-        tmpls.setItem(4, getItem("COMPASS","反转Z设置方向",a,ls.isZm()));
+        tmp_ls.setItem(0, getItem("COMPASS", "反转X设置方向", a, ls.isXm()));
+        tmp_ls.setItem(2, getItem("COMPASS", "反转Y设置方向", a, ls.isYm()));
+        tmp_ls.setItem(4, getItem("COMPASS", "反转Z设置方向", a, ls.isZm()));
 
-        tmpls.setItem(1, getItem("BARRIER","重设X(归零)",a));
-        tmpls.setItem(3, getItem("BARRIER","重设Y(归零)",a));
-        tmpls.setItem(5, getItem("BARRIER","重设Z(归零)",a));
+        tmp_ls.setItem(1, getItem("BARRIER", "重设X(归零)", a));
+        tmp_ls.setItem(3, getItem("BARRIER", "重设Y(归零)", a));
+        tmp_ls.setItem(5, getItem("BARRIER", "重设Z(归零)", a));
 
         char mX;
         if (ls.isXm()) mX = '+';
@@ -381,40 +381,40 @@ public class OpenUI {
         else mZ = '-';
 
         for (int i = 0; i < 5; i++) {
-            tmpls.setItem((i+1) * 9, getItem("PAPER","X"+mX+ powerTen(i),a));
-            tmpls.setItem((i+1)*9+1, getItem("PAPER","X"+mX+5* powerTen(i),a));
-            tmpls.setItem((i+1)*9+2, getItem("PAPER","Y"+mY+ powerTen(i),a));
-            tmpls.setItem((i+1)*9+3, getItem("PAPER","Y"+mY+5* powerTen(i),a));
-            tmpls.setItem((i+1)*9+4, getItem("PAPER","Z"+mZ+ powerTen(i),a));
-            tmpls.setItem((i+1)*9+5, getItem("PAPER","Z"+mZ+5* powerTen(i),a));
+            tmp_ls.setItem((i + 1) * 9, getItem("PAPER", "X" + mX + powerTen(i), a));
+            tmp_ls.setItem((i + 1) * 9 + 1, getItem("PAPER", "X" + mX + 5 * powerTen(i), a));
+            tmp_ls.setItem((i + 1) * 9 + 2, getItem("PAPER", "Y" + mY + powerTen(i), a));
+            tmp_ls.setItem((i + 1) * 9 + 3, getItem("PAPER", "Y" + mY + 5 * powerTen(i), a));
+            tmp_ls.setItem((i + 1) * 9 + 4, getItem("PAPER", "Z" + mZ + powerTen(i), a));
+            tmp_ls.setItem((i + 1) * 9 + 5, getItem("PAPER", "Z" + mZ + 5 * powerTen(i), a));
         }
         List<World> lw = Bukkit.getWorlds();
-        int worldsize = Bukkit.getWorlds().size();
-        if(worldsize <= 12){
-            int now = 6,line = 0;
-            for (int i = 0, lwSize = lw.size(); i < lwSize; i++,now++) {
-                if(now == 9) {
+        int world_size = Bukkit.getWorlds().size();
+        if (world_size <= 12) {
+            int now = 6, line = 0;
+            for (int i = 0, lwSize = lw.size(); i < lwSize; i++, now++) {
+                if (now == 9) {
                     now = 6;
-                    line ++;
+                    line++;
                 }
                 World world = lw.get(i);
-                tmpls.setItem(now+9*line, getItem("GRASS", world.getName(), a, ls.getWorld() == world));
+                tmp_ls.setItem(now + 9 * line, getItem("GRASS", world.getName(), a, ls.getWorld() == world));
             }
         } else {
             int now = 6,line = 0;
-            for (int i = 0; i < 12; i++,now++) {
-                if(now == 9) {
+            for (int i = 0; i < 12; i++, now++) {
+                if (now == 9) {
                     now = 6;
-                    line ++;
+                    line++;
                 }
                 World world = lw.get(i);
-                tmpls.setItem(now+9*line, getItem("GRASS", world.getName(), a, ls.getWorld() == world));
+                tmp_ls.setItem(now + 9 * line, getItem("GRASS", world.getName(), a, ls.getWorld() == world));
             }
-            tmpls.setItem(51, InvOperateEvent.next_pg);
+            tmp_ls.setItem(51, InvOperateEvent.next_pg);
         }
-        tmpls.setItem(52, InvOperateEvent.cancel);
-        tmpls.setItem(53, InvOperateEvent.confirm);
-        commander.openInventory(tmpls);
+        tmp_ls.setItem(52, InvOperateEvent.cancel);
+        tmp_ls.setItem(53, InvOperateEvent.confirm);
+        commander.openInventory(tmp_ls);
     }
 
     public static void openNPCSettingUI(@SuppressWarnings("unused") Player commander) {
@@ -423,14 +423,14 @@ public class OpenUI {
 
     public static void openIntSettingUI(Player commander) {
 
-        Inventory intset = Bukkit.createInventory(commander,54,"整数型变量设置");
+        Inventory int_set = Bukkit.createInventory(commander, 54, "整数型变量设置");
 
 
         List<String> a = new ArrayList<>();
         a.add("每一位不点就是0");
         a.add("要是点过了就回不到0了");
         a.add("只能重新设置！");
-        intset.setItem(45, getItem("BARRIER","重新设置",a));
+        int_set.setItem(45, getItem("BARRIER", "重新设置", a));
 
         a.clear();
         int ord = 0;
@@ -441,62 +441,62 @@ public class OpenUI {
         }
         a.add("现在的取值："+ord);
 
-        if(ord<0) {
-            intset.setItem(46, getItem("REDSTONE_TORCH", "负数", a, true));
+        if (ord < 0) {
+            int_set.setItem(46, getItem("REDSTONE_TORCH", "负数", a, true));
             ord *= -1;
-        } else intset.setItem(46, getItem("REDSTONE_TORCH", "负数", a));
+        } else int_set.setItem(46, getItem("REDSTONE_TORCH", "负数", a));
 
         for (int i = 1; i < 10; i++) {
-            intset.setItem(i-1, getItem("PAPER", i +"(个位)",null,i%10 == ord%10));
+            int_set.setItem(i - 1, getItem("PAPER", i + "(个位)", null, i % 10 == ord % 10));
         }
         for (int i = 11; i < 20; i++) {
-            intset.setItem(i-2, getItem("PAPER", i%10 +"(十位)",null,i%10 == (ord%100)/10));
+            int_set.setItem(i - 2, getItem("PAPER", i % 10 + "(十位)", null, i % 10 == (ord % 100) / 10));
         }
         for (int i = 21; i < 30; i++) {
-            intset.setItem(i-3, getItem("PAPER", i%10 +"(百位)",null,i%10 == (ord%1000)/100));
+            int_set.setItem(i - 3, getItem("PAPER", i % 10 + "(百位)", null, i % 10 == (ord % 1000) / 100));
         }
         for (int i = 31; i < 40; i++) {
-            intset.setItem(i-4, getItem("PAPER", i%10 +"(千位)",null,i%10 == (ord%10000)/1000));
+            int_set.setItem(i - 4, getItem("PAPER", i % 10 + "(千位)", null, i % 10 == (ord % 10000) / 1000));
         }
         for (int i = 41; i < 50; i++) {
-            intset.setItem(i-5, getItem("PAPER", i%10 +"(万位)",null,i%10 == (ord%100000)/10000));
+            int_set.setItem(i - 5, getItem("PAPER", i % 10 + "(万位)", null, i % 10 == (ord % 100000) / 10000));
         }
-        intset.setItem(52, InvOperateEvent.cancel);
-        intset.setItem(53, InvOperateEvent.confirm);
+        int_set.setItem(52, InvOperateEvent.cancel);
+        int_set.setItem(53, InvOperateEvent.confirm);
 
-        commander.openInventory(intset);
+        commander.openInventory(int_set);
     }
 
-    public static boolean uiINIT(InventoryClickEvent Invclick) {
-        Invclick.setCancelled(true);
-        return Invclick.getClickedInventory() == null || Invclick.getCurrentItem() == null;
+    public static boolean uiINIT(InventoryClickEvent Inv_click) {
+        Inv_click.setCancelled(true);
+        return Inv_click.getClickedInventory() == null || Inv_click.getCurrentItem() == null;
     }
 
     public static @NotNull
-    ItemStack getItem(String typname, String dpname, List<String> lore, boolean isench){
-        ItemStack a = new ItemStack(Material.valueOf(typname),1);
+    ItemStack getItem(String typ_name, String dp_name, List<String> lore, boolean is_en) {
+        ItemStack a = new ItemStack(Material.valueOf(typ_name), 1);
         ItemMeta b = a.getItemMeta();
-        if(b != null) b.setLore(lore);
+        if (b != null) b.setLore(lore);
         assert b != null;
-        b.setDisplayName(dpname);
-        if(isench) b.addEnchant(Enchantment.LUCK,1,true);
+        b.setDisplayName(dp_name);
+        if (is_en) b.addEnchant(Enchantment.LUCK, 1, true);
         a.setItemMeta(b);
 
         return a;
     }
 
-    public static @NotNull ItemStack getItem(String typname, String dpname, List<String> lore){
-        return getItem(typname,dpname,lore,false);
+    public static @NotNull
+    ItemStack getItem(String typ_name, String dp_name, List<String> lore) {
+        return getItem(typ_name, dp_name, lore, false);
     }
 
 
-
-    public static void openCityResidentsListUI(Player player,int now_page){
+    public static void openCityResidentsListUI(Player player, int now_page) {
         City city = City.getCity(player);
-        openCityResidentsListUI(city,player,now_page,false);
+        openCityResidentsListUI(city, player, now_page, false);
     }
 
-    public static void openCityResidentsListUI(City city,Player player,int now_page,boolean edit){
+    public static void openCityResidentsListUI(City city, Player player, int now_page, boolean edit) {
         if(city == null){
             player.sendMessage("找不到你的小镇哦~");
             return;
@@ -736,12 +736,12 @@ public class OpenUI {
 
     public static void openCityAdminUI(Player commander,int page) {
 
-        int totpage = cities.size()/45 +1;
-        Inventory temp = Bukkit.createInventory(commander,54,"City Admin Panel: Page "+page+" of "+totpage);
+        int tot_page = cities.size() / 45 + 1;
+        Inventory temp = Bukkit.createInventory(commander, 54, "City Admin Panel: Page " + page + " of " + tot_page);
 
         int index = (page - 1) * 45;
-        for (int i = 0; (i < 45)&&(index+i < city_names.size()); i++) {
-            String name = city_names.get(i+index);
+        for (int i = 0; (i < 45) && (index + i < city_names.size()); i++) {
+            String name = city_names.get(i + index);
             List<String> lore = new ArrayList<>();
             try {
                 lore.add("Mayor: " + Bukkit.getOfflinePlayer(cities.get(name).getMayor()).getName());
@@ -750,8 +750,8 @@ public class OpenUI {
             lore.addAll(cities.get(name).getDescription());
             temp.setItem(i, getItem("PAPER", name, lore));
         }
-        if(page!=1) temp.setItem(45, front_pg);
-        if(page!=totpage) temp.setItem(53, next_pg);
+        if (page != 1) temp.setItem(45, front_pg);
+        if (page != tot_page) temp.setItem(53, next_pg);
         List<String> lore = new ArrayList<>();
         lore.add("debug状态："+debug);
         lore.add("开启debug会让后台接受更多信息");
@@ -760,18 +760,18 @@ public class OpenUI {
     }
 
     public static void openCityIconSetUI(City city, Player commander, int page) {
-        if(city == null){
+        if (city == null) {
             return;
         }
-        int totpage = Material.values().length/45 +1;
-        Inventory temp = Bukkit.createInventory(commander,54,"CityIconSet: "+ city.getName() +" Page "+page+" of "+totpage);
+        int tot_page = Material.values().length / 45 + 1;
+        Inventory temp = Bukkit.createInventory(commander, 54, "CityIconSet: " + city.getName() + " Page " + page + " of " + tot_page);
         int index = (page - 1) * 45;
-        for (int i = 0; (i < 45)&&(index+i < Material.values().length); i++) {
-            Material material = Material.values()[i+index];
+        for (int i = 0; (i < 45) && (index + i < Material.values().length); i++) {
+            Material material = Material.values()[i + index];
             temp.setItem(i, new ItemStack(material));
         }
-        if(page!=1) temp.setItem(45, front_pg);
-        if(page!=totpage) temp.setItem(53, next_pg);
+        if (page != 1) temp.setItem(45, front_pg);
+        if (page != tot_page) temp.setItem(53, next_pg);
         List<String> lore = new ArrayList<>();
         lore.add("手持可以容纳文字的物品");
         lore.add("比如成书或纸笔");
@@ -781,19 +781,19 @@ public class OpenUI {
     }
 
     public static void openCityPermGroupSetUI(City city, Player commander, String name, int perm_page, int player_page) {
-        if(city == null) return;
+        if (city == null) return;
         Map<String, Boolean> perm_list = city.getPermList().get(name);
         List<String> perm_group = new ArrayList<>(city.getPermGroupList().keySet());
         List<UUID> player_list = city.getPermGroupList().get(name);
-        int perm_totpage = perm_list.size()/27 + 1, player_totpage = player_list.size()/18 + 1;
-        Inventory temp = Bukkit.createInventory(commander,54,"City权限组设置: " + name + " 权限组P" + perm_page
-                + "/" + perm_totpage + " 玩家P" + player_page + "/" + perm_totpage);
-        perm_page = min(perm_page, perm_totpage);
-        player_page = min(player_page, player_totpage);
+        int perm_tot_page = perm_list.size() / 27 + 1, player_tot_page = player_list.size() / 18 + 1;
+        Inventory temp = Bukkit.createInventory(commander, 54, "City权限组设置: " + name + " 权限组P" + perm_page
+                + "/" + perm_tot_page + " 玩家P" + player_page + "/" + perm_tot_page);
+        perm_page = min(perm_page, perm_tot_page);
+        player_page = min(player_page, player_tot_page);
         int ori = (perm_page - 1) * 27;
         for (int i = 0; i < 27 && i + ori < perm_list.size(); i++) {
             String perm_name = perm_group.get(i + ori);
-            temp.addItem(new CityPermissionItemStack(perm_name,perm_list.get(perm_name)));
+            temp.addItem(new CityPermissionItemStack(perm_name, perm_list.get(perm_name)));
         }
 
         ori = (player_page - 1) * 18;
@@ -821,7 +821,7 @@ public class OpenUI {
         player_fp_meta.setLore(lore);
         player_np_meta.setLore(lore);
         lore = new ArrayList<>();
-        lore.add(ChatColor.GREEN+"对权限翻页！");
+        lore.add(ChatColor.GREEN + "对权限翻页！");
         perm_np_meta.setLore(lore);
         perm_fp_meta.setLore(lore);
         player_front_page.setItemMeta(player_fp_meta);
@@ -829,31 +829,31 @@ public class OpenUI {
         perm_front_page.setItemMeta(perm_fp_meta);
         perm_next_page.setItemMeta(perm_np_meta);
 
-        if(player_page!=1) temp.setItem(46,player_front_page);
-        if(perm_page!=1) temp.setItem(48,perm_front_page);
-        if(player_page!=player_totpage) temp.setItem(47,player_next_page);
-        if(perm_page!=perm_totpage) temp.setItem(49,perm_next_page);
-        if(!(name.equals("residents")||name.equals("mayor")))
-            temp.setItem(50,getItem("EMERALD","向这个权限组添加玩家",null));
-        temp.setItem(52,getItem("PAPER",city.getName(),null));
-        temp.setItem(53,confirm);
+        if (player_page != 1) temp.setItem(46, player_front_page);
+        if (perm_page != 1) temp.setItem(48, perm_front_page);
+        if (player_page != player_tot_page) temp.setItem(47, player_next_page);
+        if (perm_page != perm_tot_page) temp.setItem(49, perm_next_page);
+        if (!(name.equals("residents") || name.equals("mayor")))
+            temp.setItem(50, getItem("EMERALD", "向这个权限组添加玩家", null));
+        temp.setItem(52, getItem("PAPER", city.getName(), null));
+        temp.setItem(53, confirm);
         commander.openInventory(temp);
     }
 
     public static void openIconSetUI(Player commander, int page) {
 
-        int totpage = 23;
-        Inventory temp = Bukkit.createInventory(commander,54,"IconChoose: Page "+page+" of "+totpage);
+        int tot_page = 23;
+        Inventory temp = Bukkit.createInventory(commander, 54, "IconChoose: Page " + page + " of " + tot_page);
         int index = (page - 1) * 45;
         for (int i = 0; (i < 45); i++) {
-            Material material = Material.values()[i+index];
+            Material material = Material.values()[i + index];
             temp.setItem(i, new ItemStack(material));
         }
-        if(page!=1) temp.setItem(45, front_pg);
-        if(page!=totpage) temp.setItem(53, next_pg);
+        if (page != 1) temp.setItem(45, front_pg);
+        if (page != tot_page) temp.setItem(53, next_pg);
         List<String> lore = new ArrayList<>();
         lore.add("放弃设置该权限的对应方块，将会默认为纸");
-        temp.setItem(46,getItem("BARRIER","放弃设置",lore));
+        temp.setItem(46, getItem("BARRIER", "放弃设置", lore));
         commander.openInventory(temp);
 
     }
