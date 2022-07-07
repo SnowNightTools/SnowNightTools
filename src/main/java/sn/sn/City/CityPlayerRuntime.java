@@ -19,39 +19,20 @@ public class CityPlayerRuntime extends Thread{
 
     @Override
     public void run() {
-        while (true){
+        try {
+            while (true){
 
-            try {
-                if(tps<5) sleep(2500);
-                else if(tps<10) sleep(1000);
-                else if(tps<15) sleep(500);
-            } catch (InterruptedException ignored) {
-            }
-
-            boolean found = false;
-            City cin = city_in.getOrDefault(tracker,null);
-            if(cin==null){
-
-                for (String s : cities.keySet()) {
-                    if(found)break;
-                    City city = cities.get(s);
-                    for (Range range : city.getTerritorial()) {
-                        if(found)break;
-                        if (range.isInRange(tracker.getLocation())) {
-                            foundPermGrpAndSet(city);
-                            found = true;
-                        }
-                    }
+                try {
+                    if(tps<5) sleep(2500);
+                    else if(tps<10) sleep(1000);
+                    else if(tps<15) sleep(500);
+                } catch (InterruptedException ignored) {
                 }
 
-            } else {
-                for (Range range : cin.getTerritorial()) {
-                    if(range.isInRange(tracker.getLocation())) {
-                        found = true;
-                        Other.sendDebug(tracker.getName() + " in " + cin.getName());
-                    }
-                }
-                if(!found){
+                boolean found = false;
+                City cin = city_in.getOrDefault(tracker,null);
+                if(cin==null){
+
                     for (String s : cities.keySet()) {
                         if(found)break;
                         City city = cities.get(s);
@@ -63,13 +44,35 @@ public class CityPlayerRuntime extends Thread{
                             }
                         }
                     }
+
+                } else {
+                    for (Range range : cin.getTerritorial()) {
+                        if(range.isInRange(tracker.getLocation())) {
+                            found = true;
+                            Other.sendDebug(tracker.getName() + " in " + cin.getName());
+                        }
+                    }
                     if(!found){
-                        city_in.remove(tracker);
+                        for (String s : cities.keySet()) {
+                            if(found)break;
+                            City city = cities.get(s);
+                            for (Range range : city.getTerritorial()) {
+                                if(found)break;
+                                if (range.isInRange(tracker.getLocation())) {
+                                    foundPermGrpAndSet(city);
+                                    found = true;
+                                }
+                            }
+                        }
+                        if(!found){
+                            city_in.remove(tracker);
+                        }
                     }
                 }
-            }
 
-            if(!tracker.isOnline())return;
+                if(!tracker.isOnline())return;
+            }
+        } catch (Exception ignored) {
         }
     }
 
