@@ -313,8 +313,8 @@ public class Quest_CE implements CommandExecutor {
     private boolean workQuestCreateCE(String[] args) {
         if(args.length==2){
 
-            if(args[1].contains("\\")|| args[1].contains("'")|| args[1].contains("\"")|| args[1].contains(" ")|| args[1].contains(".")){
-                questPlayer.sendMessage(ChatColor.RED+"非法的任务名！");
+            if (Other.checkName(args[1])){
+                questPlayer.sendMessage("这个名字容易引发bug，换一个吧！");
                 return true;
             }
             String name = args[1];

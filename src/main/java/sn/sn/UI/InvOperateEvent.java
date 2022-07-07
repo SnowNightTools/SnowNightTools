@@ -451,6 +451,12 @@ public class InvOperateEvent implements Listener {
                 c.add((str)->{
                     if (city.getPermGroupList().containsKey(str)||str.equalsIgnoreCase("all")) {
                         commander.sendMessage("该名已经被使用。");
+                        AskSetEvent.askSetAsync(commander,q,c,null,null);
+                        return;
+                    }
+                    if (Other.checkName(str)){
+                        commander.sendMessage("这个名字容易引发bug，换一个吧！");
+                        AskSetEvent.askSetAsync(commander,q,c,null,null);
                         return;
                     }
                     city.setPermToPermGroup(str,"all",false);

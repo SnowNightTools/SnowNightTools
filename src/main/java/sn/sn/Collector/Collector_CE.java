@@ -14,8 +14,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import sn.sn.Basic.AutoSave;
 import sn.sn.Basic.Other;
-import sn.sn.Range.Range;
 import sn.sn.Basic.SnFileIO;
+import sn.sn.Range.Range;
 
 import java.io.File;
 import java.io.IOException;
@@ -337,6 +337,10 @@ public class Collector_CE implements CommandExecutor {
         if (checkRange(commander)) return true;
         if (collector_names.contains(args[1])){
             sender.sendMessage("换个名字吧，这个名字有人用过了……");
+            return true;
+        }
+        if (Other.checkName(args[1])){
+            commander.sendMessage("这个名字容易引发bug，换一个吧！");
             return true;
         }
 

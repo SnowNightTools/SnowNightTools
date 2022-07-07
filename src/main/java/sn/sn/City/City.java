@@ -10,6 +10,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import sn.sn.Basic.Other;
 import sn.sn.Basic.SnFileIO;
 import sn.sn.Range.Range;
 
@@ -283,6 +284,9 @@ public class City {
 
     public void addPlayerToPermGroup(String pg_name, UUID player) {
         if(pg_name.equals("mayor")||pg_name.equals("residents")) return;
+        if (Other.checkName(pg_name)){
+            return;
+        }
         if(perm_set.contains(player))return;
         perm_set.add(player);
         List<UUID> list = this.perm_group.getOrDefault(pg_name, new ArrayList<>());
