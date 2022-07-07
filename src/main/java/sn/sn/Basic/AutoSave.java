@@ -1,9 +1,13 @@
 package sn.sn.Basic;
 
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
+import sn.sn.City.CityPermissionItemStack;
 import sn.sn.Collector.Collector;
+import sn.sn.Quest.Quest;
 
 import java.io.IOException;
+import java.util.Map;
 
 import static sn.sn.Sn.*;
 
@@ -44,10 +48,22 @@ public class AutoSave extends Thread{
         city_yml.set("amount",cnt);
 
         //quest save
-        n = 0;
 
+        for (Quest quest : quests) {
+            quest.saveQuestToYml();
+        }
+
+        //corresponding_material save
+        cnt = 0;
+        Map<String, Material> map = CityPermissionItemStack.getCorrespondingMaterials();
+        for (String s : map.keySet()) {
+            city_perm_corresponding_material_yml.set(cnt+".pn",s);
+            city_perm_corresponding_material_yml.set(cnt++ +".material",map.get(s).getKey().getKey());
+        }
+        city_perm_corresponding_material_yml.set("amount",cnt);
 
         try {
+            city_perm_corresponding_material_yml.save(city_perm_corresponding_material_file);
             city_yml.save(city_file);
             collector_yml.save(collector_file);
             bin_yml.save(bin_file);

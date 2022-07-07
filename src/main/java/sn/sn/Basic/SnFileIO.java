@@ -1086,7 +1086,7 @@ public class SnFileIO {
             for (int i1 = 0; i1 < pg_perm_amt; i1++) {
                 String perm = ymlfile.getString(path+".perm."+i+".perm."+i1+".p_name","");
                 boolean on = ymlfile.getBoolean(path+".perm."+i+".perm."+i1+".p_on",false);
-                temp.addPermToPermGroup(name,perm,on);
+                temp.setPermToPermGroup(name,perm,on);
             }
         }
 

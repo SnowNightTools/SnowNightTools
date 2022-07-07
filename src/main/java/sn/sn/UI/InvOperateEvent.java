@@ -16,11 +16,12 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import sn.sn.Ask.AskSet;
+import sn.sn.Ask.AskSetEvent;
 import sn.sn.Basic.Other;
 import sn.sn.Basic.PlayerOperation;
 import sn.sn.Basic.SnFileIO;
 import sn.sn.City.City;
+import sn.sn.City.CityPermissionItemStack;
 import sn.sn.Express.Express_CE;
 import sn.sn.Quest.*;
 
@@ -28,6 +29,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.function.Consumer;
 
+import static java.lang.Math.min;
 import static sn.sn.City.City_CE.workCityWarp;
 import static sn.sn.Quest.Quest.getQuest;
 import static sn.sn.Sn.*;
@@ -52,10 +54,10 @@ import static sn.sn.Sn.*;
 public class InvOperateEvent implements Listener {
 
 
-    public static final ItemStack pg_up = new ItemStack(Material.WRITABLE_BOOK);
+    public static final ItemStack front_pg = new ItemStack(Material.WRITABLE_BOOK);
     public static final ItemStack cancel = new ItemStack(Material.BARRIER);
     public static final ItemStack confirm = new ItemStack(Material.EMERALD);
-    public static final ItemStack pg_dn = new ItemStack(Material.WRITABLE_BOOK);
+    public static final ItemStack next_pg = new ItemStack(Material.WRITABLE_BOOK);
 
     public InvOperateEvent(){
         ItemMeta confirm_meta = confirm.getItemMeta();
@@ -67,14 +69,14 @@ public class InvOperateEvent implements Listener {
         cancel_meta.setDisplayName(ChatColor.RED+"取消");
         cancel.setItemMeta(cancel_meta);
 
-        ItemMeta pg_up_meta = pg_up.getItemMeta();
+        ItemMeta pg_up_meta = front_pg.getItemMeta();
         assert pg_up_meta != null;
         pg_up_meta.setDisplayName(ChatColor.WHITE+"上一页");
-        pg_up.setItemMeta(pg_up_meta);
-        ItemMeta pg_dn_meta = pg_dn.getItemMeta();
+        front_pg.setItemMeta(pg_up_meta);
+        ItemMeta pg_dn_meta = next_pg.getItemMeta();
         assert pg_dn_meta != null;
         pg_dn_meta.setDisplayName(ChatColor.WHITE+"下一页");
-        pg_dn.setItemMeta(pg_dn_meta);
+        next_pg.setItemMeta(pg_dn_meta);
     }
 
     private static void putEntitySet(Player commander, Object ignored){
@@ -113,6 +115,7 @@ public class InvOperateEvent implements Listener {
         Player commander;
         commander = Bukkit.getPlayer(inv_click.getView().getPlayer().getUniqueId());
         if(commander==null)return;
+
         if(inv_click.getView().getTitle().equalsIgnoreCase(ChatColor.BLUE+"雪花速递")){
             workExpressIO(inv_click,commander);
             return;
@@ -193,6 +196,11 @@ public class InvOperateEvent implements Listener {
             return;
         }
 
+        if(inv_click.getView().getTitle().equalsIgnoreCase("IconChoose")){
+            workIconChooseIO(inv_click, commander);
+            return;
+        }
+
         if(inv_click.getView().getTitle().contains("城市加入申请管理面板")) {
             workCityApplicationAcceptIO(inv_click,commander);
             return;
@@ -223,8 +231,233 @@ public class InvOperateEvent implements Listener {
             return;
         }
 
+        if(inv_click.getView().getTitle().contains("权限组选择界面")){
+            workCityPermChooseCE(inv_click, commander);
+            return;
+        }
+
+        if(inv_click.getView().getTitle().contains("City权限组设置")){
+            workCityPermGroupSetIO(inv_click, commander);
+            return;
+        }
+
+        if(inv_click.getView().getTitle().contains("PGPlayerAdd")){
+            workCityPermGroupAddPlayerIO(inv_click, commander);
+            return;
+        }
+
         if(inv_click.getView().getTitle().contains("MyCity")) {
             workMyCityIO(inv_click,commander);
+        }
+    }
+
+    private void workCityPermGroupAddPlayerIO(InventoryClickEvent inv_click, Player commander) {
+        if (OpenUI.uiINIT(inv_click)) return;
+        String city_name;
+        try {
+            city_name = Objects.requireNonNull(Objects.requireNonNull(inv_click.getInventory().getItem(52)).getItemMeta()).getDisplayName();
+        } catch (Exception e) {
+            Other.sendError(e.getLocalizedMessage());
+            return;
+        }
+        City city = cities.get(city_name);
+        if(city == null) return;
+        List<OfflinePlayer> not_set_player = new ArrayList<>(List.of(Bukkit.getOfflinePlayers()));
+        List<UUID> not_set = new ArrayList<>();
+        not_set_player.forEach(p -> not_set.add(p.getUniqueId()));
+        for (Map.Entry<String, List<UUID>> entry : city.getPermGroupList().entrySet()) {
+            not_set.removeAll(entry.getValue());
+        }
+        not_set.remove(city.getMayor());
+        not_set.removeAll(city.getResidents());
+        int tot_page = not_set.size() / 45 + 1;
+        int page = Integer.parseInt(Objects.requireNonNull(getPage(inv_click)));
+        String name = getCity(inv_click);
+
+        switch (inv_click.getSlot()) {
+            case 53:
+                if(page != tot_page){
+                    OpenUI.openCityPermGroupAddPlayerUI(city, commander,name,page+1);
+                }
+                return;
+            case 45:
+                if(page != 1){
+                    OpenUI.openCityPermGroupAddPlayerUI(city, commander,name,page-1);
+                }
+                return;
+            case 46:
+                int now = (page - 1) * 45;
+                List<UUID> addList = not_set.subList(now, min(now + 45, not_set.size()));
+                addList.forEach(u -> city.addPlayerToPermGroup(name,u));
+                OpenUI.openCityPermGroupAddPlayerUI(city, commander,name,page);
+                return;
+            case 47:
+                not_set.forEach(u -> city.addPlayerToPermGroup(name,u));
+                OpenUI.openCityPermGroupSetUI(city, commander,name,1,1);
+                return;
+            case 51:
+                OpenUI.openCityPermGroupSetUI(city, commander,name,1,1);
+                return;
+            default:
+                if(inv_click.getSlot() >= 45) return;
+                ItemMeta im = Objects.requireNonNull(inv_click.getCurrentItem()).getItemMeta();
+                if(!(im instanceof SkullMeta)){
+                    Other.sendError("发现非法物品存在于UI界面");
+                    return;
+                }
+                city.addPlayerToPermGroup(name, Objects.requireNonNull(((SkullMeta) im).getOwningPlayer()).getUniqueId());
+                OpenUI.openCityPermGroupAddPlayerUI(city, commander,name,page);
+        }
+    }
+
+    private void workCityPermGroupSetIO(InventoryClickEvent inv_click, Player commander) {
+        if (OpenUI.uiINIT(inv_click)) return;
+        String city_name;
+        try {
+            city_name = Objects.requireNonNull(Objects.requireNonNull(inv_click.getInventory().getItem(52)).getItemMeta()).getDisplayName();
+        } catch (Exception e) {
+            Other.sendError(e.getLocalizedMessage());
+            return;
+        }
+        City city = cities.get(city_name);
+        if(city == null) return;
+        int perm_page, player_page;
+        String name;
+        try {
+            String title = inv_click.getView().getTitle();
+            String perm_page_str = title.split("/")[0];
+            perm_page_str = perm_page_str.split("组P")[1];
+            String player_page_str = title.split("/")[1];
+            player_page_str = player_page_str.split("家P")[1];
+            perm_page = Integer.parseInt(perm_page_str);
+            player_page = Integer.parseInt(player_page_str);
+            name = title.split(": ")[1];
+            name = name.split(" 权限")[0];
+        } catch (Exception e) {
+            Other.sendError(e.getLocalizedMessage());
+            return;
+        }
+        Map<String, Boolean> perm_list = city.getPermList().get(name);
+        List<UUID> player_list = city.getPermGroupList().get(name);
+        int perm_tot_page = perm_list.size()/27 + 1, player_tot_page = player_list.size()/18 + 1;
+        int slot = inv_click.getSlot();
+        switch (slot){
+            case 46:
+                if (player_page != 1)
+                    OpenUI.openCityPermGroupSetUI(city, commander,name,perm_page,player_page - 1);
+                return;
+            case 47:
+                if (player_page != player_tot_page)
+                    OpenUI.openCityPermGroupSetUI(city, commander,name,perm_page,player_page + 1);
+                return;
+            case 48:
+                if (perm_page != 1)
+                    OpenUI.openCityPermGroupSetUI(city, commander,name,perm_page - 1,player_page);
+                return;
+            case 49:
+                if (perm_page != perm_tot_page)
+                    OpenUI.openCityPermGroupSetUI(city, commander,name,perm_page + 1,player_page);
+                return;
+            case 50:
+                OpenUI.openCityPermGroupAddPlayerUI(city, commander,name,1);
+                return;
+            case 53:
+                OpenUI.openCityPermGroupChooseUI(city, commander);
+                return;
+            default:
+                if(slot < 27){
+                    ItemStack item = inv_click.getCurrentItem();
+                    if(!(item instanceof CityPermissionItemStack)) {
+                        Other.sendError("在操作城镇权限时发现非法物品存在于UI界面");
+                        return;
+                    }
+                    CityPermissionItemStack c = (CityPermissionItemStack) item;
+                    String perm_name = c.getPermName();
+                    city.setPermToPermGroup(name,perm_name,!perm_list.getOrDefault(perm_name,false));
+                    OpenUI.openCityPermGroupSetUI(city, commander,name,perm_page,player_page);
+                } else if(slot < 45) {
+                    ItemStack item = inv_click.getCurrentItem();
+                    ItemMeta im = Objects.requireNonNull(item).getItemMeta();
+                    if(!(im instanceof SkullMeta)) {
+                        Other.sendError("在操作城镇权限时发现非法物品存在于UI界面");
+                        return;
+                    }
+                    city.removePlayerFromPermGroup(name, Objects.requireNonNull(((SkullMeta) im).getOwningPlayer()).getUniqueId());
+                    OpenUI.openCityPermGroupSetUI(city, commander,name,perm_page,player_page);
+                }
+        }
+    }
+
+    private void workIconChooseIO(InventoryClickEvent inv_click, Player commander) {
+        if (OpenUI.uiINIT(inv_click)) return;
+        int page = Integer.parseInt(Objects.requireNonNull(getPage(inv_click)));
+        final int page_amount = 23;
+        switch (inv_click.getSlot()){
+            case 53:
+                if(page != page_amount){
+                    OpenUI.openCityAdminUI(commander,page+1);
+                }
+                return;
+            case 45:
+                if(page != 1){
+                    OpenUI.openCityAdminUI(commander,page-1);
+                }
+                return;
+            case 46:
+                if(setting.containsKey(commander)){
+                    setting.get(commander).accept(Material.PAPER);
+                    commander.sendMessage("你的设置被放弃，默认设置为"+Material.PAPER);
+                } else {
+                    commander.sendMessage("你的设置被放弃");
+                }
+                return;
+            default:
+                Material c;
+                try {
+                    c = Objects.requireNonNull(inv_click.getCurrentItem()).getType();
+                } catch (Exception ignored) {
+                    return;
+                }
+                if(setting.containsKey(commander)){
+                    setting.get(commander).accept(c);
+                    commander.sendMessage("设置成功");
+                } else {
+                    commander.sendMessage("无法找到你的设置项目，这可能是一个bug，请联系管理员。");
+                }
+
+        }
+    }
+
+    private void workCityPermChooseCE(InventoryClickEvent inv_click, Player commander) {
+        if (OpenUI.uiINIT(inv_click)) return;
+        String s = getCity(inv_click);
+        City city = cities.get(s);
+        if (city == null) return;
+        switch (inv_click.getSlot()){
+            case 45:
+                OpenUI.openCityManageUI(city, commander,false);
+                return;
+            case 46:
+                List<String> q = new ArrayList<>();
+                q.add("请输入权限组名");
+                List<Consumer<String>> c = new ArrayList<>();
+                c.add((str)->{
+                    if (city.getPermGroupList().containsKey(str)||str.equalsIgnoreCase("all")) {
+                        commander.sendMessage("该名已经被使用。");
+                        return;
+                    }
+                    city.setPermToPermGroup(str,"all",false);
+                    commander.sendMessage("已经添加新的权限组！");
+                    OpenUI.openCityPermGroupChooseUI(city, commander);
+                });
+                AskSetEvent.askSetAsync(commander,q,c,null,null);
+                commander.closeInventory();
+                return;
+            default:
+                if(Objects.requireNonNull(inv_click.getCurrentItem()).hasItemMeta()){
+                    String name = Objects.requireNonNull(inv_click.getCurrentItem().getItemMeta()).getDisplayName();
+                    OpenUI.openCityPermGroupSetUI( city, commander, name,1 , 1);
+                }
         }
     }
 
@@ -257,7 +490,6 @@ public class InvOperateEvent implements Listener {
                     return;
                 }
                 OpenUI.openCityManageUI(cities.get(city_name), commander,false);
-                return;
         }
     }
 
@@ -329,6 +561,9 @@ public class InvOperateEvent implements Listener {
             case 36:
                 OpenUI.openCityResidentsListUI(city,commander,1,edit);
                 return;
+            case 44:
+                OpenUI.openCityPermGroupChooseUI(city,commander);
+                return;
             case 45:
                 edit = !edit;
                 OpenUI.openCityManageUI(city,commander,edit);
@@ -342,7 +577,7 @@ public class InvOperateEvent implements Listener {
                     city.setWelcomeMessage(s1);
                     commander.sendMessage("已经将城市欢迎语设置为："+s1);
                 });
-                AskSet.askSetAsync(commander,q,c,null,player -> player.sendMessage("操作取消！"));
+                AskSetEvent.askSetAsync(commander,q,c,null, player -> player.sendMessage("操作取消！"));
             case 3:
                 if(commander.isOp()||commander.hasPermission("sn.city.admin")){
                     city.setAdmin();
@@ -360,7 +595,7 @@ public class InvOperateEvent implements Listener {
     }
 
     private String getCity(InventoryClickEvent inv_click) {
-        String s = inv_click.getView().getTitle().split(" ")[1];
+        String s = inv_click.getView().getTitle().split(": ")[1];
         if (s.contains(" Page ")) {
             s = s.split(" Page ")[0];
         }
@@ -437,7 +672,7 @@ public class InvOperateEvent implements Listener {
                         };
                         List<Consumer<String>> list = new ArrayList<>();
                         list.add(react);
-                        AskSet.askSetAsync(commander,
+                        AskSetEvent.askSetAsync(commander,
                                 q,
                                 list,
                                 (player1)-> player1.sendMessage("操作成功"),
@@ -524,7 +759,7 @@ public class InvOperateEvent implements Listener {
         };
         list.add(consumer);
         String finalSp = getPage(inv_click);
-        AskSet.askSetAsync(commander, list,
+        AskSetEvent.askSetAsync(commander, list,
                 (player) -> {
                     if (finalSp != null)
                     OpenUI.openCityApplicationAcceptUI(
@@ -795,7 +1030,7 @@ public class InvOperateEvent implements Listener {
 
         }
 
-        if (Objects.requireNonNull(inv_click.getClickedInventory()).contains(pg_up)||Objects.requireNonNull(inv_click.getClickedInventory()).contains(pg_dn)) {
+        if (Objects.requireNonNull(inv_click.getClickedInventory()).contains(front_pg)||Objects.requireNonNull(inv_click.getClickedInventory()).contains(next_pg)) {
             //玩家点击的是上面的设置内容
             int pg_index = Integer.parseInt(inv_click.getView().getTitle(), inv_click.getView().getTitle().indexOf("第")+1, inv_click.getView().getTitle().indexOf("页"),10);
             String name;
@@ -1173,8 +1408,8 @@ public class InvOperateEvent implements Listener {
             for (int i = now; (i < now+45)&&(i < items.size()); i++) {
                 temp.addItem(items.get(i));
             }
-            if(now_page != 1) temp.setItem(45, pg_up);
-            if(now_page != pages) temp.setItem(53, pg_dn);
+            if(now_page != 1) temp.setItem(45, front_pg);
+            if(now_page != pages) temp.setItem(53, next_pg);
             commander.openInventory(temp);
         }
     }

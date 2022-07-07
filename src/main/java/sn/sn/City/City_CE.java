@@ -13,7 +13,7 @@ import sn.sn.Range.Range;
 import java.util.*;
 import java.util.function.Consumer;
 
-import static sn.sn.Ask.AskSet.askSetAsync;
+import static sn.sn.Ask.AskSetEvent.askSetAsync;
 import static sn.sn.City.City.getCity;
 import static sn.sn.Collector.Collector_CE.getRange;
 import static sn.sn.UI.OpenUI.*;
@@ -214,11 +214,16 @@ public class City_CE implements CommandExecutor {
         }
         if(args[2].equals("add")){
             if(args.length != 4) {
-                help(commander);
+
                 return true;
             }
             perm_city_settable.add(args[3]);
             commander.sendMessage("添加了可设置权限: "+ args[3]);
+            OpenUI.openIconSetUI(commander,1);
+            setting.put(commander,(mat) ->{
+                CityPermissionItemStack.addCorrespondingMaterials(args[3],(Material) mat);
+                commander.sendMessage("成功添加了该权限的对应方块");
+            });
             return true;
         }
         if(args[2].equals("remove")){
@@ -380,7 +385,7 @@ public class City_CE implements CommandExecutor {
         if(args.length != 5)return help(commander);
         City city = City.checkMayorAndGetCity(commander);
         if(city == null) return true;
-        city.addPermToPermGroup(args[2],args[3],Boolean.getBoolean(args[4]));
+        city.setPermToPermGroup(args[2],args[3],Boolean.getBoolean(args[4]));
         sender.sendMessage("权限组"+args[2]+"的权限"+ args[3]+"已经被设置为"+args[4]);
         return true;
     }
@@ -488,6 +493,19 @@ public class City_CE implements CommandExecutor {
         }
         if(city_names.contains(args[1])){
             sender.sendMessage("已经有人用过这个名字了……换一个吧！");
+            return true;
+        }
+        if(args[1].contains("City")||args[1].contains("List")||
+                args[1].contains(":")||args[1].contains(" ")||
+                args[1].contains("Group")||args[1].contains("Page")||
+                args[1].contains("Set")||args[1].contains("of")||
+                args[1].contains("Perm")||args[1].contains("：")||
+                args[1].contains("面板")||args[1].contains("界面")||
+                args[1].contains("设置")||args[1].contains("Add")||
+                args[1].contains("My")||args[1].contains("Bin")||
+                args[1].contains("\\")||args[1].contains("'")||args[1].contains("\"")||
+                args[1].contains("\n")||args[1].contains("\t")||args[1].contains("\0")){
+            sender.sendMessage("你取的这个名字容易引起系统bug，换一个吧！");
             return true;
         }
         city_names.add(args[1]);

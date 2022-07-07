@@ -6,22 +6,20 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import static sn.sn.Ask.AskSet.askSet;
+import static sn.sn.Ask.AskSetEvent.askSet;
 
 public class AskSetThread extends Thread {
 
-    final Player commander;
-    final int amount;
-    final List<Consumer<String>> consumer_list;
-    final int time_limit;
-    final List<String> questions;
-    final Consumer<Player> n_done;
-    final Consumer<Player> done;
+    private final Player commander;
+    private final List<Consumer<String>> consumer_list;
+    private final int time_limit;
+    private final List<String> questions;
+    private final Consumer<Player> n_done;
+    private final Consumer<Player> done;
 
     public AskSetThread(Player commander, List<String> questions, List<Consumer<String>> consumer_list, int time_limit){
         this.questions = questions;
         this.commander = commander;
-        this.amount = questions.size();
         this.consumer_list = consumer_list;
         this.time_limit = time_limit;
         n_done = null;
@@ -31,7 +29,6 @@ public class AskSetThread extends Thread {
     public AskSetThread(Player commander, List<String> questions, List<Consumer<String>> consumer_list, int time_limit, Consumer<Player> n_done){
         this.questions = questions;
         this.commander = commander;
-        this.amount = questions.size();
         this.consumer_list = consumer_list;
         this.time_limit = time_limit;
         this.n_done = n_done;
@@ -40,7 +37,6 @@ public class AskSetThread extends Thread {
     public AskSetThread(Player commander, List<String> questions, List<Consumer<String>> consumer_list, int time_limit, Consumer<Player> done, Consumer<Player> n_done){
         this.questions = questions;
         this.commander = commander;
-        this.amount = questions.size();
         this.consumer_list = consumer_list;
         this.time_limit = time_limit;
         this.n_done = n_done;

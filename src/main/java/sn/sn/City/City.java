@@ -24,17 +24,19 @@ public class City {
     private ItemStack icon;
     private String name, welcome_message = "欢迎~";
     private List<String> description = new ArrayList<>();
-    private List<UUID> residents = new ArrayList<>();
-    private List<UUID> application = new ArrayList<>();
-    private Map<String, List<UUID>> perm_group = new HashMap<>();
     private UUID mayor;
     private List<Range> territorial = new ArrayList<>();
-    private Map<String ,Map<String, Boolean>> perm_list = new HashMap<>();
-    private List<Chunk> chunks = new ArrayList<>();
-    private boolean activated = false;
-    private Map<String, Location> warps = new HashMap<>();
     private CITY_TYPE type = CITY_TYPE.NOT_ACTIVE;
-    private boolean admin;
+    private final List<UUID> residents = new ArrayList<>();
+    private final List<UUID> application = new ArrayList<>();
+    private final List<UUID> perm_set = new ArrayList<>();
+    private final Map<String, List<UUID>> perm_group = new HashMap<>();
+    private final Map<String ,Map<String, Boolean>> perm_list = new HashMap<>();
+    private final List<Chunk> chunks = new ArrayList<>();
+    private final Map<String, Location> warps = new HashMap<>();
+    private boolean admin = false;
+    private boolean activated = false;
+
 
     private Inventory shop;
     private Long bal = 0L;
@@ -79,6 +81,12 @@ public class City {
         for (String s : perm_city_settable) {
             default_perm.put(s,false);
         }
+        Map<String,Boolean> mayor_perm = new HashMap<>();
+        for (String s : perm_city_settable) {
+            mayor_perm.put(s,true);
+        }
+
+        perm_list.put("mayor",mayor_perm);
         perm_list.put("default",default_perm);
         perm_group.put("default",residents);
     }
@@ -263,6 +271,10 @@ public class City {
 
     public void setMayor(UUID mayor) {
         this.mayor = mayor;
+        perm_set.add(mayor);
+        List<UUID> t = new ArrayList<>();
+        t.add(mayor);
+        perm_group.put("default",t);
     }
 
     public Map<String, Map<String, Boolean>> getPermList() {
@@ -270,14 +282,29 @@ public class City {
     }
 
     public void addPlayerToPermGroup(String pg_name, UUID player) {
+        if(perm_set.contains(player))return;
+        perm_set.add(player);
         List<UUID> list = this.perm_group.getOrDefault(pg_name, new ArrayList<>());
         list.add(player);
         perm_group.put(pg_name, list);
     }
 
-    public void addPermToPermGroup(String pg_name, String perm, boolean on) {
+    public void removePlayerFromPermGroup(String pg_name, UUID player) {
+        if(!perm_set.contains(player))return;
+        perm_set.remove(player);
+        List<UUID> list = this.perm_group.get(pg_name);
+        if(!list.contains(player))return;
+        list.remove(player);
+        perm_group.put(pg_name, list);
+    }
+
+    public void setPermToPermGroup(String pg_name, String perm, boolean on) {
         Map<String, Boolean> temp = perm_list.getOrDefault(pg_name,new HashMap<>());
-        temp.put(perm,on);
+        if(perm.equalsIgnoreCase("all")){
+            for (String s : perm_city_settable) {
+                temp.put(s,on);
+            }
+        } else temp.put(perm,on);
         perm_list.put(pg_name,temp);
     }
 
@@ -373,6 +400,7 @@ public class City {
     }
 
     public void addResident(UUID resident) {
+        perm_set.add(mayor);
         this.residents.add(resident);
         perm_group.put("default",residents);
         city_joined.put(Bukkit.getOfflinePlayer(resident), true);

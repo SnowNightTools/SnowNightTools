@@ -13,6 +13,7 @@ import sn.sn.Basic.LocSet;
 import sn.sn.Basic.Other;
 import sn.sn.City.CITY_TYPE;
 import sn.sn.City.City;
+import sn.sn.City.CityPermissionItemStack;
 import sn.sn.Quest.Quest;
 import sn.sn.Quest.QuestAction;
 import sn.sn.Quest.QuestActionType;
@@ -20,10 +21,10 @@ import sn.sn.Quest.QuestSettingType;
 
 import java.util.*;
 
+import static com.google.common.primitives.Ints.min;
 import static sn.sn.Basic.SnFileIO.getSkull;
 import static sn.sn.Sn.*;
-import static sn.sn.UI.InvOperateEvent.pg_dn;
-import static sn.sn.UI.InvOperateEvent.pg_up;
+import static sn.sn.UI.InvOperateEvent.*;
 
 @SuppressWarnings("SpellCheckingInspection")
 public class OpenUI {
@@ -269,8 +270,8 @@ public class OpenUI {
             Quest quest = quests.get(i);
             positionset.setItem(nowindex + i, getItem("BOOK", quest.getQuestName(), quest.getQuestDescription()));
         }
-        if(pgindex != 1)positionset.setItem(45, pg_up);
-        if(quests.size() > nowindex + 45)positionset.setItem(53, InvOperateEvent.pg_dn);
+        if(pgindex != 1)positionset.setItem(45, front_pg);
+        if(quests.size() > nowindex + 45)positionset.setItem(53, InvOperateEvent.next_pg);
         commander.openInventory(positionset);
     }
 
@@ -409,7 +410,7 @@ public class OpenUI {
                 World world = lw.get(i);
                 tmpls.setItem(now+9*line, getItem("GRASS", world.getName(), a, ls.getWorld() == world));
             }
-            tmpls.setItem(51, InvOperateEvent.pg_dn);
+            tmpls.setItem(51, InvOperateEvent.next_pg);
         }
         tmpls.setItem(52, InvOperateEvent.cancel);
         tmpls.setItem(53, InvOperateEvent.confirm);
@@ -518,8 +519,8 @@ public class OpenUI {
             }
             temp.addItem(getSkull(resident, lore));
         }
-        if(now_page != 1)temp.setItem(45,pg_up);
-        if(now_page != page_amount)temp.setItem(53,pg_dn);
+        if(now_page != 1)temp.setItem(45, front_pg);
+        if(now_page != page_amount)temp.setItem(53, next_pg);
         temp.setItem(52,getItem("PAPER","共有"+(city.getResidents().size()+1)+"人",null));
         player.openInventory(temp);
     }
@@ -554,8 +555,8 @@ public class OpenUI {
                 temp.addItem(getItem("PAPER",s,lore));
             }
         }
-        if(now_page != 1)temp.setItem(45,pg_up);
-        if(now_page != page_amount)temp.setItem(53,pg_dn);
+        if(now_page != 1)temp.setItem(45, front_pg);
+        if(now_page != page_amount)temp.setItem(53, next_pg);
         temp.setItem(52,getItem("PAPER","共有"+(city.getWarps().size())+"个Warp",null));
         player.openInventory(temp);
     }
@@ -613,7 +614,12 @@ public class OpenUI {
         lore = new ArrayList<>();
         lore.add("城市居民列表");
         lore.add(ChatColor.GREEN+"点击进入城市居民管理界面");
-        temp.setItem(36,getItem("PLAYER_HEAD","城市居民列表",lore));
+        temp.setItem(36,getItem("PLAYER_HEAD","城市居民",lore));
+
+        lore = new ArrayList<>();
+        lore.add("城市权限组列表");
+        lore.add(ChatColor.GREEN+"点击进入城市权限组管理界面");
+        temp.setItem(44,getItem("PAPER","城市权限组",lore));
 
         lore = new ArrayList<>();
         lore.add("点我进入或退出编辑状态");
@@ -695,17 +701,31 @@ public class OpenUI {
         for (int i = now; (i < now+45)&&(i < applications.size()); i++) {
             temp.addItem(getSkull(applications.get(i),null));
         }
-        if(page!=1) temp.setItem(45,pg_up);
-        if(page!=page_total) temp.setItem(53,pg_dn);
+        if(page!=1) temp.setItem(45, front_pg);
+        if(page!=page_total) temp.setItem(53, next_pg);
         player.openInventory(temp);
     }
 
     public static void openCityPermGroupChooseUI(City city,Player commander) {
         if(city == null) return;
         Inventory temp = Bukkit.createInventory(commander,54,"权限组选择界面: "+city.getName());
+        int cnt = 0;
         for (String s : city.getPermGroupList().keySet()) {
             temp.addItem(getItem("PAPER",s,null));
+            if(cnt++ == 45){
+                commander.sendMessage("可能有部分权限组未列出，请使用指令查看！");
+                break;
+            }
         }
+
+        List<String> lore = new ArrayList<>();
+        lore.add("点我返回主页");
+        temp.setItem(45,getItem("PAPER","返回",lore));
+
+        lore = new ArrayList<>();
+        lore.add("点我添加一个权限组");
+        temp.setItem(46,getItem("PAPER","添加",lore));
+
         commander.openInventory(temp);
     }
 
@@ -730,12 +750,13 @@ public class OpenUI {
             lore.addAll(cities.get(name).getDescription());
             temp.setItem(i, getItem("PAPER", name, lore));
         }
-        if(page!=1) temp.setItem(45,pg_up);
-        if(page!=totpage) temp.setItem(53,pg_dn);
+        if(page!=1) temp.setItem(45, front_pg);
+        if(page!=totpage) temp.setItem(53, next_pg);
         List<String> lore = new ArrayList<>();
         lore.add("debug状态："+debug);
         lore.add("开启debug会让后台接受更多信息");
         temp.setItem(46,getItem("IRON_AXE","debug",lore,debug));
+        commander.openInventory(temp);
     }
 
     public static void openCityIconSetUI(City city, Player commander, int page) {
@@ -749,15 +770,120 @@ public class OpenUI {
             Material material = Material.values()[i+index];
             temp.setItem(i, new ItemStack(material));
         }
-        if(page!=1) temp.setItem(45,pg_up);
-        if(page!=totpage) temp.setItem(53,pg_dn);
+        if(page!=1) temp.setItem(45, front_pg);
+        if(page!=totpage) temp.setItem(53, next_pg);
         List<String> lore = new ArrayList<>();
         lore.add("手持可以容纳文字的物品");
-        lore.add("比如成书");
+        lore.add("比如成书或纸笔");
         lore.add("然后点这里可以设置城市描述");
-        lore.add("请注意，只记录第一页的内容");
-        lore.add("而且每行的长度是有限制的");
         temp.setItem(46,getItem("BOOK","导入城市描述",lore));
+        commander.openInventory(temp);
+    }
+
+    public static void openCityPermGroupSetUI(City city, Player commander, String name, int perm_page, int player_page) {
+        if(city == null) return;
+        Map<String, Boolean> perm_list = city.getPermList().get(name);
+        List<String> perm_group = new ArrayList<>(city.getPermGroupList().keySet());
+        List<UUID> player_list = city.getPermGroupList().get(name);
+        int perm_totpage = perm_list.size()/27 + 1, player_totpage = player_list.size()/18 + 1;
+        Inventory temp = Bukkit.createInventory(commander,54,"City权限组设置: " + name + " 权限组P" + perm_page
+                + "/" + perm_totpage + " 玩家P" + player_page + "/" + perm_totpage);
+        perm_page = min(perm_page, perm_totpage);
+        player_page = min(player_page, player_totpage);
+        int ori = (perm_page - 1) * 27;
+        for (int i = 0; i < 27 && i + ori < perm_list.size(); i++) {
+            String perm_name = perm_group.get(i + ori);
+            temp.addItem(new CityPermissionItemStack(perm_name,perm_list.get(perm_name)));
+        }
+
+        ori = (player_page - 1) * 18;
+        for (int i = 0; i < 18 && i + ori < player_list.size(); i++) {
+            temp.setItem(i + 27, getSkull(player_list.get(i), null));
+        }
+
+        ItemStack player_front_page = new ItemStack(Material.WRITABLE_BOOK);
+        ItemStack player_next_page = new ItemStack(Material.WRITABLE_BOOK);
+        ItemStack perm_front_page = new ItemStack(Material.WRITABLE_BOOK);
+        ItemStack perm_next_page = new ItemStack(Material.WRITABLE_BOOK);
+        ItemMeta player_fp_meta = player_front_page.getItemMeta();
+        ItemMeta player_np_meta = player_next_page.getItemMeta();
+        ItemMeta perm_fp_meta = perm_front_page.getItemMeta();
+        ItemMeta perm_np_meta = perm_next_page.getItemMeta();
+        if(perm_fp_meta==null||perm_np_meta==null||player_fp_meta==null||player_np_meta==null){
+            return;
+        }
+        player_fp_meta.setDisplayName("上一页");
+        player_np_meta.setDisplayName("下一页");
+        perm_fp_meta.setDisplayName("上一页");
+        perm_np_meta.setDisplayName("下一页");
+        List<String> lore = new ArrayList<>();
+        lore.add(ChatColor.YELLOW+"对玩家翻页！");
+        player_fp_meta.setLore(lore);
+        player_np_meta.setLore(lore);
+        lore = new ArrayList<>();
+        lore.add(ChatColor.GREEN+"对权限翻页！");
+        perm_np_meta.setLore(lore);
+        perm_fp_meta.setLore(lore);
+        player_front_page.setItemMeta(player_fp_meta);
+        player_next_page.setItemMeta(player_np_meta);
+        perm_front_page.setItemMeta(perm_fp_meta);
+        perm_next_page.setItemMeta(perm_np_meta);
+
+        if(player_page!=1) temp.setItem(46,player_front_page);
+        if(perm_page!=1) temp.setItem(48,perm_front_page);
+        if(player_page!=player_totpage) temp.setItem(47,player_next_page);
+        if(perm_page!=perm_totpage) temp.setItem(49,perm_next_page);
+
+        temp.setItem(50,getItem("EMERALD","向这个权限组添加玩家",null));
+        temp.setItem(52,getItem("PAPER",city.getName(),null));
+        temp.setItem(53,confirm);
+        commander.openInventory(temp);
+    }
+
+    public static void openIconSetUI(Player commander, int page) {
+
+        int totpage = 23;
+        Inventory temp = Bukkit.createInventory(commander,54,"IconChoose: Page "+page+" of "+totpage);
+        int index = (page - 1) * 45;
+        for (int i = 0; (i < 45); i++) {
+            Material material = Material.values()[i+index];
+            temp.setItem(i, new ItemStack(material));
+        }
+        if(page!=1) temp.setItem(45, front_pg);
+        if(page!=totpage) temp.setItem(53, next_pg);
+        List<String> lore = new ArrayList<>();
+        lore.add("放弃设置该权限的对应方块，将会默认为纸");
+        temp.setItem(46,getItem("BARRIER","放弃设置",lore));
+        commander.openInventory(temp);
+
+    }
+
+    public static void openCityPermGroupAddPlayerUI(City city, Player commander, String name, int page) {
+        if(city == null) return;
+        List<OfflinePlayer> not_set_player = new ArrayList<>(List.of(Bukkit.getOfflinePlayers()));
+        List<UUID> not_set = new ArrayList<>();
+        not_set_player.forEach(p -> not_set.add(p.getUniqueId()));
+        for (Map.Entry<String, List<UUID>> entry : city.getPermGroupList().entrySet()) {
+            not_set.removeAll(entry.getValue());
+        }
+        not_set.remove(city.getMayor());
+        not_set.removeAll(city.getResidents());
+        int tot_page = not_set.size() / 45 + 1;
+        page = min(page, tot_page);
+        Inventory temp = Bukkit.createInventory(commander, 54, "PGPlayerAdd: " + name
+                + " Page " + page + " of " + tot_page);
+        int now = (page - 1) * 45;
+        List<String> lore = new ArrayList<>();
+        lore.add("点击将其加入权限组！");
+        for (int i = 0; i < 45 && (i + now) < not_set.size(); i++) {
+            temp.addItem(getSkull(not_set.get(i + now),lore));
+        }
+        if(page!=1) temp.setItem(45, front_pg);
+        if(page!=tot_page) temp.setItem(53, next_pg);
+        temp.setItem(46,getItem("EMERALD","将整页玩家都加入",null));
+        temp.setItem(47,getItem("EMERALD","将能加入的玩家都加入",null));
+        temp.setItem(51,confirm);
+        temp.setItem(52,getItem("PAPER",city.getName(),null));
         commander.openInventory(temp);
     }
 }

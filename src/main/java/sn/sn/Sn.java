@@ -14,6 +14,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import sn.sn.Basic.*;
 import sn.sn.City.City;
+import sn.sn.City.CityPermissionItemStack;
 import sn.sn.City.City_CE;
 import sn.sn.Collector.Collector;
 import sn.sn.Collector.CollectorRuntime;
@@ -44,6 +45,7 @@ public class Sn extends JavaPlugin {
     public static File collector_file;
     public static File bin_file;
     public static File city_file;
+    public static File city_perm_corresponding_material_file;
     public static File data_folder;
     public static YamlConfiguration share_yml;
     public static YamlConfiguration bin_yml;
@@ -52,6 +54,7 @@ public class Sn extends JavaPlugin {
     public static YamlConfiguration quest_yml;
     public static YamlConfiguration playerquest_yml;
     public static YamlConfiguration collector_yml;
+    public static YamlConfiguration city_perm_corresponding_material_yml;
     public static String share_path, quest_path, playerquest_path, plugin_path;
 
     public static Map<Player, Location> start_point = new HashMap<>();
@@ -145,25 +148,10 @@ public class Sn extends JavaPlugin {
         registerClass(QuestReward.class);
         registerClass(QuestActionData.class);
 
-
         config_file = new File(data_folder.getAbsolutePath() + File.separator + "config.yml");
         Other.sendInfo(data_folder.getAbsolutePath() + File.separator + "config.yml");
 
-        int brkcnt1 = 1 ;
-        while (true) {
-            saveDefaultConfig();
-
-            Other.sendDebug("尝试寻找config 第"+brkcnt1+"次，会尝试5次。");
-            config_file = new File(data_folder.getAbsolutePath() + File.separator + "config.yml");
-            brkcnt1 ++;
-            if(brkcnt1 >= 5) {
-                sendError("config为空文件，请配置雪夜插件的config文件！");
-                break;
-            }
-            config_yml = YamlConfiguration.loadConfiguration(config_file);
-            if(config_yml.contains("debug"))break;
-        }
-
+        loadConfig();
 
         debug = config_yml.getBoolean("debug",false);
         eco_use_vault = config_yml.getBoolean("vault",false);
@@ -179,6 +167,9 @@ public class Sn extends JavaPlugin {
 
 
         try {
+            city_perm_corresponding_material_file = new File(data_folder,"city_perm_corresponding_material.yml");
+            //noinspection ResultOfMethodCallIgnored
+            city_perm_corresponding_material_file.createNewFile();
 
             collector_file = new File(data_folder,"collector.yml");
             //noinspection ResultOfMethodCallIgnored
@@ -206,17 +197,19 @@ public class Sn extends JavaPlugin {
         collector_yml = YamlConfiguration.loadConfiguration(collector_file);
         quest_yml = YamlConfiguration.loadConfiguration(quest_file);
         playerquest_yml = YamlConfiguration.loadConfiguration(playerquest_file);
+        city_perm_corresponding_material_yml = YamlConfiguration.loadConfiguration(city_perm_corresponding_material_file);
         //plugin_yml = YamlConfiguration.loadConfiguration(plugin_file);
 
         // load quests
         loadQuests();
 
-        // load collectors
+        // load collectors and bins
         loadCollectors();
         loadBin();
 
-        //load cities
+        //load cities and city_perm_corresponding_material
         loadCities();
+        loadCityCorrespondingMaterial();
 
         if(eco_use_vault)
             if(!Other.initVault()) Other.sendInfo("vault插件挂钩失败，请检查vault插件和经济、权限插件！");
@@ -243,6 +236,27 @@ public class Sn extends JavaPlugin {
         Objects.requireNonNull(getCommand("quest")).setExecutor(new Quest_CE());
 
         Other.sendInfo("雪夜插件已加载~");
+    }
+
+    private void loadCityCorrespondingMaterial() {
+        CityPermissionItemStack.checkCorrespondingMaterialFromYml(city_perm_corresponding_material_yml);
+    }
+
+    private void loadConfig() {
+        int brkcnt1 = 1 ;
+        while (true) {
+            saveDefaultConfig();
+
+            Other.sendDebug("尝试寻找config 第"+brkcnt1+"次，会尝试5次。");
+            config_file = new File(data_folder.getAbsolutePath() + File.separator + "config.yml");
+            brkcnt1 ++;
+            if(brkcnt1 >= 5) {
+                sendError("config为空文件，请配置雪夜插件的config文件！");
+                break;
+            }
+            config_yml = YamlConfiguration.loadConfiguration(config_file);
+            if(config_yml.contains("debug"))break;
+        }
     }
 
     private void loadCities() {

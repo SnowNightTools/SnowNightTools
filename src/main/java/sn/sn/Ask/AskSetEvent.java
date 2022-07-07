@@ -17,12 +17,12 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 @SuppressWarnings("unused")
-public class AskSet implements Listener {
+public class AskSetEvent implements Listener {
 
     private final UUID uuid;
     private final Consumer<String> consumer;
 
-    public AskSet(UUID uuid, Consumer<String> consumer) {
+    public AskSetEvent(UUID uuid, Consumer<String> consumer) {
         this.uuid = uuid;
         this.consumer = consumer;
     }
@@ -32,17 +32,18 @@ public class AskSet implements Listener {
         commander.sendMessage("开始设置变量：");
 
         List<String> tmpl = new ArrayList<>();
-        int waiting = 0;
+        double waiting = 0;
         for (int i = 0; i < amount; i++) {
 
-            AskSet task = new AskSet(commander.getUniqueId(), tmpl::add);
+            AskSetEvent task = new AskSetEvent(commander.getUniqueId(), tmpl::add);
             Bukkit.getPluginManager().registerEvents(task, Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("Sn")));
 
             while (tmpl.size() != i+1){
                 //noinspection BusyWait
-                Thread.sleep(10000);
-                waiting += 10;
-                commander.sendMessage("你设置了"+tmpl.size()+"/"+amount+"个参数,你还有"+(time_limit -waiting)+"秒来完成设置");
+                Thread.sleep(500);
+                if(waiting % 10 == 0)
+                    commander.sendMessage("你设置了"+tmpl.size()+"/"+amount+"个参数,你还有"+(time_limit - waiting)+"秒来完成设置");
+                waiting += 0.5;
                 commander.sendMessage(questions.get(i));
                 if(waiting >= time_limit){
                     commander.sendMessage("设置取消");
@@ -184,7 +185,5 @@ public class AskSet implements Listener {
             consumer.accept(event.getMessage());
             HandlerList.unregisterAll(this);
         }
-
     }
-
 }

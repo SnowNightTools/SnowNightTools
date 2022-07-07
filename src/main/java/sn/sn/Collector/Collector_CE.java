@@ -26,7 +26,7 @@ import java.util.Objects;
 import static java.lang.Math.pow;
 import static sn.sn.Collector.CollectorThrowThread.rubbishes_folder;
 import static sn.sn.Sn.*;
-import static sn.sn.UI.InvOperateEvent.pg_dn;
+import static sn.sn.UI.InvOperateEvent.next_pg;
 
 /*
 * Collector_CE 扫地机器人 与 简单收集系统 类
@@ -425,7 +425,7 @@ public class Collector_CE implements CommandExecutor {
         for (int i = 0; i < 45; i++) {
             temp.addItem(items.get(i));
         }
-        temp.setItem(53, pg_dn);
+        temp.setItem(53, next_pg);
         commander.openInventory(temp);
     }
 

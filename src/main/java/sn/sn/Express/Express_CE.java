@@ -14,7 +14,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import sn.sn.Ask.AskSet;
+import sn.sn.Ask.AskSetEvent;
 import sn.sn.Basic.Other;
 import sn.sn.Basic.SnFileIO;
 import sn.sn.Sn;
@@ -383,7 +383,7 @@ public class Express_CE implements CommandExecutor {
             Other.sendInfo("完成，请/reload,或重启服务器。");
         });
 
-        AskSet.askSetAsync(sender_player,q,d,null,p -> p.sendMessage("设置被打断！"));
+        AskSetEvent.askSetAsync(sender_player,q,d,null, p -> p.sendMessage("设置被打断！"));
 
         return false;
     }

@@ -278,54 +278,54 @@ public class Quest implements Cloneable, ConfigurationSerializable, Serializable
             return false;
         }
 
-        if (ymlfile.getInt(name + ".tpye") != 1) {
+        if (ymlfile.getInt(name + ".type") != 1) {
             Other.sendInfo("[WARNING]读取Quest数据错误，该名的类型不正确");
             return false;
         }
         //读取quest position信息
-        questposition.readQpFromYml(ymlfile.getString(quest_name + ".property-inherit.questposition"));
+        questposition.readQpFromYml(ymlfile.getString(quest_name + ".property-inherit.quest_position"));
 
         //读取quest type信息
-        questtype = QuestType.valueOf(Objects.requireNonNull(ymlfile.getString("property-set.questtype")).toUpperCase(Locale.ROOT));
+        questtype = QuestType.valueOf(Objects.requireNonNull(ymlfile.getString("property-set.quest_type")).toUpperCase(Locale.ROOT));
 
         //读取quest accept condition 和quest target
-        if (ymlfile.contains(quest_name + "property-set.questacceptconditionamount"))
-            if (ymlfile.getInt(quest_name + "property-set.questacceptconditionamount") != 0) {
-                quest_accept_condition_amount = ymlfile.getInt(quest_name + "property-set.questacceptconditionamount");
+        if (ymlfile.contains(quest_name + "property-set.quest_accept_condition_amount"))
+            if (ymlfile.getInt(quest_name + "property-set.quest_accept_condition_amount") != 0) {
+                quest_accept_condition_amount = ymlfile.getInt(quest_name + "property-set.quest_accept_condition_amount");
                 for (int j = 0; j < quest_accept_condition_amount; j++) {
-                    if (!ymlfile.contains(quest_name + ".property-inherit.questacceptcondition." + j)) {
+                    if (!ymlfile.contains(quest_name + ".property-inherit.quest_accept_condition." + j)) {
                         Other.sendInfo("[WARNING]读取Quest时错误，信息文件可能损坏！");
                         break;
                     }
-                    String tname = ymlfile.getString(quest_name + ".property-inherit.questacceptcondition." + j);
+                    String tname = ymlfile.getString(quest_name + ".property-inherit.quest_accept_condition." + j);
                     quest_accept_condition.get(j).readQaFromYml(ymlfile, tname);
                 }
             }
 
-        if (ymlfile.contains(quest_name + "property-set.questtargetamount"))
-            if (ymlfile.getInt(quest_name + "property-set.questtargetamount") != 0) {
-                quest_target_amount = ymlfile.getInt(quest_name + "property-set.questtargetamount");
+        if (ymlfile.contains(quest_name + "property-set.quest_target_amount"))
+            if (ymlfile.getInt(quest_name + "property-set.quest_target_amount") != 0) {
+                quest_target_amount = ymlfile.getInt(quest_name + "property-set.quest_target_amount");
                 for (int j = 0; j < quest_target_amount; j++) {
-                    if (!ymlfile.contains(quest_name + ".property-inherit.questtarget." + j)) {
+                    if (!ymlfile.contains(quest_name + ".property-inherit.quest_target." + j)) {
                         Other.sendInfo("[WARNING]读取Quest时错误，信息文件可能损坏！");
                         break;
                     }
-                    String tname = ymlfile.getString(quest_name + ".property-inherit.questtarget." + j);
+                    String tname = ymlfile.getString(quest_name + ".property-inherit.quest_target." + j);
                     quest_target.get(j).readQaFromYml(ymlfile, tname);
                 }
             }
 
         //quest description
-        quest_description_line = ymlfile.getInt("property-set.questdescriptionline");
+        quest_description_line = ymlfile.getInt("property-set.quest_description_line");
         for (int j = 0; j < this.getQuestDescriptionLine(); j++) {
-            quest_description.set(j, ymlfile.getString(quest_name + ".property-set.questdescription." + j));
+            quest_description.set(j, ymlfile.getString(quest_name + ".property-set.quest_description." + j));
         }
-        //questreward
-        questreward.readQrFromYml(ymlfile, ymlfile.getString(quest_name + ".property-inherit.questreward"));
+        //quest_reward
+        questreward.readQrFromYml(ymlfile, ymlfile.getString(quest_name + ".property-inherit.quest_reward"));
 
         //isSync
-        if (ymlfile.contains(quest_name + ".property-set.issync"))
-            is_sync = ymlfile.getBoolean(quest_name + ".property-set.issync");
+        if (ymlfile.contains(quest_name + ".property-set.sync"))
+            is_sync = ymlfile.getBoolean(quest_name + ".property-set.sync");
 
         is_sync = ymlfile.getBoolean(quest_name + ".property-set.on", false);
         return true;
@@ -344,31 +344,31 @@ public class Quest implements Cloneable, ConfigurationSerializable, Serializable
         }
 
         ymlfile.set(quest_name + ".type", 1);
-        ymlfile.set(quest_name + ".property-inherit.questposition", questposition.getQuestpositionname());
+        ymlfile.set(quest_name + ".property-inherit.quest_position", questposition.getQuestpositionname());
         questposition.saveQpToYml();
-        ymlfile.set(quest_name + ".property-inherit.questreward", questreward.getQuestrewardname());
+        ymlfile.set(quest_name + ".property-inherit.quest_reward", questreward.getQuestrewardname());
         questreward.saveQrToYml();
 
-        ymlfile.set(quest_name + ".property-set.questnumber", quest_number);
+        ymlfile.set(quest_name + ".property-set.quest_number", quest_number);
         ymlfile.set(quest_name + ".property-set.quest_name", quest_name);
-        ymlfile.set(quest_name + ".property-set.questtype", questtype.getKey());
+        ymlfile.set(quest_name + ".property-set.quest_type", questtype.getKey());
         //ymlfile.set(quest_name+".property-inherit","QUEST");
-        ymlfile.set(quest_name + ".property-set.questdescriptionline", quest_description_line);
-        ymlfile.set(quest_name + ".property-set.questacceptconditionamount", quest_accept_condition_amount);
-        ymlfile.set(quest_name + ".property-set.questtargetamount", quest_target_amount);
-        ymlfile.set(quest_name + ".property-set.issync", is_sync);
+        ymlfile.set(quest_name + ".property-set.quest_description_line", quest_description_line);
+        ymlfile.set(quest_name + ".property-set.quest_accept_condition_amount", quest_accept_condition_amount);
+        ymlfile.set(quest_name + ".property-set.quest_target_amount", quest_target_amount);
+        ymlfile.set(quest_name + ".property-set.sync", is_sync);
         ymlfile.set(quest_name + ".property-set.on", on);
 
         for (int i = 0; i < quest_description_line; i++) {
-            ymlfile.set(quest_name + ".property-set.questdescription." + i, quest_description.get(i));
+            ymlfile.set(quest_name + ".property-set.quest_description." + i, quest_description.get(i));
         }
         for (int i = 0; i < quest_accept_condition_amount; i++) {
-            ymlfile.set(quest_name + ".property-inherit.questacceptcondition." + i, quest_accept_condition.get(i).getQuest_action_name());
+            ymlfile.set(quest_name + ".property-inherit.quest_accept_condition." + i, quest_accept_condition.get(i).getQuest_action_name());
             quest_accept_condition.get(i).saveQaToYml(ymlfile);
         }
 
         for (int i = 0; i < quest_target_amount; i++) {
-            ymlfile.set(quest_name + ".property-inherit.questtarget." + i, quest_target.get(i).getQuest_action_name());
+            ymlfile.set(quest_name + ".property-inherit.quest_target." + i, quest_target.get(i).getQuest_action_name());
             quest_target.get(i).saveQaToYml(ymlfile);
         }
 
