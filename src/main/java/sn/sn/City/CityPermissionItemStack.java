@@ -38,12 +38,9 @@ public class CityPermissionItemStack extends ItemStack {
         return corresponding_material;
     }
 
-    public static boolean addCorrespondingMaterials(String s, Material m) {
-        if(corresponding_material.containsKey(s)){
-            return false;
-        } else {
+    public static void addCorrespondingMaterials(String s, Material m) {
+        if (!corresponding_material.containsKey(s)) {
             corresponding_material.put(s, m);
-            return true;
         }
     }
 
