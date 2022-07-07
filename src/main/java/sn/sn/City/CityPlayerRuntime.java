@@ -17,6 +17,7 @@ public class CityPlayerRuntime extends Thread{
         this.tracker = tracker;
     }
 
+    @SuppressWarnings("BusyWait")
     @Override
     public void run() {
         try {
