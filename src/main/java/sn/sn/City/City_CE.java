@@ -1,23 +1,29 @@
 package sn.sn.City;
 
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import sn.sn.Basic.Other;
-import sn.sn.UI.OpenUI;
 import sn.sn.Range.Range;
+import sn.sn.UI.OpenUI;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 import static sn.sn.Ask.AskSetEvent.askSetAsync;
 import static sn.sn.City.City.getCity;
 import static sn.sn.Collector.Collector_CE.getRange;
-import static sn.sn.UI.OpenUI.*;
 import static sn.sn.Sn.*;
+import static sn.sn.UI.OpenUI.*;
 
 /*
 *
@@ -556,13 +562,13 @@ public class City_CE implements CommandExecutor {
                     sender.sendMessage("/city range remove <index> 向小镇中删除区域.");
                     sender.sendMessage("/city loadchunk 让插件常加载脚下的方块,需要整个区块都在城镇区域内.");
                 }
-                if(commander.isOp()||commander.hasPermission("Sn.city.admin")){
-                    sender.sendMessage("/city admin perm add/remove <perm> 添加/删除一个可以被城主设置的权限");
-                    sender.sendMessage("/city admin perm add/remove index <perm_index> 添加/删除一个可以被城主设置的权限.");
-                    sender.sendMessage("/city admin perm list 查看可以被城主设置的权限列表.");
-                    sender.sendMessage("/city admin 打开小镇系统管理面板.");
+            }
+            if (commander.isOp() || commander.hasPermission("Sn.city.admin")) {
+                sender.sendMessage("/city admin perm add/remove <perm> 添加/删除一个可以被城主设置的权限");
+                sender.sendMessage("/city admin perm add/remove index <perm_index> 添加/删除一个可以被城主设置的权限.");
+                sender.sendMessage("/city admin perm list 查看可以被城主设置的权限列表.");
+                sender.sendMessage("/city admin 打开小镇系统管理面板.");
 
-                }
             }
         }
         Other.sendDebug("City Help Page Called");
