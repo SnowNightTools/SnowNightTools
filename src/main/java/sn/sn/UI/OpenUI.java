@@ -783,7 +783,7 @@ public class OpenUI {
     public static void openCityPermGroupSetUI(City city, Player commander, String name, int perm_page, int player_page) {
         if (city == null) return;
         Map<String, Boolean> perm_list = city.getPermList().get(name);
-        List<String> perm_group = new ArrayList<>(city.getPermGroupList().keySet());
+        List<String> perm_group = new ArrayList<>(perm_city_settable);
         List<UUID> player_list = city.getPermGroupList().get(name);
         int perm_tot_page = perm_list.size() / 27 + 1, player_tot_page = player_list.size() / 18 + 1;
         Inventory temp = Bukkit.createInventory(commander, 54, "City权限组设置: " + name + " 权限组P" + perm_page
@@ -791,9 +791,9 @@ public class OpenUI {
         perm_page = min(perm_page, perm_tot_page);
         player_page = min(player_page, player_tot_page);
         int ori = (perm_page - 1) * 27;
-        for (int i = 0; i < 27 && i + ori < perm_list.size(); i++) {
+        for (int i = 0; i < 27 && i + ori < perm_group.size(); i++) {
             String perm_name = perm_group.get(i + ori);
-            temp.addItem(new CityPermissionItemStack(perm_name, perm_list.get(perm_name)));
+            temp.setItem(i, new CityPermissionItemStack(perm_name, perm_list.getOrDefault(perm_name, false)));
         }
 
         ori = (player_page - 1) * 18;

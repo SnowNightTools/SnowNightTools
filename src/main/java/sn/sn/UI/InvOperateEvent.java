@@ -196,7 +196,7 @@ public class InvOperateEvent implements Listener {
             return;
         }
 
-        if(inv_click.getView().getTitle().equalsIgnoreCase("IconChoose")){
+        if (inv_click.getView().getTitle().contains("IconChoose")) {
             workIconChooseIO(inv_click, commander);
             return;
         }
@@ -384,7 +384,8 @@ public class InvOperateEvent implements Listener {
                         return;
                     }
                     try {
-                        city.removePlayerFromPermGroup(name, Objects.requireNonNull(((SkullMeta) im).getOwningPlayer()).getUniqueId());
+                        if (!(name.equals("residents") || name.equals("mayor")))
+                            city.removePlayerFromPermGroup(name, Objects.requireNonNull(((SkullMeta) im).getOwningPlayer()).getUniqueId());
                     } catch (Exception e) {
                         commander.sendMessage("可能出现错误，建议删除该权限组并重新创建，或联系管理员!");
                         commander.closeInventory();
@@ -402,12 +403,12 @@ public class InvOperateEvent implements Listener {
         switch (inv_click.getSlot()){
             case 53:
                 if(page != page_amount){
-                    OpenUI.openCityAdminUI(commander,page+1);
+                    OpenUI.openIconSetUI(commander, page + 1);
                 }
                 return;
             case 45:
                 if(page != 1){
-                    OpenUI.openCityAdminUI(commander,page-1);
+                    OpenUI.openIconSetUI(commander, page - 1);
                 }
                 return;
             case 46:

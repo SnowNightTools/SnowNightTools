@@ -229,6 +229,7 @@ public class City_CE implements CommandExecutor {
             setting.put(commander,(mat) ->{
                 CityPermissionItemStack.addCorrespondingMaterials(args[3],(Material) mat);
                 commander.sendMessage("成功添加了该权限的对应方块");
+                commander.closeInventory();
             });
             return true;
         }

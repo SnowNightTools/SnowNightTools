@@ -6,10 +6,9 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import sn.sn.Basic.Other;
+import sn.sn.Sn;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class CityPermissionItemStack extends ItemStack {
 
@@ -19,17 +18,25 @@ public class CityPermissionItemStack extends ItemStack {
 
     public CityPermissionItemStack(String perm_name, Boolean on) {
         this.perm_name = perm_name;
-        if(on) turnOn();
         this.setType(corresponding_material.getOrDefault(perm_name, Material.PAPER));
+        this.setAmount(1);
+        ItemMeta meta = this.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(perm_name);
+            this.setItemMeta(meta);
+        }
+        if (on) turnOn();
     }
 
     public static void checkCorrespondingMaterialFromYml(YamlConfiguration ymlfile){
         int amount = ymlfile.getInt("amount");
         corresponding_material = new HashMap<>();
         for (int i = 0; i < amount; i++) {
-            String pn = ymlfile.getString(i+".pn");
-            Material m = Material.getMaterial(ymlfile.getString(i+".material","PAPER"));
-            corresponding_material.put(pn,m);
+            String pn = Objects.requireNonNull(ymlfile.getString(i + ".pn")).toUpperCase(Locale.ROOT);
+            Material m = Material.getMaterial(ymlfile.getString(i + ".material", "PAPER").toUpperCase(Locale.ROOT));
+            if (!Sn.perm_city_settable.contains(pn))
+                Sn.perm_city_settable.add(pn);
+            corresponding_material.put(pn, m);
         }
         Other.sendDebug("checkCorrespondingMaterialFromYml method called");
     }
