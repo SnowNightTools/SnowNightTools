@@ -515,7 +515,7 @@ public class InvOperateEvent implements Listener {
         String page_str = getPage(inv_click);
         if(page_str == null) return;
         int page = Integer.parseInt(page_str);
-        int page_amount = (Material.values().length)/45 +1;
+        int page_amount = 23;
         switch (inv_click.getSlot()){
             case 53:
                 if(page != page_amount){

@@ -763,7 +763,7 @@ public class OpenUI {
         if (city == null) {
             return;
         }
-        int tot_page = Material.values().length / 45 + 1;
+        int tot_page = 23;
         Inventory temp = Bukkit.createInventory(commander, 54, "CityIconSet: " + city.getName() + " Page " + page + " of " + tot_page);
         int index = (page - 1) * 45;
         for (int i = 0; (i < 45) && (index + i < Material.values().length); i++) {
