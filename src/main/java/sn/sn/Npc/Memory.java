@@ -12,9 +12,9 @@ public class Memory implements ConfigurationSerializable {
     final Map<Event , Integer> event_level;
     final Map<Event, Integer> event_favorability;
 
-    final List<Snnpc> peoplelist;
-    final Map<Snnpc, Intege/* people_favorability;
-    final Map<Snnpc, Characters> people_impressions;
+    final List<Npc> peoplelist;
+    final Map<Npc, Intege/* people_favorability;
+    final Map<Npc, Characters> people_impressions;
 
     final List<Player> playerlist;
     final Map<Player, Integer> player_favorability;

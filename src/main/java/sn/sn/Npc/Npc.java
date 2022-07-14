@@ -4,7 +4,7 @@ import org.bukkit.entity.EntityType;
 
 import javax.swing.text.Position;
 
-public class Snnpc {
+public class Npc {
 
     Memory memory;
 
